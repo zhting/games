@@ -7,4 +7,4 @@
 - `/`：主页
 - `/game`：果冻俄罗斯方块
 
-部署目标：`https://chatgpt.tangletang.top/game`
+部署目标：`https://games.tangletang.top`
