@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>果冻方块 · Jelly Tetris</title>
+<style>
+  :root{
+    --bg1:#1b0f2e; --bg2:#3a1145; --bg3:#120a1f;
+    --glass:rgba(255,255,255,.06);
+    --line:rgba(255,255,255,.10);
+    --ink:#fff3fa;
+    --muted:rgba(255,243,250,.55);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:ui-rounded,"PingFang SC","Hiragino Maru Gothic ProN","Yuanti SC","Microsoft YaHei",system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 700px at 20% -10%, #5a1b63 0%, transparent 55%),
+      radial-gradient(900px 600px at 110% 110%, #21306b 0%, transparent 55%),
+      linear-gradient(160deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+    min-height:100%;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .bubble{position:fixed;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.30), rgba(255,255,255,.04) 60%, transparent 70%);
+    animation:floatUp linear infinite;}
+  @keyframes floatUp{from{transform:translateY(110vh) scale(var(--s,1))}to{transform:translateY(-20vh) scale(var(--s,1))}}
+  @media (prefers-reduced-motion: reduce){.bubble{display:none}}
+
+  .wrap{display:flex;gap:22px;align-items:flex-start;padding:16px;position:relative;z-index:1}
+  .boardCard{
+    position:relative;border-radius:26px;padding:14px;
+    background:linear-gradient(170deg,rgba(255,255,255,.10),rgba(255,255,255,.03) 40%,rgba(255,255,255,.06));
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:0 30px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.25);
+    backdrop-filter:blur(6px);
+  }
+  canvas#board{display:block;border-radius:16px;touch-action:none}
+  .side{display:flex;flex-direction:column;gap:14px;width:190px}
+  .card{
+    background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:12px 14px;
+    backdrop-filter:blur(6px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .card h3{font-size:12px;letter-spacing:.22em;color:var(--muted);font-weight:600;margin-bottom:6px}
+  .big{font-size:30px;font-weight:800;letter-spacing:.02em;
+       text-shadow:0 2px 10px rgba(255,93,143,.35)}
+  .row2{display:flex;gap:14px}
+  .row2 .card{flex:1}
+  .row2 .big{font-size:22px}
+  canvas#next{display:block;width:100%;height:auto}
+  .title{font-size:21px;font-weight:800;line-height:1.15}
+  .title small{display:block;font-size:11px;letter-spacing:.3em;color:var(--muted);font-weight:600;margin-top:4px}
+  .keys{font-size:12px;color:var(--muted);line-height:1.9}
+  .keys b{color:var(--ink);font-weight:700;background:rgba(255,255,255,.10);
+          border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-right:4px}
+  button.cta{
+    width:100%;border:none;cursor:pointer;border-radius:16px;padding:12px;
+    font:inherit;font-weight:800;font-size:15px;color:#3c0f22;
+    background:linear-gradient(180deg,#ffd1e0,#ff7aa6 60%,#ff5d8f);
+    box-shadow:0 8px 20px rgba(255,93,143,.40), inset 0 2px 0 rgba(255,255,255,.65), inset 0 -3px 0 rgba(160,20,70,.35);
+    transition:transform .12s cubic-bezier(.34,1.56,.64,1);
+  }
+  button.cta:active{transform:scale(.94) translateY(2px)}
+
+  .overlay{
+    position:absolute;inset:14px;border-radius:16px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:12px;text-align:center;
+    background:rgba(20,8,32,.62);backdrop-filter:blur(8px);z-index:5;
+  }
+  .overlay.hidden{display:none}
+  .overlay .ot{font-size:30px;font-weight:800}
+  .overlay .os{font-size:13px;color:var(--muted);max-width:230px;line-height:1.8}
+  .overlay button.cta{width:auto;padding:12px 34px}
+
+  .touchpad{display:none;gap:10px;justify-content:center;margin-top:12px}
+  .touchpad button{
+    width:54px;height:54px;border-radius:50%;border:1px solid var(--line);cursor:pointer;
+    background:rgba(255,255,255,.10);color:var(--ink);font-size:20px;font-weight:800;
+    backdrop-filter:blur(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);
+    transition:transform .1s;
+  }
+  .touchpad button:active{transform:scale(.88);background:rgba(255,255,255,.22)}
+
+  @media (max-width:760px){
+    body{overflow:auto;align-items:flex-start}
+    .wrap{flex-direction:column-reverse;align-items:center;gap:12px;padding-bottom:30px}
+    .side{width:min(92vw,340px);flex-direction:row;flex-wrap:wrap}
+    .side .card{flex:1 1 40%}
+    .side .title-card,.side .keys-card{display:none}
+    .touchpad{display:flex}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="boardCard">
+    <canvas id="board"></canvas>
+    <div class="overlay" id="overlay">
+      <div class="ot" id="ovTitle">果冻方块</div>
+      <div class="os" id="ovText">真·软体物理的俄罗斯方块。<br>每块果冻由几十个质点和弹簧构成，<br>落地、转身、推挤都会真实地震颤传播。</div>
+      <button class="cta" id="ovBtn">开始游戏</button>
+    </div>
+    <div class="touchpad">
+      <button id="tL">◀</button>
+      <button id="tRot">⟳</button>
+      <button id="tD">▼</button>
+      <button id="tHard">⤓</button>
+      <button id="tR">▶</button>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="card title-card">
+      <div class="title">果冻方块<small>JELLY TETRIS</small></div>
+    </div>
+    <div class="card"><h3>下一个</h3><canvas id="next" width="160" height="110"></canvas></div>
+    <div class="card"><h3>分数</h3><div class="big" id="score">0</div></div>
+    <div class="row2">
+      <div class="card"><h3>行数</h3><div class="big" id="lines">0</div></div>
+      <div class="card"><h3>等级</h3><div class="big" id="level">1</div></div>
+    </div>
+    <div class="card keys-card"><h3>操作</h3>
+      <div class="keys">
+        <b>←</b><b>→</b>移动 &nbsp;<b>↑</b>旋转<br>
+        <b>↓</b>软降 &nbsp;<b>空格</b>硬降<br>
+        <b>Z</b>反向旋转 &nbsp;<b>P</b>暂停
+      </div>
+    </div>
+    <button class="cta" id="pauseBtn">暂停</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ===================================================================
+   果冻俄罗斯方块 v2 —— 真实软体物理
+   每个果冻块的轮廓被细分为质点链，受四种力支配：
+     1. 形状保持弹簧（拉回静止形态）
+     2. 表面张力弹簧（拉向相邻质点中点，让冲击沿表面传播成波）
+     3. 体积压强（面积偏离静止面积时沿法线鼓出/收缩 → 压扁必鼓边）
+     4. 速度阻尼
+   所有运动都来自"静止形态瞬移、身体弹性追赶"与碰撞冲量，
+   没有任何预设的循环动画 —— 每一次颤动都由当时的物理状态决定。
+   =================================================================== */
+const COLS = 10, ROWS = 20;
+const CS = Math.max(20, Math.min(32,
+  Math.floor((window.innerHeight - 120) / ROWS),
+  Math.floor((window.innerWidth - 40) / (COLS + 8))));
+const PAD = 6;
+const W = COLS * CS + PAD * 2, H = ROWS * CS + PAD * 2;
+const PX = CS / 32; // 相对 32px 基准的像素比例，用于缩放物理量
+
+const cv = document.getElementById('board');
+const dpr = Math.min(2, window.devicePixelRatio || 1);
+cv.width = W * dpr; cv.height = H * dpr;
+cv.style.width = W + 'px'; cv.style.height = H + 'px';
+const ctx = cv.getContext('2d');
+ctx.scale(dpr, dpr);
+const nextCv = document.getElementById('next');
+const nctx = nextCv.getContext('2d');
+
+/* ---------- 形状 ---------- */
+const SHAPES = {
+  I:{box:4, cells:[[0,1],[1,1],[2,1],[3,1]], color:'#2ec5ff'},
+  O:{box:2, cells:[[0,0],[1,0],[0,1],[1,1]], color:'#ffd23f'},
+  T:{box:3, cells:[[1,0],[0,1],[1,1],[2,1]], color:'#b557ff'},
+  S:{box:3, cells:[[1,0],[2,0],[0,1],[1,1]], color:'#51e057'},
+  Z:{box:3, cells:[[0,0],[1,0],[1,1],[2,1]], color:'#ff4d6d'},
+  J:{box:3, cells:[[0,0],[0,1],[1,1],[2,1]], color:'#4f7bff'},
+  L:{box:3, cells:[[2,0],[0,1],[1,1],[2,1]], color:'#ff9633'},
+};
+const TYPES = Object.keys(SHAPES);
+function rotCells(type, rot){
+  let c = SHAPES[type].cells.map(p => p.slice());
+  const n = SHAPES[type].box;
+  for (let r = 0; r < ((rot % 4) + 4) % 4; r++)
+    c = c.map(([x, y]) => [n - 1 - y, x]);
+  return c;
+}
+
+/* ---------- 颜色（HSL 分层，保持糖果饱和度） ---------- */
+const HSLCACHE = {};
+function hsl(hex){
+  if (HSLCACHE[hex]) return HSLCACHE[hex];
+  const r = parseInt(hex.slice(1,3),16)/255, g = parseInt(hex.slice(3,5),16)/255, b = parseInt(hex.slice(5,7),16)/255;
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  let h=0, s=0, l=(max+min)/2;
+  if (max!==min){
+    const d = max-min;
+    s = l>.5 ? d/(2-max-min) : d/(max+min);
+    h = max===r ? (g-b)/d + (g<b?6:0) : max===g ? (b-r)/d+2 : (r-g)/d+4;
+    h *= 60;
+  }
+  return HSLCACHE[hex] = [h, s*100, l*100];
+}
+const cl = v => Math.max(0, Math.min(100, v));
+function shade(hex, dl, ds, a){
+  const [h,s,l] = hsl(hex);
+  return `hsla(${h.toFixed(1)},${cl(s+(ds||0))}%,${cl(l+dl)}%,${a==null?1:a})`;
+}
+
+/* ---------- 轮廓提取 ---------- */
+function outlines(cells){
+  const set = new Set(cells.map(([x,y]) => x+','+y));
+  const edges = new Map(); // 起点 -> [终点...]
+  const add = (k,v) => { const a = edges.get(k); a ? a.push(v) : edges.set(k,[v]); };
+  for (const [x,y] of cells){
+    if (!set.has(x+','+(y-1))) add(x+','+y, [x+1,y]);
+    if (!set.has((x+1)+','+y)) add((x+1)+','+y, [x+1,y+1]);
+    if (!set.has(x+','+(y+1))) add((x+1)+','+(y+1), [x,y+1]);
+    if (!set.has((x-1)+','+y)) add(x+','+(y+1), [x,y]);
+  }
+  const loops = [];
+  while (edges.size){
+    const loop = [];
+    let key = edges.keys().next().value;
+    while (edges.has(key)){
+      const [sx,sy] = key.split(',').map(Number);
+      loop.push([sx,sy]);
+      const list = edges.get(key);
+      const end = list.pop();
+      if (!list.length) edges.delete(key);
+      key = end[0]+','+end[1];
+    }
+    if (loop.length >= 4) loops.push(loop);
+  }
+  return loops;
+}
+
+/* 把格子轮廓细分为像素质点链 */
+const SUB = 3;
+function loopPoints(cells){
+  return outlines(cells).map(loop => {
+    const pts = [];
+    for (let i=0;i<loop.length;i++){
+      const a = loop[i], b = loop[(i+1)%loop.length];
+      for (let s=0;s<SUB;s++){
+        const t = s/SUB;
+        pts.push([PAD+(a[0]+(b[0]-a[0])*t)*CS, PAD+(a[1]+(b[1]-a[1])*t)*CS]);
+      }
+    }
+    return pts;
+  });
+}
+function polyArea(pts){
+  let a = 0;
+  for (let i=0;i<pts.length;i++){
+    const p = pts[i], q = pts[(i+1)%pts.length];
+    a += p[0]*q[1] - q[0]*p[1];
+  }
+  return a/2;
+}
+
+/* ---------- 软体 ---------- */
+// 物理参数（像素 / 秒制；随格子大小缩放）
+const K_SHAPE = 110;     // 形状保持刚度
+const K_SURF  = 420;     // 表面张力刚度（决定波在表面的传播速度）
+const K_PRESS = 3600;    // 体积压强增益
+const DAMP    = 3.8;     // 阻尼
+const PHYS_H  = 1/180;   // 物理子步长
+const VMAX    = 1500*PX;
+
+class SoftBody{
+  constructor(cells, color){
+    this.color = color;
+    this.sleeping = false;
+    this.calm = 0;
+    this.build(cells, 0, 0);
+  }
+  /* 重建静止形态；(ox,oy) 为初始位置相对静止形态的偏移（让身体从旧处弹回来） */
+  build(cells, ox, oy){
+    this.cells = cells;
+    this.loops = loopPoints(cells).map(rest => ({
+      rest,
+      pos: rest.map(p => [p[0]+ox, p[1]+oy]),
+      vel: rest.map(() => [0,0]),
+      restArea: polyArea(rest),
+    }));
+    this.makeBubbles();
+    this.wake();
+  }
+  makeBubbles(){
+    this.bubbles = [];
+    for (const [x,y] of this.cells){
+      const n = Math.random() < .8 ? 1 + (Math.random()*2|0) : 0;
+      for (let i=0;i<n;i++) this.bubbles.push({
+        x: PAD+(x+.15+Math.random()*.7)*CS,
+        y: PAD+(y+.15+Math.random()*.7)*CS,
+        r: (.8+Math.random()*1.7)*PX,
+        a: .25+Math.random()*.45,
+        d: .55+Math.random()*.6,    // 深度系数：越深跟随形变越少
+      });
+    }
+  }
+  wake(){ this.sleeping = false; this.calm = 0; }
+  teleport(dx, dy){           // 刚性移动：位置稳定地跟随网格，形变另由冲量注入
+    for (const L of this.loops){
+      for (const p of L.rest){ p[0]+=dx; p[1]+=dy; }
+      for (const p of L.pos){ p[0]+=dx; p[1]+=dy; }
+    }
+    for (const b of this.bubbles){ b.x+=dx; b.y+=dy; }
+  }
+  bounds(){
+    let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+    for (const L of this.loops) for (const p of L.rest){
+      if(p[0]<minX)minX=p[0]; if(p[0]>maxX)maxX=p[0];
+      if(p[1]<minY)minY=p[1]; if(p[1]>maxY)maxY=p[1];
+    }
+    return [minX,minY,maxX,maxY];
+  }
+  /* —— 零均值形变冲量：只改变形状，不移动整体位置 —— */
+  squash(v){                  // 垂直压扁：上半下压，下半向外鼓
+    const [minX,minY,maxX,maxY] = this.bounds();
+    const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
+    const hw=Math.max(1,(maxX-minX)/2), hh=Math.max(1,(maxY-minY)/2);
+    for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+      const rx=(L.rest[i][0]-cx)/hw, ry=(L.rest[i][1]-cy)/hh;
+      L.vel[i][1] += -v*ry;
+      L.vel[i][0] += v*.45*rx*Math.max(0,ry);
+    }
+    this.wake();
+  }
+  lean(dir, v){               // 横移时的摆头：顶部先向反方向甩，再弹回
+    const [,minY,,maxY] = this.bounds();
+    const cy=(minY+maxY)/2, hh=Math.max(1,(maxY-minY)/2);
+    for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+      L.vel[i][0] += dir*v*(L.rest[i][1]-cy)/hh;
+    }
+    this.wake();
+  }
+  stretchV(v){                // 下落时的轻微拉长（滴落感）
+    const [,minY,,maxY] = this.bounds();
+    const cy=(minY+maxY)/2, hh=Math.max(1,(maxY-minY)/2);
+    for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+      L.vel[i][1] += v*(L.rest[i][1]-cy)/hh;
+    }
+    this.wake();
+  }
+  addVel(vx, vy){
+    for (const L of this.loops) for (const v of L.vel){ v[0]+=vx; v[1]+=vy; }
+    this.wake();
+  }
+  /* 在 (x,y) 附近半径 r 内施加局部冲量，随距离衰减 —— 碰撞传导 */
+  nudgeAt(x, y, vx, vy, r){
+    let hit = false;
+    for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+      const d = Math.hypot(L.pos[i][0]-x, L.pos[i][1]-y);
+      if (d < r){
+        const f = 1 - d/r;
+        L.vel[i][0] += vx*f; L.vel[i][1] += vy*f;
+        hit = true;
+      }
+    }
+    if (hit) this.wake();
+  }
+  /* 旋转后的搅动：绕质心的切向速度 + 轻微外扩 */
+  swirl(dir, power){
+    const [cx,cy] = this.centroid();
+    for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+      const dx = L.rest[i][0]-cx, dy = L.rest[i][1]-cy;
+      const r = Math.hypot(dx,dy) || 1;
+      L.vel[i][0] += (-dy/r)*dir*power + dx/r*power*.25;
+      L.vel[i][1] += ( dx/r)*dir*power + dy/r*power*.25;
+    }
+    this.wake();
+  }
+  centroid(){
+    let cx=0, cy=0, n=0;
+    for (const L of this.loops) for (const p of L.pos){ cx+=p[0]; cy+=p[1]; n++; }
+    return n ? [cx/n, cy/n] : [0,0];
+  }
+  centroidDelta(){
+    let dx=0, dy=0, n=0;
+    for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+      dx += L.pos[i][0]-L.rest[i][0]; dy += L.pos[i][1]-L.rest[i][1]; n++;
+    }
+    return n ? [dx/n, dy/n] : [0,0];
+  }
+  step(dt){
+    if (this.sleeping) return;
+    let t = dt, maxV = 0, maxD = 0;
+    while (t > 1e-6){
+      const h = Math.min(PHYS_H, t); t -= h;
+      const dampF = Math.exp(-DAMP*h);
+      for (const L of this.loops){
+        const n = L.pos.length;
+        const area = polyArea(L.pos);
+        const press = K_PRESS * (L.restArea - area) / Math.abs(L.restArea || 1)
+                    * Math.sign(L.restArea || 1) * PX;
+        for (let i=0;i<n;i++){
+          const p = L.pos[i], r = L.rest[i], v = L.vel[i];
+          const pp = L.pos[(i-1+n)%n], pn = L.pos[(i+1)%n];
+          const rp = L.rest[(i-1+n)%n], rn = L.rest[(i+1)%n];
+          // 形状保持
+          let fx = K_SHAPE*(r[0]-p[0]);
+          let fy = K_SHAPE*(r[1]-p[1]);
+          // 表面张力：惩罚相对静止形态的曲率偏差（静止时严格零力，
+          // 冲击仍沿轮廓传播成波，且拐角不会被拉成屈曲平衡）
+          fx += K_SURF*(((pp[0]+pn[0])*.5 - p[0]) - ((rp[0]+rn[0])*.5 - r[0]));
+          fy += K_SURF*(((pp[1]+pn[1])*.5 - p[1]) - ((rp[1]+rn[1])*.5 - r[1]));
+          // 表面相对阻尼：耗散邻点间的相对运动（高频微颤快速平息）
+          const vp = L.vel[(i-1+n)%n], vn = L.vel[(i+1)%n];
+          fx += 7*((vp[0]+vn[0])*.5 - v[0]);
+          fy += 7*((vp[1]+vn[1])*.5 - v[1]);
+          // 体积压强：沿外法线
+          let nx = pn[1]-pp[1], ny = -(pn[0]-pp[0]);
+          const nl = Math.hypot(nx,ny) || 1;
+          fx += press*nx/nl; fy += press*ny/nl;
+          v[0] = (v[0] + fx*h)*dampF;
+          v[1] = (v[1] + fy*h)*dampF;
+          const sp = Math.hypot(v[0],v[1]);
+          if (sp > VMAX){ v[0]*=VMAX/sp; v[1]*=VMAX/sp; }
+          p[0] += v[0]*h; p[1] += v[1]*h;
+          // 边界：托盘壁与底（与静止形态精确对齐，避免弹簧-钳制驻波）
+          const L1 = PAD, R1 = PAD+COLS*CS, B1 = PAD+ROWS*CS;
+          if (p[0] < L1){ p[0]=L1; if (v[0]<0){ v[0]*=-.28; v[1]*=.85; } }
+          if (p[0] > R1){ p[0]=R1; if (v[0]>0){ v[0]*=-.28; v[1]*=.85; } }
+          if (p[1] > B1){ p[1]=B1; if (v[1]>0){ v[1]*=-.30; v[0]*=.82; } }
+        }
+      }
+      // 刚体平移抑制：整体位置牢牢钉在网格上，只允许形状层面的颤动
+      let mdx=0, mdy=0, mvx=0, mvy=0, nn=0;
+      for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+        mdx += L.pos[i][0]-L.rest[i][0]; mdy += L.pos[i][1]-L.rest[i][1];
+        mvx += L.vel[i][0];              mvy += L.vel[i][1];
+        nn++;
+      }
+      if (nn){
+        mdx/=nn; mdy/=nn; mvx/=nn; mvy/=nn;
+        const ap = 1-Math.exp(-28*h), av = 1-Math.exp(-12*h);
+        for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+          L.pos[i][0] -= mdx*ap; L.pos[i][1] -= mdy*ap;
+          L.vel[i][0] -= mvx*av; L.vel[i][1] -= mvy*av;
+        }
+      }
+    }
+    // 休眠判定：真正静下来就完全停住（果冻不被碰就不会动）
+    for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+      const v = L.vel[i];
+      const s = Math.abs(v[0])+Math.abs(v[1]);
+      if (s > maxV) maxV = s;
+      const d = Math.abs(L.pos[i][0]-L.rest[i][0])+Math.abs(L.pos[i][1]-L.rest[i][1]);
+      if (d > maxD) maxD = d;
+    }
+    if (maxV < 9*PX && maxD < .8*PX){
+      this.calm += dt;
+      if (this.calm > .3){
+        for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
+          L.pos[i][0]=L.rest[i][0]; L.pos[i][1]=L.rest[i][1];
+          L.vel[i][0]=0; L.vel[i][1]=0;
+        }
+        this.sleeping = true;
+      }
+    } else this.calm = 0;
+  }
+}
+
+/* ---------- 果冻渲染（可口质感） ---------- */
+function smoothPath(c, pts){
+  c.beginPath();
+  const n = pts.length;
+  const m0 = [(pts[n-1][0]+pts[0][0])/2,(pts[n-1][1]+pts[0][1])/2];
+  c.moveTo(m0[0], m0[1]);
+  for (let i=0;i<n;i++){
+    const p = pts[i], q = pts[(i+1)%n];
+    c.quadraticCurveTo(p[0], p[1], (p[0]+q[0])/2, (p[1]+q[1])/2);
+  }
+  c.closePath();
+}
+
+function drawJellyLoops(c, loops, color, opt={}){
+  const ghost = opt.ghost, bubbles = opt.bubbles, bdx = opt.bdx||0, bdy = opt.bdy||0;
+  for (const pts of loops){
+    smoothPath(c, pts);
+    if (ghost){
+      c.save();
+      c.fillStyle = shade(color, 14, 0, .07); c.fill();
+      c.strokeStyle = 'rgba(255,255,255,.30)';
+      c.setLineDash([5,5]); c.lineWidth = 1.5; c.stroke();
+      c.restore();
+      continue;
+    }
+    let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+    for (const [x,y] of pts){ if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+    const bw = Math.max(1,maxX-minX), bh = Math.max(1,maxY-minY);
+    const cx = (minX+maxX)/2;
+
+    c.save();
+    // 柔和有色投影
+    c.shadowColor = shade(color, -38, -8, .45);
+    c.shadowBlur = 12*PX; c.shadowOffsetY = 6*PX;
+    // 半透明主体：亮顶 → 通透中段 → 浓郁底部
+    const g = c.createLinearGradient(0, minY, 0, maxY);
+    g.addColorStop(0,   shade(color, 26, -4, .94));
+    g.addColorStop(.40, shade(color,  3,  6, .60));
+    g.addColorStop(1,   shade(color,-15, 10, .88));
+    c.fillStyle = g; c.fill();
+    c.shadowColor = 'transparent';
+    c.clip();
+
+    // 底部透光（次表面散射：光从果冻底边透出来）
+    c.globalCompositeOperation = 'screen';
+    const sss = c.createRadialGradient(cx, maxY + bh*.18, 1, cx, maxY + bh*.18, bw*.72);
+    sss.addColorStop(0, shade(color, 30, 8, .85));
+    sss.addColorStop(.55, shade(color, 18, 8, .25));
+    sss.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = sss; c.fill();
+    // 两侧薄边透光
+    const edgeL = c.createLinearGradient(minX, 0, minX+bw*.18, 0);
+    edgeL.addColorStop(0, shade(color, 24, 6, .35)); edgeL.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle = edgeL; c.fill();
+    const edgeR = c.createLinearGradient(maxX, 0, maxX-bw*.18, 0);
+    edgeR.addColorStop(0, shade(color, 24, 6, .35)); edgeR.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle = edgeR; c.fill();
+    c.globalCompositeOperation = 'source-over';
+
+    // 内芯（中心偏下更浓，营造厚度）
+    const core = c.createRadialGradient(cx, minY+bh*.62, 2, cx, minY+bh*.62, Math.max(bw,bh)*.55);
+    core.addColorStop(0, shade(color, -16, 12, .28));
+    core.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = core; c.fill();
+
+    // 内部小气泡（跟着形变轻微漂移）
+    if (bubbles){
+      for (const b of bubbles){
+        const bx = b.x + bdx*b.d, by = b.y + bdy*b.d;
+        if (bx < minX-4 || bx > maxX+4 || by < minY-4 || by > maxY+4) continue;
+        c.fillStyle = shade(color, -22, 8, .30);
+        c.beginPath(); c.arc(bx, by, b.r, 0, Math.PI*2); c.fill();
+        c.fillStyle = `rgba(255,255,255,${b.a})`;
+        c.beginPath(); c.arc(bx - b.r*.3, by - b.r*.35, b.r*.45, 0, Math.PI*2); c.fill();
+      }
+    }
+
+    // 顶部釉面高光（沿轮廓描，随形变摆动）
+    const hl = c.createLinearGradient(0, minY, 0, minY + bh*.5);
+    hl.addColorStop(0, 'rgba(255,255,255,.85)');
+    hl.addColorStop(1, 'rgba(255,255,255,0)');
+    c.strokeStyle = hl; c.lineWidth = 3.2*PX; c.stroke();
+
+    // 湿润光斑（左上斜置的长椭圆）
+    c.save();
+    c.translate(minX + bw*.32, minY + bh*.20);
+    c.rotate(-.35);
+    c.scale(1.9, 1);
+    const spec = c.createRadialGradient(0,0,0, 0,0, Math.min(bw,bh)*.26);
+    spec.addColorStop(0, 'rgba(255,255,255,.78)');
+    spec.addColorStop(.6, 'rgba(255,255,255,.22)');
+    spec.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = spec;
+    c.beginPath(); c.arc(0,0, Math.min(bw,bh)*.26, 0, Math.PI*2); c.fill();
+    c.restore();
+    // 小颗反光糖点
+    c.fillStyle = 'rgba(255,255,255,.9)';
+    c.beginPath(); c.arc(minX+bw*.52, minY+bh*.13, 1.6*PX, 0, Math.PI*2); c.fill();
+
+    // 底缘回光线
+    c.globalCompositeOperation = 'screen';
+    const rim = c.createLinearGradient(0, maxY-bh*.22, 0, maxY);
+    rim.addColorStop(0, 'rgba(0,0,0,0)');
+    rim.addColorStop(1, shade(color, 34, 6, .55));
+    c.strokeStyle = rim; c.lineWidth = 4.5*PX; c.stroke();
+    c.restore();
+
+    // 清晰外缘
+    c.strokeStyle = shade(color, -26, 6, .85);
+    c.lineWidth = 1.4*PX;
+    c.stroke();
+  }
+}
+
+/* ---------- 游戏状态 ---------- */
+let grid, pieces, active, nextType, bag = [];
+let score, lines, level, dropTimer, dropInterval, softDrop;
+let state = 'menu';
+let particles = [], flashes = [];
+let shakeY = 0, shakeV = 0;
+let lastT = performance.now();
+
+function fromBag(){
+  if (!bag.length){ bag = TYPES.slice(); for (let i=bag.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [bag[i],bag[j]]=[bag[j],bag[i]]; } }
+  return bag.pop();
+}
+function reset(){
+  grid = Array.from({length:ROWS}, () => Array(COLS).fill(null));
+  pieces = []; particles = []; flashes = []; bag = [];
+  score = 0; lines = 0; level = 1; softDrop = false;
+  dropInterval = 800; dropTimer = 0;
+  nextType = fromBag();
+  spawn();
+  updateHUD();
+}
+function spawn(){
+  const type = nextType; nextType = fromBag();
+  const box = SHAPES[type].box;
+  active = { type, rot:0, x:(COLS-box>>1), y:-2, color:SHAPES[type].color, body:null };
+  active.body = new SoftBody(absCells(active), active.color);
+  active.body.squash(60*PX);   // 出现时位置固定，只轻轻"duang"一下
+  drawNext();
+  if (collides(active, 0, 0, active.rot)) gameOver();
+}
+function absCells(p, dx=0, dy=0, rot=p.rot){
+  return rotCells(p.type, rot).map(([cx,cy]) => [p.x+cx+dx, p.y+cy+dy]);
+}
+function collides(p, dx, dy, rot){
+  return absCells(p, dx, dy, rot).some(([x,y]) =>
+    x<0 || x>=COLS || y>=ROWS || (y>=0 && grid[y][x]!==null));
+}
+
+/* ---------- 操作（所有形变都来自瞬移追赶或冲量） ---------- */
+function move(dir){
+  if (state!=='play') return;
+  if (!collides(active, dir, 0, active.rot)){
+    active.x += dir;
+    active.body.teleport(dir*CS, 0);     // 位置即刻到位
+    active.body.lean(dir, 95*PX);        // 形状轻微甩头，不影响位置
+  } else {
+    // 撞墙：撞击面获得反向冲量，波从撞击侧传开
+    const [cx,cy] = active.body.centroid();
+    active.body.nudgeAt(cx + dir*CS, cy, -dir*150*PX, 0, 2.2*CS);
+  }
+}
+function rotate(dir){
+  if (state!=='play') return;
+  const nr = (active.rot + dir + 4) % 4;
+  for (const [kx,ky] of [[0,0],[-1,0],[1,0],[-2,0],[2,0],[0,-1],[-1,-1],[1,-1]]){
+    if (!collides(active, kx, ky, nr)){
+      active.x += kx; active.y += ky; active.rot = nr;
+      active.body.build(absCells(active), 0, 0);
+      active.body.swirl(dir, (150 + Math.random()*40)*PX);  // 物理搅动，响应由弹簧决定
+      return;
+    }
+  }
+  active.body.swirl(dir, 70*PX); // 转不动也会抖一下
+}
+function stepDown(byPlayer){
+  if (collides(active, 0, 1, active.rot)){ lock(false, 1); return; }
+  active.y++;
+  active.body.teleport(0, CS);
+  active.body.stretchV(22*PX);           // 轻微滴落拉伸（纯形变）
+  if (byPlayer) score++;
+}
+function hardDrop(){
+  if (state!=='play') return;
+  let n = 0;
+  while (!collides(active, 0, 1, active.rot)){ active.y++; n++; }
+  score += n*2;
+  active.body.teleport(0, n*CS);
+  shakeV += 2.5 + Math.min(3, n*.25);
+  lock(true, n);
+}
+function lock(hard, fallDist){
+  const cells = absCells(active);
+  if (cells.some(([,y]) => y < 0)){ gameOver(); return; }
+  const body = active.body;
+  const p = { cells, color:active.color, body };
+  // 落地压扁 ∝ 下落势能（零均值形变：位置不动，鼓边回弹全由压强和弹簧算出）
+  body.squash((hard ? 300 + fallDist*18 : 165)*PX);
+  pieces.push(p);
+  for (const [x,y] of cells) grid[y][x] = p;
+
+  // 碰撞传导：冲击波从接触点向邻近果冻扩散
+  const bottom = Math.max(...cells.map(c=>c[1]));
+  const contactCells = cells.filter(c => c[1] === bottom);
+  const impact = (hard ? 200 + fallDist*16 : 95)*PX;
+  for (const [cx0,cy0] of contactCells){
+    const wx = PAD+(cx0+.5)*CS, wy = PAD+(cy0+1)*CS;
+    for (const q of pieces){
+      if (q === p) continue;
+      q.body.nudgeAt(wx, wy, 0, impact, 2.6*CS);
+    }
+  }
+  clearRows();
+  if (state==='play') spawn();
+  updateHUD();
+}
+
+function clearRows(){
+  const full = [];
+  for (let y=0;y<ROWS;y++) if (grid[y].every(c=>c!==null)) full.push(y);
+  if (!full.length) return;
+
+  for (const y of full){
+    flashes.push({y, life:1});
+    for (let x=0;x<COLS;x++){
+      const col = grid[y][x].color;
+      for (let i=0;i<2;i++) particles.push({
+        x:PAD+(x+.5)*CS, y:PAD+(y+.5)*CS,
+        vx:(Math.random()-.5)*260*PX, vy:(-90-Math.random()*200)*PX,
+        r:(2.5+Math.random()*3.5)*PX, color:col, life:1 });
+    }
+  }
+  const fullSet = new Set(full);
+  const survivors = [];
+  for (const p of pieces){
+    const oldCells = p.cells;
+    const kept = oldCells.filter(([,y]) => !fullSet.has(y));
+    if (!kept.length) continue;
+    const newCells = kept.map(([x,y]) => [x, y + full.filter(fy => fy > y).length]);
+    const changed = kept.length !== oldCells.length ||
+                    newCells.some((c,i) => c[1] !== kept[i][1]);
+    if (changed){
+      // 位置即刻到位，用与位移成正比的压扁脉冲表现"墩"下来的一下
+      const avgShift = newCells.reduce((s,c,i)=>s+(c[1]-kept[i][1]),0)/newCells.length;
+      p.body.build(newCells, 0, 0);
+      p.body.squash((110 + avgShift*42)*PX);
+    }
+    p.cells = newCells;
+    survivors.push(p);
+  }
+  pieces = survivors;
+  grid = Array.from({length:ROWS}, () => Array(COLS).fill(null));
+  for (const p of pieces) for (const [x,y] of p.cells) grid[y][x] = p;
+
+  const n = full.length;
+  score += [0,100,300,500,800][n] * level;
+  lines += n;
+  level = ((lines/10)|0) + 1;
+  dropInterval = Math.max(70, 800 * Math.pow(.85, level-1));
+  shakeV += 1.5 + n;
+}
+
+function gameOver(){
+  state = 'over';
+  for (const p of pieces){
+    p.body.squash(240*PX);
+    p.body.lean(Math.random()<.5?-1:1, 130*PX);
+  }
+  showOverlay('果冻塌啦！', `最终得分 ${score} · 消除 ${lines} 行<br>再来一盘，堆得更高一点？`, '再玩一次');
+}
+
+/* ---------- 画面 ---------- */
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r);
+  c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath();
+}
+function drawBoard(){
+  ctx.clearRect(0,0,W,H);
+  ctx.save();
+  ctx.translate(0, shakeY);
+
+  ctx.fillStyle = 'rgba(8,2,20,.45)';
+  roundRect(ctx, PAD-3, PAD-3, COLS*CS+6, ROWS*CS+6, 12); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.05)';
+  ctx.lineWidth = 1;
+  for (let x=1;x<COLS;x++){ ctx.beginPath(); ctx.moveTo(PAD+x*CS, PAD); ctx.lineTo(PAD+x*CS, PAD+ROWS*CS); ctx.stroke(); }
+  for (let y=1;y<ROWS;y++){ ctx.beginPath(); ctx.moveTo(PAD, PAD+y*CS); ctx.lineTo(PAD+COLS*CS, PAD+y*CS); ctx.stroke(); }
+
+  // 消行闪光
+  for (const f of flashes){
+    ctx.globalAlpha = f.life*.55;
+    ctx.fillStyle = '#fff';
+    roundRect(ctx, PAD, PAD+f.y*CS, COLS*CS, CS, 6); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  for (const p of pieces){
+    const [bdx,bdy] = p.body.centroidDelta();
+    drawJellyLoops(ctx, p.body.loops.map(L=>L.pos), p.color,
+                   {bubbles:p.body.bubbles, bdx, bdy});
+  }
+  if (active && (state==='play' || state==='pause')){
+    let gy = 0;
+    while (!collides(active, 0, gy+1, active.rot)) gy++;
+    if (gy>0) drawJellyLoops(ctx, loopPoints(absCells(active,0,gy)), active.color, {ghost:true});
+    const [bdx,bdy] = active.body.centroidDelta();
+    drawJellyLoops(ctx, active.body.loops.map(L=>L.pos), active.color,
+                   {bubbles:active.body.bubbles, bdx, bdy});
+  }
+  for (const pt of particles){
+    ctx.globalAlpha = Math.max(0, pt.life);
+    const g = ctx.createRadialGradient(pt.x-pt.r*.3, pt.y-pt.r*.3, 0, pt.x, pt.y, pt.r*pt.life+0.01);
+    g.addColorStop(0, shade(pt.color, 30, 0, .95));
+    g.addColorStop(1, shade(pt.color, -10, 8, .75));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(pt.x, pt.y, Math.max(.1, pt.r*pt.life), 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawNext(){
+  const w = nextCv.width, h = nextCv.height;
+  nctx.clearRect(0,0,w,h);
+  const cells = rotCells(nextType, 0);
+  const minX = Math.min(...cells.map(c=>c[0])), maxX = Math.max(...cells.map(c=>c[0]));
+  const minY = Math.min(...cells.map(c=>c[1])), maxY = Math.max(...cells.map(c=>c[1]));
+  const s = 30;
+  const ox = (w-(maxX-minX+1)*s)/2 - minX*s, oy = (h-(maxY-minY+1)*s)/2 - minY*s;
+  const loops = outlines(cells).map(loop => {
+    const pts = [];
+    for (let i=0;i<loop.length;i++){
+      const a=loop[i], b=loop[(i+1)%loop.length];
+      for (let t=0;t<SUB;t++) pts.push([ox+(a[0]+(b[0]-a[0])*t/SUB)*s, oy+(a[1]+(b[1]-a[1])*t/SUB)*s]);
+    }
+    return pts;
+  });
+  drawJellyLoops(nctx, loops, SHAPES[nextType].color, {});
+}
+
+/* ---------- 主循环 ---------- */
+function frame(t){
+  const dt = Math.min(.05, (t - lastT)/1000); lastT = t;
+
+  if (state === 'play'){
+    dropTimer += dt*1000;
+    const itv = softDrop ? Math.min(45, dropInterval/15) : dropInterval;
+    while (dropTimer >= itv){ dropTimer -= itv; stepDown(softDrop); if (state!=='play') break; }
+  }
+  if (state === 'play' || state === 'over'){
+    if (active) active.body.step(dt);
+    for (const p of pieces) p.body.step(dt);
+    for (const pt of particles){ pt.vy += 700*PX*dt; pt.x += pt.vx*dt; pt.y += pt.vy*dt; pt.life -= 1.4*dt; }
+    particles = particles.filter(p => p.life > 0);
+    for (const f of flashes) f.life -= 5*dt;
+    flashes = flashes.filter(f => f.life > 0);
+    shakeV += (-260*shakeY - 13*shakeV) * dt;
+    shakeY += shakeV * dt * 9;
+  }
+  drawBoard();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- HUD / 覆盖层 ---------- */
+const $ = id => document.getElementById(id);
+function updateHUD(){ $('score').textContent = score; $('lines').textContent = lines; $('level').textContent = level; }
+function showOverlay(title, html, btn){
+  $('ovTitle').textContent = title; $('ovText').innerHTML = html; $('ovBtn').textContent = btn;
+  $('overlay').classList.remove('hidden');
+}
+function hideOverlay(){ $('overlay').classList.add('hidden'); }
+$('ovBtn').addEventListener('click', () => {
+  if (state === 'pause') state = 'play';
+  else { reset(); state = 'play'; }
+  hideOverlay(); $('pauseBtn').textContent = '暂停';
+});
+$('pauseBtn').addEventListener('click', togglePause);
+function togglePause(){
+  if (state === 'play'){
+    state = 'pause'; $('pauseBtn').textContent = '继续';
+    showOverlay('暂停中', '果冻们正在原地待命…', '继续游戏');
+  } else if (state === 'pause'){
+    state = 'play'; $('pauseBtn').textContent = '暂停'; hideOverlay();
+  }
+}
+
+/* ---------- 输入 ---------- */
+document.addEventListener('keydown', e => {
+  if (['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' '].includes(e.key)) e.preventDefault();
+  if (e.key === 'p' || e.key === 'P'){ togglePause(); return; }
+  if (state !== 'play') return;
+  switch (e.key){
+    case 'ArrowLeft': move(-1); break;
+    case 'ArrowRight': move(1); break;
+    case 'ArrowUp': case 'x': case 'X': if(!e.repeat) rotate(1); break;
+    case 'z': case 'Z': if(!e.repeat) rotate(-1); break;
+    case 'ArrowDown': softDrop = true; break;
+    case ' ': if(!e.repeat) hardDrop(); break;
+  }
+});
+document.addEventListener('keyup', e => { if (e.key === 'ArrowDown') softDrop = false; });
+
+function holdable(el, fn){
+  let iv;
+  const start = e => { e.preventDefault(); fn(); iv = setInterval(fn, 110); };
+  const stop  = () => clearInterval(iv);
+  el.addEventListener('touchstart', start, {passive:false});
+  el.addEventListener('touchend', stop); el.addEventListener('touchcancel', stop);
+  el.addEventListener('mousedown', start); el.addEventListener('mouseup', stop); el.addEventListener('mouseleave', stop);
+}
+holdable($('tL'), () => move(-1));
+holdable($('tR'), () => move(1));
+holdable($('tD'), () => { if(state==='play') stepDown(true); });
+$('tRot').addEventListener('click', () => rotate(1));
+$('tHard').addEventListener('click', hardDrop);
+
+/* ---------- 背景泡泡 ---------- */
+for (let i=0;i<14;i++){
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  const s = 8 + Math.random()*34;
+  b.style.width = b.style.height = s+'px';
+  b.style.left = Math.random()*100+'vw';
+  b.style.setProperty('--s', (0.6+Math.random()).toFixed(2));
+  b.style.animationDuration = (16+Math.random()*22)+'s';
+  b.style.animationDelay = (-Math.random()*30)+'s';
+  document.body.appendChild(b);
+}
+
+reset();
+state = 'menu';
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
