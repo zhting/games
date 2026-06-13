@@ -77,8 +77,17 @@
   }
   .overlay.hidden{display:none}
   .overlay .ot{font-size:30px;font-weight:800}
-  .overlay .os{font-size:13px;color:var(--muted);max-width:230px;line-height:1.8}
+  .overlay .os{font-size:13px;color:var(--muted);max-width:248px;line-height:1.8}
+  .overlay .os b{color:var(--ink);font-weight:800}
   .overlay button.cta{width:auto;padding:12px 34px}
+  .modeSel{display:flex;gap:8px;background:rgba(255,255,255,.07);border:1px solid var(--line);
+           border-radius:14px;padding:5px}
+  .modeSel.hidden{display:none}
+  .modeOpt{border:none;cursor:pointer;border-radius:10px;padding:8px 18px;font:inherit;font-weight:800;
+           font-size:14px;color:var(--muted);background:transparent;
+           touch-action:manipulation;-webkit-user-select:none;user-select:none;transition:.15s}
+  .modeOpt.active{color:#3c0f22;background:linear-gradient(180deg,#ffd1e0,#ff7aa6 70%,#ff5d8f);
+                  box-shadow:0 4px 12px rgba(255,93,143,.35), inset 0 1px 0 rgba(255,255,255,.6)}
 
   .touchpad{display:none}
   .padbtn{
@@ -124,24 +133,30 @@
     /* —— 棋盘区：占满宽度居中 —— */
     .boardCard{order:1;align-self:center;padding:7px;border-radius:18px}
 
-    /* —— 底部控制：双拇指分区 —— */
+    /* —— 底部控制：双拇指分区，尺寸随屏宽自适应 —— */
     .touchpad{
-      display:flex;order:2;justify-content:space-between;align-items:flex-end;
-      width:100%;margin-top:14px;
-      padding:0 6px calc(14px + env(safe-area-inset-bottom,0px));
+      display:flex;order:2;justify-content:space-between;align-items:center;
+      width:100%;margin-top:16px;gap:10px;
+      padding:0 max(10px,3vw) calc(16px + env(safe-area-inset-bottom,0px));
     }
-    .pad-cluster{display:flex;gap:12px;align-items:center}
-    .pad-left .padbtn{width:62px;height:62px;font-size:22px}
-    .pad-right{gap:14px}
-    .pad-right .padbtn{width:68px;height:68px;font-size:26px}
-    .pad-right .rot{width:78px;height:78px;font-size:30px}
+    .pad-cluster{display:flex;align-items:center;gap:clamp(8px,3.2vw,16px)}
+    .pad-left .padbtn{
+      width:clamp(46px,14.5vw,60px);height:clamp(46px,14.5vw,60px);font-size:clamp(18px,5vw,22px);
+    }
+    .pad-right{gap:clamp(10px,3.5vw,16px)}
+    .pad-right .padbtn{
+      width:clamp(50px,15.5vw,64px);height:clamp(50px,15.5vw,64px);font-size:clamp(20px,5.5vw,26px);
+    }
+    .pad-right .rot{
+      width:clamp(56px,17.5vw,74px);height:clamp(56px,17.5vw,74px);font-size:clamp(24px,6.5vw,30px);
+    }
   }
 
   @media (max-width:760px) and (max-height:680px){
-    .pad-left .padbtn{width:54px;height:54px}
-    .pad-right .padbtn{width:58px;height:58px}
-    .pad-right .rot{width:66px;height:66px}
     .touchpad{margin-top:10px}
+    .pad-left .padbtn{width:clamp(44px,13vw,54px);height:clamp(44px,13vw,54px)}
+    .pad-right .padbtn{width:clamp(48px,14vw,58px);height:clamp(48px,14vw,58px)}
+    .pad-right .rot{width:clamp(52px,15.5vw,66px);height:clamp(52px,15.5vw,66px)}
   }
 </style>
 </head>
@@ -152,6 +167,10 @@
     <div class="overlay" id="overlay">
       <div class="ot" id="ovTitle">果冻方块</div>
       <div class="os" id="ovText">真·软体物理的俄罗斯方块。<br>每块果冻由几十个质点和弹簧构成，<br>落地、转身、推挤都会真实地震颤传播。</div>
+      <div class="modeSel" id="modeSel">
+        <button class="modeOpt active" data-mode="classic">经典</button>
+        <button class="modeOpt" data-mode="melt">融化</button>
+      </div>
       <button class="cta" id="ovBtn">开始游戏</button>
     </div>
   </div>
@@ -377,6 +396,38 @@ class SoftBody{
     }
   }
   wake(){ this.sleeping = false; this.calm = 0; }
+  /* 融化：把静止形态揉圆并下垂，让果冻瘫软铺开、不再恢复成方正轮廓 */
+  meltify(){
+    for (const L of this.loops){
+      let cx=0; for (const p of L.rest) cx+=p[0]; cx/=L.rest.length;
+      let minY=1e9,maxY=-1e9; for (const p of L.rest){ if(p[1]<minY)minY=p[1]; if(p[1]>maxY)maxY=p[1]; }
+      const hgt = Math.max(1, maxY-minY);
+      // 两遍拉普拉斯平滑：抹圆尖角
+      for (let pass=0; pass<2; pass++){
+        const src = L.rest.map(p => p.slice());
+        const n = src.length;
+        for (let i=0;i<n;i++){
+          const a = src[(i-1+n)%n], b = src[(i+1)%n];
+          L.rest[i][0] = src[i][0]*.5 + (a[0]+b[0])*.25;
+          L.rest[i][1] = src[i][1]*.5 + (a[1]+b[1])*.25;
+        }
+      }
+      // 下垂瘫软：顶部下沉、底部略微摊开（下沉量封顶，避免高团顶部塌过头显得悬空）
+      const sag = Math.min(0.18*CS, hgt*0.12);
+      for (const p of L.rest){
+        const ty = (p[1]-minY)/hgt;                 // 0顶 .. 1底
+        p[1] += (1-ty) * sag;
+        p[0] = cx + (p[0]-cx) * (1 + 0.04*ty);
+      }
+      L.restArea = polyArea(L.rest);
+      for (let i=0;i<L.pos.length;i++){
+        L.pos[i][0]=L.rest[i][0]; L.pos[i][1]=L.rest[i][1];
+        L.vel[i][0]=0; L.vel[i][1]=0;
+      }
+    }
+    this.melted = true;
+    this.wake();
+  }
   teleport(dx, dy){           // 刚性移动：位置稳定地跟随网格，形变另由冲量注入
     for (const L of this.loops){
       for (const p of L.rest){ p[0]+=dx; p[1]+=dy; }
@@ -495,6 +546,10 @@ class SoftBody{
           const sp = Math.hypot(v[0],v[1]);
           if (sp > VMAX){ v[0]*=VMAX/sp; v[1]*=VMAX/sp; }
           p[0] += v[0]*h; p[1] += v[1]*h;
+          // 形变钳制：顶点偏离静止位置不得超过 ~0.75 格，防止冲量叠加把软体吹成巨块
+          const dvx = p[0]-r[0], dvy = p[1]-r[1];
+          const dv = Math.hypot(dvx, dvy), maxDev = 0.75*CS;
+          if (dv > maxDev){ const k = maxDev/dv; p[0]=r[0]+dvx*k; p[1]=r[1]+dvy*k; v[0]*=.4; v[1]*=.4; }
           // 边界：托盘壁与底（与静止形态精确对齐，避免弹簧-钳制驻波）
           const L1 = PAD, R1 = PAD+COLS*CS, B1 = PAD+ROWS*CS;
           if (p[0] < L1){ p[0]=L1; if (v[0]<0){ v[0]*=-.28; v[1]*=.85; } }
@@ -654,12 +709,21 @@ function drawJellyLoops(c, loops, color, opt={}){
 }
 
 /* ---------- 游戏状态 ---------- */
-let grid, pieces, active, nextType, bag = [];
+let grid, pieces, active, nextType, nextColor, bag = [];
 let score, lines, level, dropTimer, dropInterval, softDrop;
 let state = 'menu';
+let mode = 'classic', pendingMode = 'classic';
 let particles = [], flashes = [];
 let shakeY = 0, shakeV = 0;
 let lastT = performance.now();
+
+// 融化模式调色板（3 色，便于凑出整行同色）
+const MELT_PALETTE = ['#ff4d6d', '#ffd23f', '#4cc9f0'];
+function pickColor(type){
+  return mode === 'melt'
+    ? MELT_PALETTE[(Math.random()*MELT_PALETTE.length)|0]
+    : SHAPES[type].color;
+}
 
 function fromBag(){
   if (!bag.length){ bag = TYPES.slice(); for (let i=bag.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [bag[i],bag[j]]=[bag[j],bag[i]]; } }
@@ -670,16 +734,18 @@ function reset(){
   pieces = []; particles = []; flashes = []; bag = [];
   score = 0; lines = 0; level = 1; softDrop = false;
   dropInterval = 800; dropTimer = 0;
-  nextType = fromBag();
+  nextType = fromBag(); nextColor = pickColor(nextType);
   spawn();
   updateHUD();
 }
 function spawn(){
-  const type = nextType; nextType = fromBag();
+  const type = nextType, color = nextColor;
+  nextType = fromBag(); nextColor = pickColor(nextType);
   const box = SHAPES[type].box;
-  active = { type, rot:0, x:(COLS-box>>1), y:-2, color:SHAPES[type].color, body:null };
+  active = { type, rot:0, x:(COLS-box>>1), y:-2, color, body:null };
   active.body = new SoftBody(absCells(active), active.color);
   active.body.squash(60*PX);   // 出现时位置固定，只轻轻"duang"一下
+  softDrop = false;            // 软降只作用于当前方块；新方块需重新按下才快降
   drawNext();
   if (collides(active, 0, 0, active.rot)) gameOver();
 }
@@ -736,6 +802,17 @@ function hardDrop(){
 function lock(hard, fallDist){
   const cells = absCells(active);
   if (cells.some(([,y]) => y < 0)){ gameOver(); return; }
+
+  if (mode === 'melt'){
+    // 吸入网格（暂存颜色），随后逐列重力沉降、同色融合、连锁消除
+    for (const [x,y] of cells) if (y>=0 && y<ROWS) grid[y][x] = { color: active.color };
+    const cols = Array.from(new Set(cells.map(c => c[0])));
+    resolveMelt(cols, (hard ? 300 + fallDist*16 : 165)*PX);
+    if (state==='play') spawn();
+    updateHUD();
+    return;
+  }
+
   const body = active.body;
   const p = { cells, color:active.color, body };
   // 落地压扁 ∝ 下落势能（零均值形变：位置不动，鼓边回弹全由压强和弹簧算出）
@@ -757,6 +834,130 @@ function lock(hard, fallDist){
   clearRows();
   if (state==='play') spawn();
   updateHUD();
+}
+
+/* —— 融化模式：把网格里的同色 4-连通区域重组为一摊摊融化软体 —— */
+function regroupMelt(impactCells, impactStrength){
+  const seen = Array.from({length:ROWS}, () => Array(COLS).fill(false));
+  const blobs = [];
+  for (let y=0;y<ROWS;y++) for (let x=0;x<COLS;x++){
+    if (!grid[y][x] || seen[y][x]) continue;
+    const color = grid[y][x].color;
+    const stack = [[x,y]], cells = [];
+    seen[y][x] = true;
+    while (stack.length){
+      const [cx,cy] = stack.pop(); cells.push([cx,cy]);
+      for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nx=cx+dx, ny=cy+dy;
+        if (nx>=0&&nx<COLS&&ny>=0&&ny<ROWS&&!seen[ny][nx]&&grid[ny][nx]&&grid[ny][nx].color===color){
+          seen[ny][nx]=true; stack.push([nx,ny]);
+        }
+      }
+    }
+    const body = new SoftBody(cells, color);
+    body.meltify();
+    blobs.push({ cells, color, body });
+  }
+  // 大块先画、小块后画：被包住的小块叠在上层，避免被同色大块覆盖
+  blobs.sort((a,b) => b.cells.length - a.cells.length);
+  pieces = blobs;
+  grid = Array.from({length:ROWS}, () => Array(COLS).fill(null));
+  for (const b of blobs) for (const [x,y] of b.cells) grid[y][x] = b;
+
+  // 落点处的融化团抖一下，并把冲击向下方相邻的团传导
+  if (impactCells){
+    const hit = new Set();
+    for (const [ix,iy] of impactCells){
+      const b = grid[iy][ix];
+      if (b && !hit.has(b)){ b.body.squash(impactStrength); hit.add(b); }
+      const below = iy+1<ROWS ? grid[iy+1][ix] : null;
+      if (below && !hit.has(below)){
+        const wx = PAD+(ix+.5)*CS, wy = PAD+(iy+1)*CS;
+        below.body.nudgeAt(wx, wy, 0, impactStrength*.55, 2.4*CS);
+      }
+    }
+  }
+}
+
+/* —— 融化模式核心：逐列重力沉降 + 同色横向贯通消除 ——
+   液体不会架在半空：每列的格子都向下流到底、填满下方空隙，悬空与拱桥会滑落甚至滴断。
+   消除规则：同一种颜色的 4-连通区域只要从左墙连到右墙（横向贯通），整片该色一起化掉，连锁进行。 */
+function gridColorMat(){ return grid.map(row => row.map(c => c ? c.color : null)); }
+function settleColumns(mat){                 // 逐列把占用格压到底部，保留同列内的上下次序
+  const out = Array.from({length:ROWS}, () => Array(COLS).fill(null));
+  for (let x=0;x<COLS;x++){
+    const col = [];
+    for (let y=ROWS-1;y>=0;y--) if (mat[y][x]) col.push(mat[y][x]); // 自底向上收集
+    for (let i=0;i<col.length;i++) out[ROWS-1-i][x] = col[i];        // 压回底部
+  }
+  return out;
+}
+// 找出所有"横向贯通(同时触左墙x=0与右墙x=COLS-1)"的同色连通区域的全部格子
+function spanningCells(mat){
+  const seen = Array.from({length:ROWS}, () => Array(COLS).fill(false));
+  const out = [];
+  for (let y=0;y<ROWS;y++) for (let x=0;x<COLS;x++){
+    if (!mat[y][x] || seen[y][x]) continue;
+    const color = mat[y][x];
+    const comp = [], stack = [[x,y]];
+    seen[y][x] = true;
+    let touchL=false, touchR=false;
+    while (stack.length){
+      const [cx,cy] = stack.pop(); comp.push([cx,cy]);
+      if (cx===0) touchL=true;
+      if (cx===COLS-1) touchR=true;
+      for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nx=cx+dx, ny=cy+dy;
+        if (nx>=0&&nx<COLS&&ny>=0&&ny<ROWS&&!seen[ny][nx]&&mat[ny][nx]===color){
+          seen[ny][nx]=true; stack.push([nx,ny]);
+        }
+      }
+    }
+    if (touchL && touchR) for (const c of comp) out.push(c);
+  }
+  return out;
+}
+function resolveMelt(impactCols, strength){
+  let mat = settleColumns(gridColorMat());     // 先沉降
+  let cleared = 0;
+  for (;;){                                    // 连锁消除
+    const cells = spanningCells(mat);
+    if (!cells.length) break;
+    cleared += cells.length;
+    for (const [x,y] of cells){
+      const col = mat[y][x];
+      flashes.push({x, y, life:1});
+      for (let i=0;i<4;i++) particles.push({
+        x:PAD+(x+.5)*CS, y:PAD+(y+.5)*CS,
+        vx:(Math.random()-.5)*280*PX, vy:(-100-Math.random()*210)*PX,
+        r:(2.5+Math.random()*3.8)*PX, color:col, life:1 });
+      mat[y][x] = null;
+    }
+    mat = settleColumns(mat);                   // 消除后再次沉降
+  }
+  grid = mat.map(row => row.map(c => c ? { color:c } : null));
+  regroupMelt(null, 0);                        // 按同色连通重组成融化团
+
+  // 落点冲量：受影响列顶端的融化团坍塌一下，其余团轻颤
+  const hit = new Set();
+  if (impactCols){
+    for (const x of impactCols){
+      for (let y=0;y<ROWS;y++){
+        const b = grid[y][x];
+        if (b){ if (!hit.has(b)){ b.body.squash(strength); hit.add(b); } break; }
+      }
+    }
+  }
+  for (const b of pieces) if (!hit.has(b)) b.body.squash(35*PX);
+
+  if (cleared){
+    const rowsEq = Math.max(1, Math.round(cleared / COLS));
+    score += cleared * 18 * level;
+    lines += rowsEq;
+    level = ((lines/10)|0) + 1;
+    dropInterval = Math.max(70, 800 * Math.pow(.85, level-1));
+    shakeV += 2 + rowsEq*1.5;
+  }
 }
 
 function clearRows(){
@@ -810,7 +1011,7 @@ function gameOver(){
     p.body.squash(240*PX);
     p.body.lean(Math.random()<.5?-1:1, 130*PX);
   }
-  showOverlay('果冻塌啦！', `最终得分 ${score} · 消除 ${lines} 行<br>再来一盘，堆得更高一点？`, '再玩一次');
+  showOverlay('果冻塌啦！', `最终得分 ${score} · 消除 ${lines} 行<br>再来一盘，堆得更高一点？`, '再玩一次', true);
 }
 
 /* ---------- 画面 ---------- */
@@ -831,11 +1032,13 @@ function drawBoard(){
   for (let x=1;x<COLS;x++){ ctx.beginPath(); ctx.moveTo(PAD+x*CS, PAD); ctx.lineTo(PAD+x*CS, PAD+ROWS*CS); ctx.stroke(); }
   for (let y=1;y<ROWS;y++){ ctx.beginPath(); ctx.moveTo(PAD, PAD+y*CS); ctx.lineTo(PAD+COLS*CS, PAD+y*CS); ctx.stroke(); }
 
-  // 消行闪光
+  // 消行/消格闪光
   for (const f of flashes){
     ctx.globalAlpha = f.life*.55;
     ctx.fillStyle = '#fff';
-    roundRect(ctx, PAD, PAD+f.y*CS, COLS*CS, CS, 6); ctx.fill();
+    if (f.x !== undefined) roundRect(ctx, PAD+f.x*CS, PAD+f.y*CS, CS, CS, 5);
+    else roundRect(ctx, PAD, PAD+f.y*CS, COLS*CS, CS, 6);
+    ctx.fill();
   }
   ctx.globalAlpha = 1;
 
@@ -880,7 +1083,7 @@ function drawNext(){
     }
     return pts;
   });
-  drawJellyLoops(nctx, loops, SHAPES[nextType].color, {});
+  drawJellyLoops(nctx, loops, nextColor, {});
 }
 
 /* ---------- 主循环 ---------- */
@@ -889,8 +1092,12 @@ function frame(t){
 
   if (state === 'play'){
     dropTimer += dt*1000;
-    const itv = softDrop ? Math.min(45, dropInterval/15) : dropInterval;
-    while (dropTimer >= itv){ dropTimer -= itv; stepDown(softDrop); if (state!=='play') break; }
+    for (;;){
+      const itv = softDrop ? Math.min(45, dropInterval/15) : dropInterval;
+      if (dropTimer < itv) break;
+      dropTimer -= itv; stepDown(softDrop);
+      if (state !== 'play') break;
+    }
   }
   if (state === 'play' || state === 'over'){
     if (active) active.body.step(dt);
@@ -909,11 +1116,24 @@ function frame(t){
 /* ---------- HUD / 覆盖层 ---------- */
 const $ = id => document.getElementById(id);
 function updateHUD(){ $('score').textContent = score; $('lines').textContent = lines; $('level').textContent = level; }
-function showOverlay(title, html, btn){
+function showOverlay(title, html, btn, showMode){
   $('ovTitle').textContent = title; $('ovText').innerHTML = html; $('ovBtn').textContent = btn;
+  $('modeSel').classList.toggle('hidden', !showMode);
   $('overlay').classList.remove('hidden');
 }
 function hideOverlay(){ $('overlay').classList.add('hidden'); }
+function updateModeDesc(){
+  if (pendingMode === 'melt')
+    $('ovText').innerHTML = '融化模式：落地的果冻会瘫软<b>融化</b>、向下流淌、同色融成一摊。<br>当一种颜色从<b>左边连到右边</b>，整片该色就会一起化掉。';
+  else
+    $('ovText').innerHTML = '经典模式：传统俄罗斯方块玩法，<br>填满任意一整行即可消除。<br>果冻落地会真实地震颤、回弹。';
+}
+const modeOpts = Array.prototype.slice.call(document.querySelectorAll('.modeOpt'));
+modeOpts.forEach(b => bindTap(b, () => {
+  pendingMode = b.getAttribute('data-mode');
+  modeOpts.forEach(o => o.classList.toggle('active', o === b));
+  updateModeDesc();
+}));
 /* 触屏优先的点按绑定：touchend 直接触发，绕开 click 合成链路
    （Alook 等浏览器的点击翻页/双击缩放/长按手势都可能吞掉合成 click）*/
 function bindTap(el, fn){
@@ -929,15 +1149,15 @@ function bindTap(el, fn){
   el.addEventListener('contextmenu', e => e.preventDefault());
 }
 bindTap($('ovBtn'), () => {
-  if (state === 'pause') state = 'play';
-  else { reset(); state = 'play'; }
+  if (state === 'pause'){ state = 'play'; }
+  else { mode = pendingMode; reset(); state = 'play'; }
   hideOverlay(); $('pauseBtn').textContent = '暂停';
 });
 bindTap($('pauseBtn'), togglePause);
 function togglePause(){
   if (state === 'play'){
     state = 'pause'; $('pauseBtn').textContent = '继续';
-    showOverlay('暂停中', '果冻们正在原地待命…', '继续游戏');
+    showOverlay('暂停中', '果冻们正在原地待命…', '继续游戏', false);
   } else if (state === 'pause'){
     state = 'play'; $('pauseBtn').textContent = '暂停'; hideOverlay();
   }
@@ -953,7 +1173,7 @@ document.addEventListener('keydown', e => {
     case 'ArrowRight': move(1); break;
     case 'ArrowUp': case 'x': case 'X': if(!e.repeat) rotate(1); break;
     case 'z': case 'Z': if(!e.repeat) rotate(-1); break;
-    case 'ArrowDown': softDrop = true; break;
+    case 'ArrowDown': if(!e.repeat) softDrop = true; break;
     case ' ': if(!e.repeat) hardDrop(); break;
   }
 });
@@ -970,9 +1190,35 @@ function holdable(el, fn){
 }
 holdable($('tL'), () => move(-1));
 holdable($('tR'), () => move(1));
-holdable($('tD'), () => { if(state==='play') stepDown(true); });
+// 下键：按住持续快降（设 softDrop 标志，主循环驱动，跨方块不中断）
+// 用指针捕获，避免按钮 :active 缩小后手指漂移触发 leave 而误清状态
+(function(el){
+  if (window.PointerEvent){
+    let held = false;
+    el.addEventListener('pointerdown', e => {
+      e.preventDefault(); held = true; softDrop = true;
+      try { el.setPointerCapture(e.pointerId); } catch(_){}
+    });
+    const rel = () => { if (held){ held = false; softDrop = false; } };
+    el.addEventListener('pointerup', rel);
+    el.addEventListener('pointercancel', rel);
+    el.addEventListener('lostpointercapture', rel);
+  } else {
+    const on = e => { if(e&&e.cancelable) e.preventDefault(); softDrop = true; };
+    const off = () => { softDrop = false; };
+    el.addEventListener('touchstart', on, {passive:false});
+    el.addEventListener('touchend', off);
+    el.addEventListener('touchcancel', off);
+    el.addEventListener('mousedown', on);
+    el.addEventListener('mouseup', off);
+  }
+  el.addEventListener('contextmenu', e => e.preventDefault());
+})($('tD'));
 bindTap($('tRot'), () => rotate(1));
 bindTap($('tHard'), hardDrop);
+// 失焦/切后台时清除按住状态，避免快降卡住
+window.addEventListener('blur', () => { softDrop = false; });
+document.addEventListener('visibilitychange', () => { if (document.hidden) softDrop = false; });
 
 /* ---------- 背景泡泡 ---------- */
 for (let i=0;i<14;i++){
