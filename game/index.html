@@ -105,7 +105,7 @@
   .padbtn.rot{background:linear-gradient(180deg,rgba(140,200,255,.35),rgba(80,140,255,.28));
               border-color:rgba(150,200,255,.4)}
 
-  @media (max-width:760px){
+  @media (max-width:760px), (pointer: coarse){
     body{align-items:flex-start;justify-content:center}
     .wrap{flex-direction:column;align-items:stretch;gap:0;padding:8px 8px 0;width:100%;margin:0 auto;max-width:520px}
 
@@ -236,7 +236,9 @@ window.addEventListener('error', function(ev){
    没有任何预设的循环动画 —— 每一次颤动都由当时的物理状态决定。
    =================================================================== */
 const COLS = 10, ROWS = 20;
-const PORTRAIT = window.innerWidth < 760;
+const COARSE = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+             || (navigator.maxTouchPoints || 0) > 0;     // iPad/手机等触摸设备
+const PORTRAIT = window.innerWidth < 760 || COARSE;
 let CS;
 if (PORTRAIT){
   // 竖屏：棋盘用满可用宽度；垂直预留 顶栏(~54) + 控制区(~162) + 边距(~16)
