@@ -14,6 +14,7 @@
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
+  html{touch-action:manipulation}
   body{
     font-family:ui-rounded,"PingFang SC","Hiragino Maru Gothic ProN","Yuanti SC","Microsoft YaHei",system-ui,sans-serif;
     color:var(--ink);
@@ -22,8 +23,9 @@
       radial-gradient(900px 600px at 110% 110%, #21306b 0%, transparent 55%),
       linear-gradient(160deg,var(--bg1),var(--bg2) 55%,var(--bg3));
     min-height:100%;
-    display:flex;align-items:center;justify-content:center;
-    overflow:hidden;
+    display:flex;
+    overflow:auto;            /* 内容超出屏幕时可滚动，按钮永远够得着 */
+    touch-action:manipulation;
   }
   .bubble{position:fixed;border-radius:50%;pointer-events:none;
     background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.30), rgba(255,255,255,.04) 60%, transparent 70%);
@@ -31,19 +33,19 @@
   @keyframes floatUp{from{transform:translateY(110vh) scale(var(--s,1))}to{transform:translateY(-20vh) scale(var(--s,1))}}
   @media (prefers-reduced-motion: reduce){.bubble{display:none}}
 
-  .wrap{display:flex;gap:22px;align-items:flex-start;padding:16px;position:relative;z-index:1}
+  .wrap{display:flex;gap:22px;align-items:flex-start;padding:16px;position:relative;z-index:1;margin:auto}
   .boardCard{
     position:relative;border-radius:26px;padding:14px;
     background:linear-gradient(170deg,rgba(255,255,255,.10),rgba(255,255,255,.03) 40%,rgba(255,255,255,.06));
     border:1px solid rgba(255,255,255,.16);
     box-shadow:0 30px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.25);
-    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   }
   canvas#board{display:block;border-radius:16px;touch-action:none}
   .side{display:flex;flex-direction:column;gap:14px;width:190px}
   .card{
     background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:12px 14px;
-    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
   }
   .card h3{font-size:12px;letter-spacing:.22em;color:var(--muted);font-weight:600;margin-bottom:6px}
@@ -59,7 +61,8 @@
   .keys b{color:var(--ink);font-weight:700;background:rgba(255,255,255,.10);
           border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-right:4px}
   button.cta{
-    width:100%;border:none;cursor:pointer;border-radius:16px;padding:12px;
+    width:100%;border:none;cursor:pointer;
+    touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;border-radius:16px;padding:12px;
     font:inherit;font-weight:800;font-size:15px;color:#3c0f22;
     background:linear-gradient(180deg,#ffd1e0,#ff7aa6 60%,#ff5d8f);
     box-shadow:0 8px 20px rgba(255,93,143,.40), inset 0 2px 0 rgba(255,255,255,.65), inset 0 -3px 0 rgba(160,20,70,.35);
@@ -68,31 +71,77 @@
   button.cta:active{transform:scale(.94) translateY(2px)}
 
   .overlay{
-    position:absolute;inset:14px;border-radius:16px;display:flex;flex-direction:column;
+    position:absolute;top:14px;right:14px;bottom:14px;left:14px;border-radius:16px;display:flex;flex-direction:column;
     align-items:center;justify-content:center;gap:12px;text-align:center;
-    background:rgba(20,8,32,.62);backdrop-filter:blur(8px);z-index:5;
+    background:rgba(20,8,32,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:5;
   }
   .overlay.hidden{display:none}
   .overlay .ot{font-size:30px;font-weight:800}
   .overlay .os{font-size:13px;color:var(--muted);max-width:230px;line-height:1.8}
   .overlay button.cta{width:auto;padding:12px 34px}
 
-  .touchpad{display:none;gap:10px;justify-content:center;margin-top:12px}
-  .touchpad button{
-    width:54px;height:54px;border-radius:50%;border:1px solid var(--line);cursor:pointer;
-    background:rgba(255,255,255,.10);color:var(--ink);font-size:20px;font-weight:800;
-    backdrop-filter:blur(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);
-    transition:transform .1s;
+  .touchpad{display:none}
+  .padbtn{
+    border-radius:50%;border:1px solid var(--line);cursor:pointer;
+    touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+    background:rgba(255,255,255,.10);color:var(--ink);font-weight:800;
+    -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.2), 0 4px 12px rgba(0,0,0,.25);
+    transition:transform .08s, background .1s;
+    display:flex;align-items:center;justify-content:center;
   }
-  .touchpad button:active{transform:scale(.88);background:rgba(255,255,255,.22)}
+  .padbtn:active{transform:scale(.9);background:rgba(255,255,255,.24)}
+  .padbtn.act{background:linear-gradient(180deg,rgba(255,140,180,.35),rgba(255,93,143,.28));
+              border-color:rgba(255,150,190,.4)}
+  .padbtn.rot{background:linear-gradient(180deg,rgba(140,200,255,.35),rgba(80,140,255,.28));
+              border-color:rgba(150,200,255,.4)}
 
   @media (max-width:760px){
-    body{overflow:auto;align-items:flex-start}
-    .wrap{flex-direction:column-reverse;align-items:center;gap:12px;padding-bottom:30px}
-    .side{width:min(92vw,340px);flex-direction:row;flex-wrap:wrap}
-    .side .card{flex:1 1 40%}
-    .side .title-card,.side .keys-card{display:none}
-    .touchpad{display:flex}
+    body{align-items:flex-start;justify-content:center}
+    .wrap{flex-direction:column;align-items:stretch;gap:0;padding:8px 8px 0;width:100%;margin:0 auto;max-width:520px}
+
+    /* —— 顶部状态栏：单行紧凑 —— */
+    .side{
+      order:0;width:100%;flex-direction:row;align-items:center;gap:8px;
+      flex-wrap:nowrap;margin-bottom:8px;
+    }
+    .side .card.title-card,.side .card.keys-card{display:none}
+    .side .row2{display:contents}                 /* 行数/等级 直接并入横排 */
+    .side .card{
+      padding:6px 8px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+      min-height:48px;
+    }
+    .side .stat-card{flex:1 1 0;flex-direction:column;gap:0}
+    .side .card h3{font-size:9px;letter-spacing:.12em;margin-bottom:1px}
+    .side .big{font-size:18px;text-shadow:none}
+    .side .next-card{flex:0 0 auto;flex-direction:row;gap:6px;padding:5px 9px 5px 7px}
+    .side .next-card h3{display:none}
+    .next-card canvas#next{width:42px;height:30px}
+    #pauseBtn{
+      flex:0 0 auto;width:48px;height:48px;padding:0;border-radius:12px;font-size:18px;
+    }
+
+    /* —— 棋盘区：占满宽度居中 —— */
+    .boardCard{order:1;align-self:center;padding:7px;border-radius:18px}
+
+    /* —— 底部控制：双拇指分区 —— */
+    .touchpad{
+      display:flex;order:2;justify-content:space-between;align-items:flex-end;
+      width:100%;margin-top:14px;
+      padding:0 6px calc(14px + env(safe-area-inset-bottom,0px));
+    }
+    .pad-cluster{display:flex;gap:12px;align-items:center}
+    .pad-left .padbtn{width:62px;height:62px;font-size:22px}
+    .pad-right{gap:14px}
+    .pad-right .padbtn{width:68px;height:68px;font-size:26px}
+    .pad-right .rot{width:78px;height:78px;font-size:30px}
+  }
+
+  @media (max-width:760px) and (max-height:680px){
+    .pad-left .padbtn{width:54px;height:54px}
+    .pad-right .padbtn{width:58px;height:58px}
+    .pad-right .rot{width:66px;height:66px}
+    .touchpad{margin-top:10px}
   }
 </style>
 </head>
@@ -105,24 +154,17 @@
       <div class="os" id="ovText">真·软体物理的俄罗斯方块。<br>每块果冻由几十个质点和弹簧构成，<br>落地、转身、推挤都会真实地震颤传播。</div>
       <button class="cta" id="ovBtn">开始游戏</button>
     </div>
-    <div class="touchpad">
-      <button id="tL">◀</button>
-      <button id="tRot">⟳</button>
-      <button id="tD">▼</button>
-      <button id="tHard">⤓</button>
-      <button id="tR">▶</button>
-    </div>
   </div>
 
   <div class="side">
     <div class="card title-card">
       <div class="title">果冻方块<small>JELLY TETRIS</small></div>
     </div>
-    <div class="card"><h3>下一个</h3><canvas id="next" width="160" height="110"></canvas></div>
-    <div class="card"><h3>分数</h3><div class="big" id="score">0</div></div>
+    <div class="card next-card"><h3>下一个</h3><canvas id="next" width="160" height="110"></canvas></div>
+    <div class="card stat-card"><h3>分数</h3><div class="big" id="score">0</div></div>
     <div class="row2">
-      <div class="card"><h3>行数</h3><div class="big" id="lines">0</div></div>
-      <div class="card"><h3>等级</h3><div class="big" id="level">1</div></div>
+      <div class="card stat-card"><h3>行数</h3><div class="big" id="lines">0</div></div>
+      <div class="card stat-card"><h3>等级</h3><div class="big" id="level">1</div></div>
     </div>
     <div class="card keys-card"><h3>操作</h3>
       <div class="keys">
@@ -133,10 +175,37 @@
     </div>
     <button class="cta" id="pauseBtn">暂停</button>
   </div>
+
+  <div class="touchpad">
+    <div class="pad-cluster pad-left">
+      <button id="tL" class="padbtn">◀</button>
+      <button id="tD" class="padbtn">▼</button>
+      <button id="tR" class="padbtn">▶</button>
+    </div>
+    <div class="pad-cluster pad-right">
+      <button id="tHard" class="padbtn act">⤓</button>
+      <button id="tRot" class="padbtn act rot">⟳</button>
+    </div>
+  </div>
 </div>
 
 <script>
 'use strict';
+/* 兼容性保险：任何运行时错误都显示出来（"点击没反应"十有八九是脚本挂了） */
+window.addEventListener('error', function(ev){
+  try{
+    var el = document.getElementById('errbox');
+    if (!el){
+      el = document.createElement('div'); el.id = 'errbox';
+      el.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:999;'+
+        'background:rgba(150,20,55,.93);color:#fff;font-size:12px;padding:8px 10px;'+
+        'border-radius:10px;font-family:monospace;word-break:break-all';
+      document.body.appendChild(el);
+    }
+    el.textContent = '页面脚本出错: ' + (ev.message||'') + ' (第' + (ev.lineno||'?') + '行)';
+  }catch(_){}
+});
+
 /* ===================================================================
    果冻俄罗斯方块 v2 —— 真实软体物理
    每个果冻块的轮廓被细分为质点链，受四种力支配：
@@ -148,9 +217,19 @@
    没有任何预设的循环动画 —— 每一次颤动都由当时的物理状态决定。
    =================================================================== */
 const COLS = 10, ROWS = 20;
-const CS = Math.max(20, Math.min(32,
-  Math.floor((window.innerHeight - 120) / ROWS),
-  Math.floor((window.innerWidth - 40) / (COLS + 8))));
+const PORTRAIT = window.innerWidth < 760;
+let CS;
+if (PORTRAIT){
+  // 竖屏：棋盘用满可用宽度；垂直预留 顶栏(~54) + 控制区(~162) + 边距(~16)
+  const availW = window.innerWidth - 16;
+  const availH = window.innerHeight - 54 - 162 - 16;
+  CS = Math.max(15, Math.min(38, Math.floor(availH / ROWS), Math.floor(availW / COLS)));
+} else {
+  // 桌面：棋盘旁边有侧边栏，预留约 8 列宽度
+  CS = Math.max(20, Math.min(32,
+    Math.floor((window.innerHeight - 120) / ROWS),
+    Math.floor((window.innerWidth - 40) / (COLS + 8))));
+}
 const PAD = 6;
 const W = COLS * CS + PAD * 2, H = ROWS * CS + PAD * 2;
 const PX = CS / 32; // 相对 32px 基准的像素比例，用于缩放物理量
@@ -835,12 +914,26 @@ function showOverlay(title, html, btn){
   $('overlay').classList.remove('hidden');
 }
 function hideOverlay(){ $('overlay').classList.add('hidden'); }
-$('ovBtn').addEventListener('click', () => {
+/* 触屏优先的点按绑定：touchend 直接触发，绕开 click 合成链路
+   （Alook 等浏览器的点击翻页/双击缩放/长按手势都可能吞掉合成 click）*/
+function bindTap(el, fn){
+  let lastTouch = 0;
+  el.addEventListener('touchend', e => {
+    e.preventDefault(); e.stopPropagation();
+    lastTouch = Date.now();
+    fn();
+  }, {passive:false});
+  el.addEventListener('click', () => {
+    if (Date.now() - lastTouch > 600) fn();   // 桌面鼠标回退；触屏已处理则去重
+  });
+  el.addEventListener('contextmenu', e => e.preventDefault());
+}
+bindTap($('ovBtn'), () => {
   if (state === 'pause') state = 'play';
   else { reset(); state = 'play'; }
   hideOverlay(); $('pauseBtn').textContent = '暂停';
 });
-$('pauseBtn').addEventListener('click', togglePause);
+bindTap($('pauseBtn'), togglePause);
 function togglePause(){
   if (state === 'play'){
     state = 'pause'; $('pauseBtn').textContent = '继续';
@@ -873,12 +966,13 @@ function holdable(el, fn){
   el.addEventListener('touchstart', start, {passive:false});
   el.addEventListener('touchend', stop); el.addEventListener('touchcancel', stop);
   el.addEventListener('mousedown', start); el.addEventListener('mouseup', stop); el.addEventListener('mouseleave', stop);
+  el.addEventListener('contextmenu', e => e.preventDefault()); // 防长按弹菜单打断连发
 }
 holdable($('tL'), () => move(-1));
 holdable($('tR'), () => move(1));
 holdable($('tD'), () => { if(state==='play') stepDown(true); });
-$('tRot').addEventListener('click', () => rotate(1));
-$('tHard').addEventListener('click', hardDrop);
+bindTap($('tRot'), () => rotate(1));
+bindTap($('tHard'), hardDrop);
 
 /* ---------- 背景泡泡 ---------- */
 for (let i=0;i<14;i++){
@@ -896,6 +990,17 @@ for (let i=0;i<14;i++){
 reset();
 state = 'menu';
 requestAnimationFrame(frame);
+
+/* 横竖屏切换时重算棋盘尺寸（忽略移动端地址栏伸缩造成的小幅高度抖动） */
+let rzW = window.innerWidth, rzTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(rzTimer);
+  rzTimer = setTimeout(() => {
+    const bucketChanged = (window.innerWidth < 760) !== (rzW < 760);
+    const widthJumped = Math.abs(window.innerWidth - rzW) > 80;
+    if (bucketChanged || widthJumped){ rzW = window.innerWidth; location.reload(); }
+  }, 320);
+});
 </script>
 </body>
 </html>
