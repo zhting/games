@@ -170,6 +170,7 @@
       <div class="modeSel" id="modeSel">
         <button class="modeOpt active" data-mode="classic">经典</button>
         <button class="modeOpt" data-mode="melt">融化</button>
+        <button class="modeOpt" data-mode="iso">立体</button>
       </div>
       <button class="cta" id="ovBtn">开始游戏</button>
     </div>
@@ -609,6 +610,48 @@ function smoothPath(c, pts){
   c.closePath();
 }
 
+/* —— 背景：不规则彩色渐变(mesh)，供半透明果冻透出与折射衬托 —— */
+const bgCanvas = document.createElement('canvas');
+function buildBg(){
+  const w = COLS*CS, h = ROWS*CS;
+  bgCanvas.width = w; bgCanvas.height = h;
+  const b = bgCanvas.getContext('2d');
+  // 纵向基底渐变：紫 → 蓝
+  const base = b.createLinearGradient(0,0,0,h);
+  base.addColorStop(0,  '#46195f');
+  base.addColorStop(.40,'#3c2a84');
+  base.addColorStop(.70,'#283678');
+  base.addColorStop(1,  '#1c1546');
+  b.fillStyle = base; b.fillRect(0,0,w,h);
+  // 辉光：上部偏粉、下部偏蓝
+  b.globalCompositeOperation = 'screen';
+  let g = b.createRadialGradient(w*0.42, h*0.24, 0, w*0.42, h*0.24, h*0.52);
+  g.addColorStop(0,'#9e3a98'); g.addColorStop(1,'rgba(0,0,0,0)');
+  b.fillStyle = g; b.fillRect(0,0,w,h);
+  g = b.createRadialGradient(w*0.52, h*0.62, 0, w*0.52, h*0.62, h*0.46);
+  g.addColorStop(0,'#3358bc'); g.addColorStop(1,'rgba(0,0,0,0)');
+  b.fillStyle = g; b.fillRect(0,0,w,h);
+  b.globalCompositeOperation = 'source-over';
+  // 暗角
+  const vg = b.createRadialGradient(w/2, h*0.42, Math.min(w,h)*0.2, w/2, h/2, Math.max(w,h)*0.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(12,6,28,0.45)');
+  b.fillStyle = vg; b.fillRect(0,0,w,h);
+  // 清晰方格网（画进背景，可透过果冻并被折射）
+  b.strokeStyle = 'rgba(255,255,255,0.10)'; b.lineWidth = 1;
+  for (let x=1;x<COLS;x++){ b.beginPath(); b.moveTo(x*CS,0); b.lineTo(x*CS,h); b.stroke(); }
+  for (let y=1;y<ROWS;y++){ b.beginPath(); b.moveTo(0,y*CS); b.lineTo(w,y*CS); b.stroke(); }
+}
+buildBg();
+// 在已 clip 的果冻内，把背景渐变放大上移后透出 → 凸透镜折射
+function refractFill(c, minX, minY, bw, bh, cx, cy, mag, alpha){
+  c.save();
+  c.globalAlpha = alpha;
+  c.translate(cx, cy); c.scale(mag, mag); c.translate(-cx, -cy);
+  c.translate(0, -bh*0.06);
+  c.drawImage(bgCanvas, PAD, PAD);
+  c.restore();
+}
+
 function drawJellyLoops(c, loops, color, opt={}){
   const ghost = opt.ghost, bubbles = opt.bubbles, bdx = opt.bdx||0, bdy = opt.bdy||0;
   for (const pts of loops){
@@ -624,56 +667,75 @@ function drawJellyLoops(c, loops, color, opt={}){
     let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
     for (const [x,y] of pts){ if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
     const bw = Math.max(1,maxX-minX), bh = Math.max(1,maxY-minY);
-    const cx = (minX+maxX)/2;
+    const cx = (minX+maxX)/2, cy = (minY+maxY)/2;
+
+    // 投影 + 极淡底色（仅为投出阴影、并让果冻在暗格上仍可辨）
+    c.save();
+    c.shadowColor = shade(color, -38, -8, .42);
+    c.shadowBlur = 12*PX; c.shadowOffsetY = 6*PX;
+    smoothPath(c, pts);
+    c.fillStyle = shade(color, 0, 6, .10);
+    c.fill();
+    c.restore();
 
     c.save();
-    // 柔和有色投影
-    c.shadowColor = shade(color, -38, -8, .45);
-    c.shadowBlur = 12*PX; c.shadowOffsetY = 6*PX;
-    // 半透明主体：亮顶 → 通透中段 → 浓郁底部
-    const g = c.createLinearGradient(0, minY, 0, maxY);
-    g.addColorStop(0,   shade(color, 26, -4, .94));
-    g.addColorStop(.40, shade(color,  3,  6, .60));
-    g.addColorStop(1,   shade(color,-15, 10, .88));
-    c.fillStyle = g; c.fill();
-    c.shadowColor = 'transparent';
-    c.clip();
+    smoothPath(c, pts); c.clip();
 
-    // 底部透光（次表面散射：光从果冻底边透出来）
+    // 折射：把背景放大上移后含蓄透出（凸透镜）
+    refractFill(c, minX, minY, bw, bh, cx, cy, 1.16, .5);
+
+    // 主体色：饱和油亮的糖果胶冻（较浓郁，仍保留通透）
+    const g = c.createLinearGradient(0, minY, 0, maxY);
+    g.addColorStop(0,   shade(color, 30, 6, .72));
+    g.addColorStop(.45, shade(color,  6, 14, .50));
+    g.addColorStop(1,   shade(color,-12, 18, .76));
+    c.fillStyle = g; c.fillRect(minX-2, minY-2, bw+4, bh+4);
+
+    // 边缘色更浓(Beer-Lambert：边缘光程长→颜色更饱和)，中心更通透
+    smoothPath(c, pts);
+    c.strokeStyle = shade(color, -22, 28, .55);
+    c.lineWidth = Math.min(0.55*CS, Math.max(bw,bh)*0.4);
+    c.stroke();
+    smoothPath(c, pts);
+    c.strokeStyle = shade(color, -32, 30, .5);
+    c.lineWidth = Math.min(0.26*CS, Math.max(bw,bh)*0.18);
+    c.stroke();
+
+    // 宽幅顶部釉光（湿润糖面光泽）
+    const sheen = c.createLinearGradient(0, minY, 0, minY + bh*.52);
+    sheen.addColorStop(0, 'rgba(255,255,255,0.34)');
+    sheen.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = sheen; c.fillRect(minX-2, minY-2, bw+4, bh*.52);
+
+    // 底部透光（次表面散射）
     c.globalCompositeOperation = 'screen';
     const sss = c.createRadialGradient(cx, maxY + bh*.18, 1, cx, maxY + bh*.18, bw*.72);
-    sss.addColorStop(0, shade(color, 30, 8, .85));
-    sss.addColorStop(.55, shade(color, 18, 8, .25));
+    sss.addColorStop(0, shade(color, 30, 8, .80));
+    sss.addColorStop(.55, shade(color, 18, 8, .22));
     sss.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = sss; c.fill();
-    // 两侧薄边透光
-    const edgeL = c.createLinearGradient(minX, 0, minX+bw*.18, 0);
-    edgeL.addColorStop(0, shade(color, 24, 6, .35)); edgeL.addColorStop(1,'rgba(0,0,0,0)');
-    c.fillStyle = edgeL; c.fill();
-    const edgeR = c.createLinearGradient(maxX, 0, maxX-bw*.18, 0);
-    edgeR.addColorStop(0, shade(color, 24, 6, .35)); edgeR.addColorStop(1,'rgba(0,0,0,0)');
-    c.fillStyle = edgeR; c.fill();
+    c.fillStyle = sss; c.fillRect(minX-2, minY-2, bw+4, bh+4);
     c.globalCompositeOperation = 'source-over';
 
     // 内芯（中心偏下更浓，营造厚度）
     const core = c.createRadialGradient(cx, minY+bh*.62, 2, cx, minY+bh*.62, Math.max(bw,bh)*.55);
-    core.addColorStop(0, shade(color, -16, 12, .28));
+    core.addColorStop(0, shade(color, -16, 12, .22));
     core.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = core; c.fill();
+    c.fillStyle = core; c.fillRect(minX-2, minY-2, bw+4, bh+4);
 
     // 内部小气泡（跟着形变轻微漂移）
     if (bubbles){
       for (const b of bubbles){
         const bx = b.x + bdx*b.d, by = b.y + bdy*b.d;
         if (bx < minX-4 || bx > maxX+4 || by < minY-4 || by > maxY+4) continue;
-        c.fillStyle = shade(color, -22, 8, .30);
+        c.fillStyle = shade(color, -22, 8, .26);
         c.beginPath(); c.arc(bx, by, b.r, 0, Math.PI*2); c.fill();
         c.fillStyle = `rgba(255,255,255,${b.a})`;
         c.beginPath(); c.arc(bx - b.r*.3, by - b.r*.35, b.r*.45, 0, Math.PI*2); c.fill();
       }
     }
 
-    // 顶部釉面高光（沿轮廓描，随形变摆动）
+    // 顶部釉面高光（沿轮廓描）
+    smoothPath(c, pts);
     const hl = c.createLinearGradient(0, minY, 0, minY + bh*.5);
     hl.addColorStop(0, 'rgba(255,255,255,.85)');
     hl.addColorStop(1, 'rgba(255,255,255,0)');
@@ -685,7 +747,7 @@ function drawJellyLoops(c, loops, color, opt={}){
     c.rotate(-.35);
     c.scale(1.9, 1);
     const spec = c.createRadialGradient(0,0,0, 0,0, Math.min(bw,bh)*.26);
-    spec.addColorStop(0, 'rgba(255,255,255,.78)');
+    spec.addColorStop(0, 'rgba(255,255,255,.82)');
     spec.addColorStop(.6, 'rgba(255,255,255,.22)');
     spec.addColorStop(1, 'rgba(255,255,255,0)');
     c.fillStyle = spec;
@@ -697,6 +759,7 @@ function drawJellyLoops(c, loops, color, opt={}){
 
     // 底缘回光线
     c.globalCompositeOperation = 'screen';
+    smoothPath(c, pts);
     const rim = c.createLinearGradient(0, maxY-bh*.22, 0, maxY);
     rim.addColorStop(0, 'rgba(0,0,0,0)');
     rim.addColorStop(1, shade(color, 34, 6, .55));
@@ -704,9 +767,108 @@ function drawJellyLoops(c, loops, color, opt={}){
     c.restore();
 
     // 清晰外缘
-    c.strokeStyle = shade(color, -26, 6, .85);
+    smoothPath(c, pts);
+    c.strokeStyle = shade(color, -26, 6, .8);
     c.lineWidth = 1.4*PX;
     c.stroke();
+  }
+}
+
+/* 2.5D 立体果冻：厚度侧壁挤出 + 圆顶高光 + 强镜面，营造软糖体积感 */
+function drawJellyLoops3D(c, loops, color, opt={}){
+  if (opt.ghost){ drawJellyLoops(c, loops, color, opt); return; }
+  const bubbles = opt.bubbles, bdx = opt.bdx||0, bdy = opt.bdy||0;
+  const D = 0.22*CS, ex = 0.22*D, ey = D;          // 厚度小一些，避免压到下方相邻块
+  const layers = 4;
+  for (const pts of loops){
+    let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+    for (const [x,y] of pts){ if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+    const bw=Math.max(1,maxX-minX), bh=Math.max(1,maxY-minY), cx=(minX+maxX)/2, cy=(minY+maxY)/2;
+
+    // 1) 厚度侧壁：半透明渐变堆叠(让方块通透、不再实心)；最底层投地面阴影
+    for (let i=layers;i>=1;i--){
+      const t = i/layers;
+      c.save();
+      if (i===layers){
+        c.shadowColor = shade(color,-46,-12,.42);
+        c.shadowBlur = 13*PX; c.shadowOffsetX = ex*.5; c.shadowOffsetY = 7*PX;
+      }
+      c.translate(ex*t, ey*t);
+      smoothPath(c, pts);
+      c.fillStyle = shade(color, -10 - 24*t, 10, .34);   // 半透明、越往下越暗
+      c.fill();
+      c.restore();
+    }
+
+    // 2) 顶面：圆顶径向材质(凸起感) + 折射背景透出
+    c.save();
+    smoothPath(c, pts); c.clip();
+    // 折射：透过顶面看到放大上移的背景
+    refractFill(c, minX, minY, bw, bh, cx, cy, 1.18, .5);
+    // 圆顶色（饱和油亮）
+    const dome = c.createRadialGradient(minX+bw*.40, minY+bh*.30, 2, cx, minY+bh*.55, Math.max(bw,bh)*.78);
+    dome.addColorStop(0,  shade(color, 46, 4, .62));
+    dome.addColorStop(.42, shade(color, 8, 14, .42));
+    dome.addColorStop(1,  shade(color, -12, 18, .66));
+    c.fillStyle = dome; c.fillRect(minX-2, minY-2, bw+4, bh+4);
+
+    // 边缘色更浓(Beer-Lambert)
+    smoothPath(c, pts);
+    c.strokeStyle = shade(color, -20, 26, .48);
+    c.lineWidth = Math.min(0.5*CS, Math.max(bw,bh)*0.36);
+    c.stroke();
+    // 次表面透光(底部透亮)
+    c.globalCompositeOperation = 'screen';
+    const sss = c.createRadialGradient(cx, maxY+bh*.10, 1, cx, maxY+bh*.10, bw*.72);
+    sss.addColorStop(0, shade(color, 34, 8, .70));
+    sss.addColorStop(.6, shade(color, 18, 8, .16));
+    sss.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = sss; c.fillRect(minX-2, minY-2, bw+4, bh+4);
+    c.globalCompositeOperation = 'source-over';
+
+    // 上缘环境光遮蔽(让顶面更圆润)
+    const occ = c.createLinearGradient(0, minY, 0, minY+bh*.42);
+    occ.addColorStop(0, shade(color, -22, 10, .38));
+    occ.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = occ; c.fillRect(minX-2, minY-2, bw+4, bh+4);
+
+    // 内部气泡
+    if (bubbles){
+      for (const b of bubbles){
+        const bx = b.x + bdx*b.d, by = b.y + bdy*b.d;
+        if (bx<minX-4||bx>maxX+4||by<minY-4||by>maxY+4) continue;
+        c.fillStyle = shade(color, -24, 8, .30);
+        c.beginPath(); c.arc(bx, by, b.r, 0, Math.PI*2); c.fill();
+        c.fillStyle = `rgba(255,255,255,${b.a})`;
+        c.beginPath(); c.arc(bx-b.r*.3, by-b.r*.35, b.r*.45, 0, Math.PI*2); c.fill();
+      }
+    }
+
+    // 强镜面光斑(左上)
+    c.save();
+    c.translate(minX+bw*.34, minY+bh*.22); c.rotate(-.4); c.scale(1.7,1);
+    const sp = c.createRadialGradient(0,0,0, 0,0, Math.min(bw,bh)*.30);
+    sp.addColorStop(0, 'rgba(255,255,255,.96)');
+    sp.addColorStop(.5, 'rgba(255,255,255,.30)');
+    sp.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = sp; c.beginPath(); c.arc(0,0, Math.min(bw,bh)*.30, 0, Math.PI*2); c.fill();
+    c.restore();
+    // 小颗反光糖点
+    c.fillStyle = 'rgba(255,255,255,.92)';
+    c.beginPath(); c.arc(minX+bw*.56, minY+bh*.14, 1.7*PX, 0, Math.PI*2); c.fill();
+
+    // 顶缘受光亮线
+    smoothPath(c, pts);
+    const tl = c.createLinearGradient(0, minY, 0, minY+bh*.45);
+    tl.addColorStop(0, 'rgba(255,255,255,.82)');
+    tl.addColorStop(1, 'rgba(255,255,255,0)');
+    c.strokeStyle = tl; c.lineWidth = 2.6*PX; c.stroke();
+    c.restore();
+
+    // 顶面外缘
+    c.save(); smoothPath(c, pts);
+    c.strokeStyle = shade(color, -24, 6, .8); c.lineWidth = 1.3*PX; c.stroke();
+    c.restore();
   }
 }
 
@@ -717,6 +879,7 @@ let state = 'menu';
 let mode = 'classic', pendingMode = 'classic';
 let particles = [], flashes = [];
 let shakeY = 0, shakeV = 0;
+function addShake(v){ shakeV += v; if(shakeV>120)shakeV=120; else if(shakeV<-120)shakeV=-120; }
 let lastT = performance.now();
 
 // 融化模式调色板（3 色，便于凑出整行同色）
@@ -798,7 +961,7 @@ function hardDrop(){
   while (!collides(active, 0, 1, active.rot)){ active.y++; n++; }
   score += n*2;
   active.body.teleport(0, n*CS);
-  shakeV += 2.5 + Math.min(3, n*.25);
+  addShake(28 + Math.min(18, n*1.2));
   lock(true, n);
 }
 function lock(hard, fallDist){
@@ -958,7 +1121,7 @@ function resolveMelt(impactCols, strength){
     lines += rowsEq;
     level = ((lines/10)|0) + 1;
     dropInterval = Math.max(70, 800 * Math.pow(.85, level-1));
-    shakeV += 2 + rowsEq*1.5;
+    addShake(20 + rowsEq*9);
   }
 }
 
@@ -1004,7 +1167,7 @@ function clearRows(){
   lines += n;
   level = ((lines/10)|0) + 1;
   dropInterval = Math.max(70, 800 * Math.pow(.85, level-1));
-  shakeV += 1.5 + n;
+  addShake(20 + n*9);
 }
 
 function gameOver(){
@@ -1029,10 +1192,11 @@ function drawBoard(){
 
   ctx.fillStyle = 'rgba(8,2,20,.45)';
   roundRect(ctx, PAD-3, PAD-3, COLS*CS+6, ROWS*CS+6, 12); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,.05)';
-  ctx.lineWidth = 1;
-  for (let x=1;x<COLS;x++){ ctx.beginPath(); ctx.moveTo(PAD+x*CS, PAD); ctx.lineTo(PAD+x*CS, PAD+ROWS*CS); ctx.stroke(); }
-  for (let y=1;y<ROWS;y++){ ctx.beginPath(); ctx.moveTo(PAD, PAD+y*CS); ctx.lineTo(PAD+COLS*CS, PAD+y*CS); ctx.stroke(); }
+  // 不规则彩色渐变背景：供半透明果冻透出、折射衬托
+  ctx.save();
+  roundRect(ctx, PAD, PAD, COLS*CS, ROWS*CS, 8); ctx.clip();
+  ctx.drawImage(bgCanvas, PAD, PAD);
+  ctx.restore();
 
   // 消行/消格闪光
   for (const f of flashes){
@@ -1044,18 +1208,28 @@ function drawBoard(){
   }
   ctx.globalAlpha = 1;
 
-  for (const p of pieces){
+  const draw3D = (mode === 'iso');
+  const drawJelly = draw3D ? drawJellyLoops3D : drawJellyLoops;
+  let order = pieces;
+  if (draw3D){                       // 立体下：上方的块先画、下方的块后画(在前)，侧壁遮挡才正确
+    order = pieces.slice().sort((a,b) => {
+      const ay = Math.max(...a.body.loops.map(L => Math.max(...L.pos.map(p=>p[1]))));
+      const by = Math.max(...b.body.loops.map(L => Math.max(...L.pos.map(p=>p[1]))));
+      return ay - by;
+    });
+  }
+  for (const p of order){
     const [bdx,bdy] = p.body.centroidDelta();
-    drawJellyLoops(ctx, p.body.loops.map(L=>L.pos), p.color,
-                   {bubbles:p.body.bubbles, bdx, bdy});
+    drawJelly(ctx, p.body.loops.map(L=>L.pos), p.color,
+              {bubbles:p.body.bubbles, bdx, bdy});
   }
   if (active && (state==='play' || state==='pause')){
     let gy = 0;
     while (!collides(active, 0, gy+1, active.rot)) gy++;
     if (gy>0) drawJellyLoops(ctx, loopPoints(absCells(active,0,gy)), active.color, {ghost:true});
     const [bdx,bdy] = active.body.centroidDelta();
-    drawJellyLoops(ctx, active.body.loops.map(L=>L.pos), active.color,
-                   {bubbles:active.body.bubbles, bdx, bdy});
+    drawJelly(ctx, active.body.loops.map(L=>L.pos), active.color,
+              {bubbles:active.body.bubbles, bdx, bdy});
   }
   for (const pt of particles){
     ctx.globalAlpha = Math.max(0, pt.life);
@@ -1108,8 +1282,10 @@ function frame(t){
     particles = particles.filter(p => p.life > 0);
     for (const f of flashes) f.life -= 5*dt;
     flashes = flashes.filter(f => f.life > 0);
-    shakeV += (-260*shakeY - 13*shakeV) * dt;
-    shakeY += shakeV * dt * 9;
+    shakeV += (-95*shakeY - 13*shakeV) * dt;
+    shakeY += shakeV * dt;
+    if (shakeY > 9){ shakeY = 9; if (shakeV > 0) shakeV = 0; }
+    else if (shakeY < -9){ shakeY = -9; if (shakeV < 0) shakeV = 0; }
   }
   drawBoard();
   requestAnimationFrame(frame);
@@ -1127,6 +1303,8 @@ function hideOverlay(){ $('overlay').classList.add('hidden'); }
 function updateModeDesc(){
   if (pendingMode === 'melt')
     $('ovText').innerHTML = '融化模式：落地的果冻会瘫软<b>融化</b>、向下流淌、同色融成一摊。<br>当一种颜色从<b>左边连到右边</b>，整片该色就会一起化掉。';
+  else if (pendingMode === 'iso')
+    $('ovText').innerHTML = '立体模式：传统玩法，但果冻以 <b>2.5D 立体</b>呈现——<br>带厚度、圆顶高光与镜面反光的果冻软糖质感。';
   else
     $('ovText').innerHTML = '经典模式：传统俄罗斯方块玩法，<br>填满任意一整行即可消除。<br>果冻落地会真实地震颤、回弹。';
 }
