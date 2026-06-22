@@ -895,7 +895,6 @@ function pickColor(type){
 const FLUID_SCALE = 6;
 const FLUID_W = COLS * FLUID_SCALE, FLUID_H = ROWS * FLUID_SCALE;
 const FLUID_CELL_FILL = Math.ceil(FLUID_SCALE * FLUID_SCALE * .56);
-const FLUID_ROW_FILL = Math.floor(FLUID_W * FLUID_SCALE * .86);
 function resetFluid(){
   fluidGrid = Array(FLUID_W * FLUID_H).fill(null);
   fluidStepAcc = 0;
@@ -1002,45 +1001,64 @@ function updateFluidStep(){
   }
 }
 function resolveFluidRows(){
-  const full = [];
-  for (let gy=0; gy<ROWS; gy++){
-    let n = 0;
-    for (let fy=gy*FLUID_SCALE; fy<(gy+1)*FLUID_SCALE; fy++){
-      for (let fx=0; fx<FLUID_W; fx++) if (fluidGrid[fluidIndex(fx,fy)]) n++;
+  const seen = Array(FLUID_W * FLUID_H).fill(false);
+  const clear = [];
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const start = fluidIndex(fx,fy);
+    const color = fluidGrid[start];
+    if (!color || seen[start]) continue;
+    const comp = [], stack = [[fx,fy]];
+    seen[start] = true;
+    let touchL = false, touchR = false;
+    while (stack.length){
+      const [cx,cy] = stack.pop();
+      comp.push([cx,cy]);
+      if (cx === 0) touchL = true;
+      if (cx === FLUID_W-1) touchR = true;
+      for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nx = cx + dx, ny = cy + dy;
+        if (!fluidInside(nx,ny)) continue;
+        const ni = fluidIndex(nx,ny);
+        if (!seen[ni] && fluidGrid[ni] === color){
+          seen[ni] = true;
+          stack.push([nx,ny]);
+        }
+      }
     }
-    if (n >= FLUID_ROW_FILL) full.push(gy);
+    if (touchL && touchR) for (const cell of comp) clear.push(cell);
   }
-  if (!full.length) return;
-  const fullSet = new Set(full);
-  for (const gy of full){
-    flashes.push({y:gy, life:1});
-    for (let fx=0; fx<FLUID_W; fx+=2){
-      const fy = gy*FLUID_SCALE + ((Math.random()*FLUID_SCALE)|0);
-      const col = fluidGrid[fluidIndex(fx, fy)] || '#7fe7ff';
-      particles.push({
-        x:PAD+(fx+.5)*CS/FLUID_SCALE,
-        y:PAD+(fy+.5)*CS/FLUID_SCALE,
-        vx:(Math.random()-.5)*300*PX,
-        vy:(-110-Math.random()*220)*PX,
-        r:(1.4+Math.random()*2.2)*PX,
-        color:col, life:1
-      });
+  if (!clear.length) return;
+
+  const flashed = new Set();
+  let burst = 0;
+  for (const [fx,fy] of clear){
+    const idx = fluidIndex(fx,fy);
+    const col = fluidGrid[idx];
+    if (!col) continue;
+    fluidGrid[idx] = null;
+    const gx = (fx / FLUID_SCALE)|0, gy = (fy / FLUID_SCALE)|0;
+    const k = gx + ',' + gy;
+    if (!flashed.has(k)){
+      flashed.add(k);
+      flashes.push({x:gx, y:gy, life:1});
     }
+    if ((burst++ % 5) === 0) particles.push({
+      x:PAD+(fx+.5)*CS/FLUID_SCALE,
+      y:PAD+(fy+.5)*CS/FLUID_SCALE,
+      vx:(Math.random()-.5)*320*PX,
+      vy:(-100-Math.random()*230)*PX,
+      r:(1.4+Math.random()*2.2)*PX,
+      color:col, life:1
+    });
   }
-  const next = Array(FLUID_W * FLUID_H).fill(null);
-  let writeY = FLUID_H - 1;
-  for (let fy=FLUID_H-1; fy>=0; fy--){
-    if (fullSet.has((fy / FLUID_SCALE)|0)) continue;
-    for (let fx=0; fx<FLUID_W; fx++) next[fluidIndex(fx,writeY)] = fluidGrid[fluidIndex(fx,fy)];
-    writeY--;
-  }
-  fluidGrid = next;
-  score += full.length * 180 * level;
-  lines += full.length;
+
+  const rowsEq = Math.max(1, Math.round(clear.length / (FLUID_W * FLUID_SCALE)));
+  score += clear.length * 6 * level;
+  lines += rowsEq;
   level = ((lines/10)|0) + 1;
   dropInterval = Math.max(70, 800 * Math.pow(.85, level-1));
-  fluidWave = Math.max(fluidWave, .7 + full.length*.18);
-  addShake(22 + full.length*10);
+  fluidWave = Math.max(fluidWave, .8 + rowsEq*.2);
+  addShake(22 + rowsEq*10);
   updateHUD();
 }
 function updateFluid(dt){
@@ -1511,7 +1529,7 @@ function updateModeDesc(){
   if (pendingMode === 'melt')
     $('ovText').innerHTML = '融化模式：落地的果冻会瘫软<b>融化</b>、向下流淌、同色融成一摊。<br>当一种颜色从<b>左边连到右边</b>，整片该色就会一起化掉。';
   else if (pendingMode === 'fluid')
-    $('ovText').innerHTML = '流体模式：果冻落地后会碎成<b>液滴粒子</b>，像水一样向下流、横向铺开。<br>液体蓄满一整行会排空计分，堆到顶部就会塌掉。';
+    $('ovText').innerHTML = '流体模式：果冻落地后会碎成<b>液滴粒子</b>，像水一样向下流、横向铺开。<br><b>同色液体从左连到右</b>才会整片排空计分。';
   else if (pendingMode === 'iso')
     $('ovText').innerHTML = '立体模式：传统玩法，但果冻以 <b>2.5D 立体</b>呈现——<br>带厚度、圆顶高光与镜面反光的果冻软糖质感。';
   else
