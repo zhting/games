@@ -431,40 +431,6 @@ class SoftBody{
     this.melted = true;
     this.wake();
   }
-  waterify(){
-    this.meltify();
-    for (const L of this.loops){
-      let cx=0, minY=1e9, maxY=-1e9;
-      for (const p of L.rest){
-        cx += p[0];
-        if (p[1] < minY) minY = p[1];
-        if (p[1] > maxY) maxY = p[1];
-      }
-      cx /= L.rest.length;
-      const hgt = Math.max(1, maxY-minY);
-      for (let pass=0; pass<3; pass++){
-        const src = L.rest.map(p => p.slice());
-        const n = src.length;
-        for (let i=0;i<n;i++){
-          const a = src[(i-1+n)%n], b = src[(i+1)%n];
-          L.rest[i][0] = src[i][0]*.42 + (a[0]+b[0])*.29;
-          L.rest[i][1] = src[i][1]*.42 + (a[1]+b[1])*.29;
-        }
-      }
-      for (const p of L.rest){
-        const ty = (p[1]-minY)/hgt;
-        p[1] += (1-ty) * Math.min(.16*CS, hgt*.08);
-        p[0] = cx + (p[0]-cx) * (1 + .13*ty);
-      }
-      L.restArea = polyArea(L.rest);
-      for (let i=0;i<L.pos.length;i++){
-        L.pos[i][0]=L.rest[i][0]; L.pos[i][1]=L.rest[i][1];
-        L.vel[i][0]=0; L.vel[i][1]=0;
-      }
-    }
-    this.melted = true;
-    this.wake();
-  }
   teleport(dx, dy){           // 刚性移动：位置稳定地跟随网格，形变另由冲量注入
     for (const L of this.loops){
       for (const p of L.rest){ p[0]+=dx; p[1]+=dy; }
@@ -808,76 +774,6 @@ function drawJellyLoops(c, loops, color, opt={}){
   }
 }
 
-function drawWaterLoops(c, loops, color, opt={}){
-  if (opt.ghost){ drawJellyLoops(c, loops, color, opt); return; }
-  const bubbles = opt.bubbles, bdx = opt.bdx||0, bdy = opt.bdy||0;
-  for (const pts of loops){
-    if (!pts || pts.length < 3) continue;
-    let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
-    for (const [x,y] of pts){ if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
-    const bw = Math.max(1,maxX-minX), bh = Math.max(1,maxY-minY);
-    const cx = (minX+maxX)/2, cy = (minY+maxY)/2;
-
-    c.save();
-    c.shadowColor = shade(color, -42, -6, .34);
-    c.shadowBlur = 15*PX; c.shadowOffsetY = 7*PX;
-    smoothPath(c, pts);
-    c.fillStyle = shade(color, -12, 10, .20);
-    c.fill();
-    c.restore();
-
-    c.save();
-    smoothPath(c, pts); c.clip();
-    refractFill(c, minX, minY, bw, bh, cx, cy, 1.08, .34);
-
-    const body = c.createLinearGradient(0, minY, 0, maxY);
-    body.addColorStop(0,   shade(color, 58, -8, .70));
-    body.addColorStop(.28, shade(color, 22, 8, .56));
-    body.addColorStop(.72, shade(color, -6, 18, .66));
-    body.addColorStop(1,   shade(color, -24, 22, .82));
-    c.fillStyle = body; c.fillRect(minX-3, minY-3, bw+6, bh+6);
-
-    c.globalCompositeOperation = 'screen';
-    const surface = c.createLinearGradient(0, minY, 0, minY + bh*.46);
-    surface.addColorStop(0, 'rgba(255,255,255,.46)');
-    surface.addColorStop(.35, 'rgba(255,255,255,.18)');
-    surface.addColorStop(1, 'rgba(255,255,255,0)');
-    c.fillStyle = surface; c.fillRect(minX-3, minY-3, bw+6, bh*.52+3);
-
-    const glow = c.createRadialGradient(cx, maxY+bh*.06, 1, cx, maxY+bh*.06, Math.max(bw,bh)*.72);
-    glow.addColorStop(0, shade(color, 42, -4, .64));
-    glow.addColorStop(.55, shade(color, 22, 4, .18));
-    glow.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = glow; c.fillRect(minX-3, minY-3, bw+6, bh+6);
-    c.globalCompositeOperation = 'source-over';
-
-    const depth = c.createRadialGradient(cx, cy+bh*.20, 2, cx, cy+bh*.20, Math.max(bw,bh)*.62);
-    depth.addColorStop(0, shade(color, -18, 16, .18));
-    depth.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = depth; c.fillRect(minX-3, minY-3, bw+6, bh+6);
-
-    if (bubbles){
-      let drawn = 0;
-      for (const b of bubbles){
-        if (++drawn % 2 === 0) continue;
-        const bx = b.x + bdx*b.d, by = b.y + bdy*b.d;
-        if (bx < minX-4 || bx > maxX+4 || by < minY-4 || by > maxY+4) continue;
-        c.fillStyle = `rgba(255,255,255,${Math.min(.38, b.a*.55)})`;
-        c.beginPath(); c.arc(bx, by, Math.max(.8*PX, b.r*.72), 0, Math.PI*2); c.fill();
-      }
-    }
-    c.restore();
-
-    smoothPath(c, pts);
-    c.strokeStyle = shade(color, -30, 12, .82);
-    c.lineWidth = 1.1*PX; c.stroke();
-    smoothPath(c, pts);
-    const hl = c.createLinearGradient(0, minY, 0, minY + bh*.45);
-    hl.addColorStop(0, 'rgba(255,255,255,.72)');
-    hl.addColorStop(1, 'rgba(255,255,255,0)');
-    c.strokeStyle = hl; c.lineWidth = 2.6*PX; c.stroke();
-  }
-}
 /* 2.5D 立体果冻：厚度侧壁挤出 + 圆顶高光 + 强镜面，营造软糖体积感 */
 function drawJellyLoops3D(c, loops, color, opt={}){
   if (opt.ghost){ drawJellyLoops(c, loops, color, opt); return; }
@@ -982,6 +878,7 @@ let score, lines, level, dropTimer, dropInterval, softDrop;
 let state = 'menu';
 let mode = 'classic', pendingMode = 'classic';
 let particles = [], flashes = [];
+let fluidGrid = [], fluidStepAcc = 0, fluidWave = 0;
 let shakeY = 0, shakeV = 0;
 function addShake(v){ shakeV += v; if(shakeV>120)shakeV=120; else if(shakeV<-120)shakeV=-120; }
 let lastT = performance.now();
@@ -995,6 +892,251 @@ function pickColor(type){
   return SHAPES[type].color;
 }
 
+/* —— 流体模式：湿沙颗粒连成片流动，横贯同色整片清空 —— */
+const FLUID_SCALE = 6;
+const FLUID_W = COLS * FLUID_SCALE, FLUID_H = ROWS * FLUID_SCALE;
+const FLUID_CELL_FILL = Math.ceil(FLUID_SCALE * FLUID_SCALE * .56);
+function resetFluid(){
+  fluidGrid = Array(FLUID_W * FLUID_H).fill(null);
+  fluidStepAcc = 0;
+  fluidWave = 0;
+}
+function fluidIndex(x,y){ return y * FLUID_W + x; }
+function fluidInside(x,y){ return x>=0 && x<FLUID_W && y>=0 && y<FLUID_H; }
+function fluidColor(x,y){ return fluidInside(x,y) ? fluidGrid[fluidIndex(x,y)] : null; }
+function fluidEmpty(x,y){ return fluidInside(x,y) && !fluidGrid[fluidIndex(x,y)]; }
+function fluidOccupiesCell(x,y){
+  if (!fluidGrid.length) return false;
+  let n = 0;
+  const fx0 = x * FLUID_SCALE, fy0 = y * FLUID_SCALE;
+  for (let fy=fy0; fy<fy0+FLUID_SCALE; fy++){
+    for (let fx=fx0; fx<fx0+FLUID_SCALE; fx++){
+      if (fluidGrid[fluidIndex(fx,fy)] && ++n >= FLUID_CELL_FILL) return true;
+    }
+  }
+  return false;
+}
+function placeFluidGrain(fx, fy, color){
+  if (fluidEmpty(fx, fy)){ fluidGrid[fluidIndex(fx,fy)] = color; return true; }
+  for (let r=1; r<=8; r++){
+    for (let dy=-r; dy<=r; dy++){
+      const tries = [[fx-r, fy+dy], [fx+r, fy+dy], [fx, fy-r], [fx, fy+r]];
+      for (const [tx,ty] of tries){
+        if (fluidEmpty(tx,ty)){ fluidGrid[fluidIndex(tx,ty)] = color; return true; }
+      }
+    }
+  }
+  return false;
+}
+function spawnFluid(cells, color, hard, fallDist){
+  for (const [x,y] of cells){
+    if (y < 0) continue;
+    for (let sy=0; sy<FLUID_SCALE; sy++) for (let sx=0; sx<FLUID_SCALE; sx++){
+      placeFluidGrain(x*FLUID_SCALE + sx, y*FLUID_SCALE + sy, color);
+    }
+  }
+  score += cells.length * (hard ? 12 : 8) + Math.max(0, fallDist|0);
+  fluidWave = Math.max(fluidWave, hard ? 1.1 : .75);
+  addShake(hard ? 22 : 12);
+}
+function moveFluidGrain(x,y,nx,ny){
+  const from = fluidIndex(x,y), to = fluidIndex(nx,ny);
+  fluidGrid[to] = fluidGrid[from];
+  fluidGrid[from] = null;
+}
+function fluidSameNeighborCount(x,y,color, diag=false){
+  let n = 0;
+  const dirs = diag ? [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]] : [[1,0],[-1,0],[0,1],[0,-1]];
+  for (const [dx,dy] of dirs) if (fluidColor(x+dx,y+dy) === color) n++;
+  return n;
+}
+function fluidCanDrainFrom(x,y){
+  return fluidEmpty(x, y+1) || fluidEmpty(x-1, y+1) || fluidEmpty(x+1, y+1);
+}
+function fluidPressureAt(x,y){
+  if (!fluidInside(x,y)) return 999;
+  let n = 0;
+  for (let yy=y; yy>=0 && yy>y-16; yy--) if (fluidGrid[fluidIndex(x,yy)]) n++;
+  return n;
+}
+function fluidHasSupport(x,y){ return y+1>=FLUID_H || !fluidEmpty(x,y+1); }
+function moveKeepsFluidTogether(x,y,nx,ny,color){
+  if (ny > y) return true;
+  if (fluidSameNeighborCount(nx,ny,color,true) > 0) return true;
+  return fluidSameNeighborCount(x,y,color,true) <= 1;
+}
+function updateFluidStep(){
+  for (let y=FLUID_H-2; y>=0; y--){
+    const offset = (Math.random()*FLUID_W)|0;
+    const dir = Math.random()<.5 ? -1 : 1;
+    for (let i=0; i<FLUID_W; i++){
+      const x = (offset + i*dir + FLUID_W*2) % FLUID_W;
+      const color = fluidGrid[fluidIndex(x,y)];
+      if (!color) continue;
+      if (fluidEmpty(x, y+1)){ moveFluidGrain(x,y,x,y+1); continue; }
+      const first = Math.random()<.5 ? -1 : 1;
+      if (fluidEmpty(x+first, y+1)){ moveFluidGrain(x,y,x+first,y+1); continue; }
+      if (fluidEmpty(x-first, y+1)){ moveFluidGrain(x,y,x-first,y+1); continue; }
+    }
+  }
+
+  for (let y=FLUID_H-2; y>=0; y--){
+    const offset = (Math.random()*FLUID_W)|0;
+    const dir = Math.random()<.5 ? -1 : 1;
+    for (let i=0; i<FLUID_W; i++){
+      const x = (offset + i*dir + FLUID_W*2) % FLUID_W;
+      const color = fluidGrid[fluidIndex(x,y)];
+      if (!color || !fluidHasSupport(x,y)) continue;
+      const here = fluidPressureAt(x,y);
+      const first = Math.random()<.5 ? -1 : 1;
+      for (const d of [first, -first]){
+        const tx = x + d;
+        if (!fluidEmpty(tx,y) || !moveKeepsFluidTogether(x,y,tx,y,color)) continue;
+        const target = fluidPressureAt(tx,y);
+        const canDrain = fluidCanDrainFrom(tx,y) || fluidCanDrainFrom(tx+d,y) || fluidEmpty(tx+d,y+1);
+        if (canDrain || here > target + 2){
+          moveFluidGrain(x,y,tx,y);
+          break;
+        }
+      }
+    }
+  }
+}
+function removeFluidSpecks(maxSize=3){
+  const seen = Array(FLUID_W * FLUID_H).fill(false);
+  let removed = 0;
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const start = fluidIndex(fx,fy), color = fluidGrid[start];
+    if (!color || seen[start]) continue;
+    const comp = [], stack = [[fx,fy]];
+    seen[start] = true;
+    while (stack.length){
+      const [cx,cy] = stack.pop(); comp.push([cx,cy]);
+      for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nx=cx+dx, ny=cy+dy;
+        if (!fluidInside(nx,ny)) continue;
+        const ni = fluidIndex(nx,ny);
+        if (!seen[ni] && fluidGrid[ni] === color){ seen[ni]=true; stack.push([nx,ny]); }
+      }
+    }
+    if (comp.length <= maxSize){
+      for (const [x,y] of comp){ fluidGrid[fluidIndex(x,y)] = null; removed++; }
+    }
+  }
+  return removed;
+}
+function resolveFluidRows(){
+  const seen = Array(FLUID_W * FLUID_H).fill(false);
+  const clearColors = new Set();
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const start = fluidIndex(fx,fy);
+    const color = fluidGrid[start];
+    if (!color || seen[start]) continue;
+    const stack = [[fx,fy]];
+    seen[start] = true;
+    let touchL = false, touchR = false;
+    while (stack.length){
+      const [cx,cy] = stack.pop();
+      if (cx === 0) touchL = true;
+      if (cx === FLUID_W-1) touchR = true;
+      for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nx = cx + dx, ny = cy + dy;
+        if (!fluidInside(nx,ny)) continue;
+        const ni = fluidIndex(nx,ny);
+        if (!seen[ni] && fluidGrid[ni] === color){
+          seen[ni] = true;
+          stack.push([nx,ny]);
+        }
+      }
+    }
+    if (touchL && touchR) clearColors.add(color);
+  }
+  if (!clearColors.size) return;
+
+  const flashed = new Set();
+  let cleared = 0;
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const idx = fluidIndex(fx,fy), col = fluidGrid[idx];
+    if (!col || !clearColors.has(col)) continue;
+    fluidGrid[idx] = null;
+    cleared++;
+    const gx = (fx / FLUID_SCALE)|0, gy = (fy / FLUID_SCALE)|0;
+    const key = gx + ',' + gy;
+    if (!flashed.has(key)){ flashed.add(key); flashes.push({x:gx, y:gy, life:1}); }
+  }
+  removeFluidSpecks(FLUID_SCALE);
+  const rowsEq = Math.max(1, Math.round(cleared / (FLUID_W * FLUID_SCALE)));
+  score += cleared * 6 * level;
+  lines += rowsEq;
+  level = ((lines/10)|0) + 1;
+  dropInterval = Math.max(70, 800 * Math.pow(.85, level-1));
+  fluidWave = Math.max(fluidWave, .85 + rowsEq*.18);
+  addShake(22 + rowsEq*10);
+  updateHUD();
+}
+function updateFluid(dt){
+  if (!fluidGrid.length) return;
+  fluidStepAcc += dt * 30;
+  fluidWave = Math.max(0, fluidWave - dt*.7);
+  const steps = Math.min(3, fluidStepAcc|0);
+  if (!steps) return;
+  fluidStepAcc -= steps;
+  for (let i=0; i<steps; i++) updateFluidStep();
+  resolveFluidRows();
+}
+function drawFluid(c){
+  if (!fluidGrid.length) return;
+  const s = CS / FLUID_SCALE;
+  const wave = fluidWave;
+  c.save();
+  roundRect(c, PAD, PAD, COLS*CS, ROWS*CS, 8); c.clip();
+
+  c.globalAlpha = .78;
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const color = fluidGrid[fluidIndex(fx,fy)];
+    if (!color) continue;
+    const x = PAD + fx*s, y = PAD + fy*s;
+    c.fillStyle = shade(color, -6, 18, .72);
+    if (fluidColor(fx+1,fy) === color) c.fillRect(x+s*.42, y+s*.18, s*.78, s*.64);
+    if (fluidColor(fx,fy+1) === color) c.fillRect(x+s*.18, y+s*.42, s*.64, s*.78);
+  }
+
+  c.globalAlpha = .98;
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const color = fluidGrid[fluidIndex(fx,fy)];
+    if (!color) continue;
+    const flow = wave ? Math.sin(fy*.42 + fx*.17 + lastT*.008) * s*.16*wave : 0;
+    const x = PAD + fx*s - s*.05 + flow;
+    const y = PAD + fy*s - s*.05;
+    const n = fluidSameNeighborCount(fx,fy,color,true);
+    c.fillStyle = shade(color, n >= 4 ? 12 : 4, 16, .92);
+    roundRect(c, x, y, s*1.10, s*1.10, s*.34); c.fill();
+  }
+
+  c.globalAlpha = .66;
+  c.strokeStyle = 'rgba(18,6,30,.68)';
+  c.lineWidth = Math.max(1, s*.14);
+  c.beginPath();
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const color = fluidGrid[fluidIndex(fx,fy)];
+    if (!color) continue;
+    const right = fluidColor(fx+1,fy), down = fluidColor(fx,fy+1);
+    if (right && right !== color){ const x=PAD+(fx+1)*s, y=PAD+fy*s; c.moveTo(x,y+s*.1); c.lineTo(x,y+s*.9); }
+    if (down && down !== color){ const x=PAD+fx*s, y=PAD+(fy+1)*s; c.moveTo(x+s*.1,y); c.lineTo(x+s*.9,y); }
+  }
+  c.stroke();
+
+  c.globalAlpha = .75;
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const color = fluidGrid[fluidIndex(fx,fy)];
+    if (!color || fluidColor(fx,fy-1) === color) continue;
+    const flow = wave ? Math.sin(fx*.35 + lastT*.01) * s*.12*wave : 0;
+    c.fillStyle = shade(color, 42, -6, .56);
+    roundRect(c, PAD+(fx+.24)*s+flow, PAD+(fy+.22)*s, s*.52, Math.max(1, s*.18), s*.12); c.fill();
+  }
+  c.globalAlpha = 1;
+  c.restore();
+}
 function fromBag(){
   if (!bag.length){ bag = TYPES.slice(); for (let i=bag.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [bag[i],bag[j]]=[bag[j],bag[i]]; } }
   return bag.pop();
@@ -1002,6 +1144,7 @@ function fromBag(){
 function reset(){
   grid = Array.from({length:ROWS}, () => Array(COLS).fill(null));
   pieces = []; particles = []; flashes = []; bag = [];
+  resetFluid();
   score = 0; lines = 0; level = 1; softDrop = false;
   dropInterval = 800; dropTimer = 0;
   nextType = fromBag(); nextColor = pickColor(nextType);
@@ -1024,7 +1167,7 @@ function absCells(p, dx=0, dy=0, rot=p.rot){
 }
 function collides(p, dx, dy, rot){
   return absCells(p, dx, dy, rot).some(([x,y]) =>
-    x<0 || x>=COLS || y>=ROWS || (y>=0 && grid[y][x]!==null));
+    x<0 || x>=COLS || y>=ROWS || (y>=0 && (grid[y][x]!==null || (mode==='fluid' && fluidOccupiesCell(x,y)))));
 }
 
 /* ---------- 操作（所有形变都来自瞬移追赶或冲量） ---------- */
@@ -1074,9 +1217,7 @@ function lock(hard, fallDist){
   if (cells.some(([,y]) => y < 0)){ gameOver(); return; }
 
   if (mode === 'fluid'){
-    for (const [x,y] of cells) if (y>=0 && y<ROWS) grid[y][x] = { color: active.color };
-    const cols = Array.from(new Set(cells.map(c => c[0])));
-    resolveFluid(cols, (hard ? 360 + fallDist*18 : 190)*PX);
+    spawnFluid(cells, active.color, hard, fallDist);
     if (state==='play') spawn();
     updateHUD();
     return;
@@ -1239,102 +1380,6 @@ function resolveMelt(impactCols, strength){
   }
 }
 
-function matToColumns(mat){
-  const cols = Array.from({length:COLS}, () => []);
-  for (let x=0;x<COLS;x++) for (let y=ROWS-1;y>=0;y--) if (mat[y][x]) cols[x].push(mat[y][x]);
-  return cols;
-}
-function columnsToMat(cols){
-  const out = Array.from({length:ROWS}, () => Array(COLS).fill(null));
-  for (let x=0;x<COLS;x++) for (let i=0;i<cols[x].length && i<ROWS;i++) out[ROWS-1-i][x] = cols[x][i];
-  return out;
-}
-function settleFluidMat(mat){
-  const cols = matToColumns(mat);
-  for (let pass=0; pass<10; pass++){
-    let moved = false;
-    const start = pass % 2 ? COLS-1 : 0;
-    const end = pass % 2 ? -1 : COLS;
-    const step = pass % 2 ? -1 : 1;
-    for (let x=start; x!==end; x+=step){
-      const dirs = (Math.random() < .5) ? [-1,1] : [1,-1];
-      for (const d of dirs){
-        const nx = x + d;
-        if (nx < 0 || nx >= COLS) continue;
-        if (cols[x].length > cols[nx].length + 1){
-          cols[nx].push(cols[x].pop());
-          moved = true;
-          break;
-        }
-      }
-    }
-    if (!moved) break;
-  }
-  return columnsToMat(cols);
-}
-function regroupFluid(impactCols, strength){
-  const seen = Array.from({length:ROWS}, () => Array(COLS).fill(false));
-  const blobs = [];
-  for (let y=0;y<ROWS;y++) for (let x=0;x<COLS;x++){
-    if (!grid[y][x] || seen[y][x]) continue;
-    const color = grid[y][x].color;
-    const stack = [[x,y]], cells = [];
-    seen[y][x] = true;
-    while (stack.length){
-      const [cx,cy] = stack.pop(); cells.push([cx,cy]);
-      for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
-        const nx=cx+dx, ny=cy+dy;
-        if (nx>=0&&nx<COLS&&ny>=0&&ny<ROWS&&!seen[ny][nx]&&grid[ny][nx]&&grid[ny][nx].color===color){
-          seen[ny][nx]=true; stack.push([nx,ny]);
-        }
-      }
-    }
-    const body = new SoftBody(cells, color);
-    body.waterify();
-    blobs.push({ cells, color, body });
-  }
-  blobs.sort((a,b) => b.cells.length - a.cells.length);
-  pieces = blobs;
-  grid = Array.from({length:ROWS}, () => Array(COLS).fill(null));
-  for (const b of blobs) for (const [x,y] of b.cells) grid[y][x] = b;
-
-  const hit = new Set();
-  if (impactCols){
-    for (const x of impactCols){
-      for (let y=0;y<ROWS;y++){
-        const b = grid[y][x];
-        if (b){ if (!hit.has(b)){ b.body.squash(strength*.48); hit.add(b); } break; }
-      }
-    }
-  }
-  for (const b of pieces) if (!hit.has(b)) b.body.squash(22*PX);
-}
-function resolveFluid(impactCols, strength){
-  let mat = settleFluidMat(gridColorMat());
-  let cleared = 0;
-  for (;;){
-    const cells = spanningCells(mat);
-    if (!cells.length) break;
-    cleared += cells.length;
-    const flashed = new Set();
-    for (const [x,y] of cells){
-      const key = x + ',' + y;
-      if (!flashed.has(key)){ flashes.push({x, y, life:1}); flashed.add(key); }
-      mat[y][x] = null;
-    }
-    mat = settleFluidMat(mat);
-  }
-  grid = mat.map(row => row.map(c => c ? { color:c } : null));
-  regroupFluid(impactCols, strength);
-  if (cleared){
-    const rowsEq = Math.max(1, Math.round(cleared / COLS));
-    score += cleared * 20 * level;
-    lines += rowsEq;
-    level = ((lines/10)|0) + 1;
-    dropInterval = Math.max(70, 800 * Math.pow(.85, level-1));
-    addShake(20 + rowsEq*8);
-  }
-}
 function clearRows(){
   const full = [];
   for (let y=0;y<ROWS;y++) if (grid[y].every(c=>c!==null)) full.push(y);
@@ -1419,8 +1464,7 @@ function drawBoard(){
   ctx.globalAlpha = 1;
 
   const draw3D = (mode === 'iso');
-  const drawWater = (mode === 'fluid');
-  const drawJelly = draw3D ? drawJellyLoops3D : (drawWater ? drawWaterLoops : drawJellyLoops);
+  const drawJelly = draw3D ? drawJellyLoops3D : drawJellyLoops;
   let order = pieces;
   if (draw3D){                       // 立体下：上方的块先画、下方的块后画(在前)，侧壁遮挡才正确
     order = pieces.slice().sort((a,b) => {
@@ -1434,6 +1478,7 @@ function drawBoard(){
     drawJelly(ctx, p.body.loops.map(L=>L.pos), p.color,
               {bubbles:p.body.bubbles, bdx, bdy});
   }
+  if (mode === 'fluid') drawFluid(ctx);
   if (active && (state==='play' || state==='pause')){
     let gy = 0;
     while (!collides(active, 0, gy+1, active.rot)) gy++;
@@ -1489,6 +1534,7 @@ function frame(t){
   if (state === 'play' || state === 'over'){
     if (active) active.body.step(dt);
     for (const p of pieces) p.body.step(dt);
+    if (mode === 'fluid') updateFluid(dt);
     for (const pt of particles){ pt.vy += 700*PX*dt; pt.x += pt.vx*dt; pt.y += pt.vy*dt; pt.life -= 1.4*dt; }
     particles = particles.filter(p => p.life > 0);
     for (const f of flashes) f.life -= 5*dt;
@@ -1515,7 +1561,7 @@ function updateModeDesc(){
   if (pendingMode === 'melt')
     $('ovText').innerHTML = '融化模式：落地的果冻会瘫软<b>融化</b>、向下流淌、同色融成一摊。<br>当一种颜色从<b>左边连到右边</b>，整片该色就会一起化掉。';
   else if (pendingMode === 'fluid')
-    $('ovText').innerHTML = '流体模式：果冻落地后会化成<b>整体水体</b>，向下流淌并横向铺开。<br><b>同色液体从左连到右</b>才会整片排空计分。';
+    $('ovText').innerHTML = '流体模式：果冻落地后会化成<b>连片湿沙颗粒</b>，向下流动并横向堆开。<br><b>同色颗粒从左连到右</b>才会整片清空计分，不留下单颗粒。';
   else if (pendingMode === 'iso')
     $('ovText').innerHTML = '立体模式：传统玩法，但果冻以 <b>2.5D 立体</b>呈现——<br>带厚度、圆顶高光与镜面反光的果冻软糖质感。';
   else
