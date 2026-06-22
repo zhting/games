@@ -885,10 +885,11 @@ let lastT = performance.now();
 
 // 融化模式调色板（3 色，便于凑出整行同色）
 const MELT_PALETTE = ['#ff4d6d', '#ffd23f', '#4cc9f0'];
+const FLUID_PALETTE = ['#ff2d70', '#00d5ff', '#ffd400', '#36f28a', '#9d63ff'];
 function pickColor(type){
-  return mode === 'melt'
-    ? MELT_PALETTE[(Math.random()*MELT_PALETTE.length)|0]
-    : SHAPES[type].color;
+  if (mode === 'melt') return MELT_PALETTE[(Math.random()*MELT_PALETTE.length)|0];
+  if (mode === 'fluid') return FLUID_PALETTE[(Math.random()*FLUID_PALETTE.length)|0];
+  return SHAPES[type].color;
 }
 
 /* —— 流体模式：落地后把果冻格拆成细颗粒液滴 —— */
@@ -1077,29 +1078,50 @@ function drawFluid(c){
   c.save();
   roundRect(c, PAD, PAD, COLS*CS, ROWS*CS, 8); c.clip();
 
-  // 让相邻液滴互相重叠，视觉上融合成连续液面，而不是一颗颗沙粒。
+  // 让相邻液滴互相重叠，视觉上融合成连续液面；提高不透明度，避免不同颜色糊成一团。
   const wave = fluidWave;
-  c.globalAlpha = .78;
+  c.globalAlpha = .96;
   for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
     const color = fluidGrid[fluidIndex(fx,fy)];
     if (!color) continue;
     const flow = wave ? Math.sin(fy*.42 + fx*.17 + lastT*.008) * s*.22*wave : 0;
-    const x = PAD + fx*s - s*.18 + flow;
-    const y = PAD + fy*s - s*.18;
-    const w = s*1.42;
-    c.fillStyle = shade(color, 18, 10, .66);
-    roundRect(c, x, y, w, w, s*.55); c.fill();
+    const x = PAD + fx*s - s*.16 + flow;
+    const y = PAD + fy*s - s*.16;
+    const w = s*1.36;
+    c.fillStyle = shade(color, 8, 18, .90);
+    roundRect(c, x, y, w, w, s*.50); c.fill();
   }
 
+  // 只在不同颜色接触处加分界线，保留液体整体感，同时让颜色区域一眼分开。
+  c.globalAlpha = .74;
+  c.strokeStyle = 'rgba(22,7,35,.72)';
+  c.lineWidth = Math.max(1, s*.16);
+  c.beginPath();
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const color = fluidGrid[fluidIndex(fx,fy)];
+    if (!color) continue;
+    const right = fluidInside(fx+1,fy) ? fluidGrid[fluidIndex(fx+1,fy)] : null;
+    const down = fluidInside(fx,fy+1) ? fluidGrid[fluidIndex(fx,fy+1)] : null;
+    if (right && right !== color){
+      const x = PAD + (fx+1)*s, y = PAD + fy*s;
+      c.moveTo(x, y+s*.12); c.lineTo(x, y+s*.88);
+    }
+    if (down && down !== color){
+      const x = PAD + fx*s, y = PAD + (fy+1)*s;
+      c.moveTo(x+s*.12, y); c.lineTo(x+s*.88, y);
+    }
+  }
+  c.stroke();
+
   // 只在液体表面画少量高光，避免每个粒子都像独立颗粒。
-  c.globalAlpha = .82;
+  c.globalAlpha = .9;
   for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
     const color = fluidGrid[fluidIndex(fx,fy)];
     if (!color || (fluidInside(fx,fy-1) && fluidGrid[fluidIndex(fx,fy-1)])) continue;
     const flow = wave ? Math.sin(fx*.35 + lastT*.01) * s*.18*wave : 0;
     const x = PAD + (fx+.18)*s + flow;
     const y = PAD + (fy+.22)*s;
-    c.fillStyle = shade(color, 44, -8, .55);
+    c.fillStyle = shade(color, 48, -6, .62);
     roundRect(c, x, y, s*.62, Math.max(1, s*.22), s*.18); c.fill();
   }
   c.globalAlpha = 1;
