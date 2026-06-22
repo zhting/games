@@ -878,7 +878,7 @@ let score, lines, level, dropTimer, dropInterval, softDrop;
 let state = 'menu';
 let mode = 'classic', pendingMode = 'classic';
 let particles = [], flashes = [];
-let fluidGrid = [], fluidStepAcc = 0;
+let fluidGrid = [], fluidStepAcc = 0, fluidWave = 0;
 let shakeY = 0, shakeV = 0;
 function addShake(v){ shakeV += v; if(shakeV>120)shakeV=120; else if(shakeV<-120)shakeV=-120; }
 let lastT = performance.now();
@@ -899,6 +899,7 @@ const FLUID_ROW_FILL = Math.floor(FLUID_W * FLUID_SCALE * .86);
 function resetFluid(){
   fluidGrid = Array(FLUID_W * FLUID_H).fill(null);
   fluidStepAcc = 0;
+  fluidWave = 0;
 }
 function fluidIndex(x,y){ return y * FLUID_W + x; }
 function fluidInside(x,y){ return x>=0 && x<FLUID_W && y>=0 && y<FLUID_H; }
@@ -943,6 +944,7 @@ function spawnFluid(cells, color, hard, fallDist){
     }
   }
   score += cells.length * (hard ? 12 : 8) + Math.max(0, fallDist|0);
+  fluidWave = Math.max(fluidWave, hard ? 1.25 : .85);
   addShake(hard ? 24 : 14);
 }
 function moveFluidGrain(x,y,nx,ny){
@@ -953,11 +955,17 @@ function moveFluidGrain(x,y,nx,ny){
 function fluidCanDrainFrom(x,y){
   return fluidEmpty(x, y+1) || fluidEmpty(x-1, y+1) || fluidEmpty(x+1, y+1);
 }
-function fluidHasPressureAbove(x,y){
-  return (fluidInside(x,y-1) && fluidGrid[fluidIndex(x,y-1)]) ||
-         (fluidInside(x,y-2) && fluidGrid[fluidIndex(x,y-2)]);
+function fluidPressureAt(x,y){
+  if (!fluidInside(x,y)) return 999;
+  let n = 0;
+  for (let yy=y; yy>=0 && yy>y-16; yy--) if (fluidGrid[fluidIndex(x,yy)]) n++;
+  return n;
+}
+function fluidHasSupport(x,y){
+  return y+1>=FLUID_H || !fluidEmpty(x,y+1);
 }
 function updateFluidStep(){
+  // 先让液滴快速下坠和斜向找孔。
   for (let y=FLUID_H-2; y>=0; y--){
     const offset = (Math.random()*FLUID_W)|0;
     const dir = Math.random()<.5 ? -1 : 1;
@@ -968,12 +976,25 @@ function updateFluidStep(){
       const first = Math.random()<.5 ? -1 : 1;
       if (fluidEmpty(x+first, y+1)){ moveFluidGrain(x,y,x+first,y+1); continue; }
       if (fluidEmpty(x-first, y+1)){ moveFluidGrain(x,y,x-first,y+1); continue; }
+    }
+  }
 
-      // 稳定水面不要随机抖动；只有被上方液滴挤压，且旁边有下泄路径时才横向流动。
-      if (!fluidHasPressureAbove(x,y)) continue;
+  // 再做压力均衡：高液柱会推向低液柱，找平后停止，不会在平面上来回抖。
+  for (let y=FLUID_H-2; y>=0; y--){
+    const offset = (Math.random()*FLUID_W)|0;
+    const dir = Math.random()<.5 ? -1 : 1;
+    for (let i=0; i<FLUID_W; i++){
+      const x = (offset + i*dir + FLUID_W*2) % FLUID_W;
+      if (!fluidGrid[fluidIndex(x,y)] || !fluidHasSupport(x,y)) continue;
+      const here = fluidPressureAt(x,y);
+      const first = Math.random()<.5 ? -1 : 1;
       for (const d of [first, -first]){
-        if (fluidEmpty(x+d, y) && (fluidCanDrainFrom(x+d, y) || fluidEmpty(x+d*2, y+1))){
-          moveFluidGrain(x,y,x+d,y);
+        const tx = x + d;
+        if (!fluidEmpty(tx,y)) continue;
+        const target = fluidPressureAt(tx,y);
+        const canDrain = fluidCanDrainFrom(tx,y) || fluidCanDrainFrom(tx+d,y) || fluidEmpty(tx+d,y+1);
+        if (canDrain || here > target + 2){
+          moveFluidGrain(x,y,tx,y);
           break;
         }
       }
@@ -1018,13 +1039,15 @@ function resolveFluidRows(){
   lines += full.length;
   level = ((lines/10)|0) + 1;
   dropInterval = Math.max(70, 800 * Math.pow(.85, level-1));
+  fluidWave = Math.max(fluidWave, .7 + full.length*.18);
   addShake(22 + full.length*10);
   updateHUD();
 }
 function updateFluid(dt){
   if (!fluidGrid.length) return;
-  fluidStepAcc += dt * 52;
-  const steps = Math.min(5, fluidStepAcc|0);
+  fluidStepAcc += dt * 30;
+  fluidWave = Math.max(0, fluidWave - dt*.7);
+  const steps = Math.min(3, fluidStepAcc|0);
   if (!steps) return;
   fluidStepAcc -= steps;
   for (let i=0; i<steps; i++) updateFluidStep();
@@ -1035,19 +1058,31 @@ function drawFluid(c){
   const s = CS / FLUID_SCALE;
   c.save();
   roundRect(c, PAD, PAD, COLS*CS, ROWS*CS, 8); c.clip();
-  c.globalAlpha = .9;
+
+  // 让相邻液滴互相重叠，视觉上融合成连续液面，而不是一颗颗沙粒。
+  const wave = fluidWave;
+  c.globalAlpha = .78;
   for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
     const color = fluidGrid[fluidIndex(fx,fy)];
     if (!color) continue;
-    const x = PAD + (fx+.5)*s;
-    const y = PAD + (fy+.5)*s;
-    const r = Math.max(.85*PX, s*.52);
-    c.fillStyle = shade(color, 22, 8, .74);
-    c.beginPath(); c.arc(x, y, r, 0, Math.PI*2); c.fill();
-    if (((fx + fy) & 3) === 0){
-      c.fillStyle = 'rgba(255,255,255,.45)';
-      c.beginPath(); c.arc(x-r*.28, y-r*.34, Math.max(.6, r*.26), 0, Math.PI*2); c.fill();
-    }
+    const flow = wave ? Math.sin(fy*.42 + fx*.17 + lastT*.008) * s*.22*wave : 0;
+    const x = PAD + fx*s - s*.18 + flow;
+    const y = PAD + fy*s - s*.18;
+    const w = s*1.42;
+    c.fillStyle = shade(color, 18, 10, .66);
+    roundRect(c, x, y, w, w, s*.55); c.fill();
+  }
+
+  // 只在液体表面画少量高光，避免每个粒子都像独立颗粒。
+  c.globalAlpha = .82;
+  for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
+    const color = fluidGrid[fluidIndex(fx,fy)];
+    if (!color || (fluidInside(fx,fy-1) && fluidGrid[fluidIndex(fx,fy-1)])) continue;
+    const flow = wave ? Math.sin(fx*.35 + lastT*.01) * s*.18*wave : 0;
+    const x = PAD + (fx+.18)*s + flow;
+    const y = PAD + (fy+.22)*s;
+    c.fillStyle = shade(color, 44, -8, .55);
+    roundRect(c, x, y, s*.62, Math.max(1, s*.22), s*.18); c.fill();
   }
   c.globalAlpha = 1;
   c.restore();
