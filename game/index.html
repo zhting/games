@@ -892,7 +892,7 @@ function pickColor(type){
 }
 
 /* —— 流体模式：落地后把果冻格拆成细颗粒液滴 —— */
-const FLUID_SCALE = 4;
+const FLUID_SCALE = 6;
 const FLUID_W = COLS * FLUID_SCALE, FLUID_H = ROWS * FLUID_SCALE;
 const FLUID_CELL_FILL = Math.ceil(FLUID_SCALE * FLUID_SCALE * .56);
 const FLUID_ROW_FILL = Math.floor(FLUID_W * FLUID_SCALE * .86);
@@ -937,7 +937,7 @@ function spawnFluid(cells, color, hard, fallDist){
         y:PAD+(y+(sy+.5)/FLUID_SCALE)*CS,
         vx:(Math.random()-.5)*kick,
         vy:(-70-Math.random()*120)*PX,
-        r:(1.8+Math.random()*2.4)*PX,
+        r:(1.05+Math.random()*1.65)*PX,
         color, life:.85
       });
     }
@@ -950,6 +950,13 @@ function moveFluidGrain(x,y,nx,ny){
   fluidGrid[to] = fluidGrid[from];
   fluidGrid[from] = null;
 }
+function fluidCanDrainFrom(x,y){
+  return fluidEmpty(x, y+1) || fluidEmpty(x-1, y+1) || fluidEmpty(x+1, y+1);
+}
+function fluidHasPressureAbove(x,y){
+  return (fluidInside(x,y-1) && fluidGrid[fluidIndex(x,y-1)]) ||
+         (fluidInside(x,y-2) && fluidGrid[fluidIndex(x,y-2)]);
+}
 function updateFluidStep(){
   for (let y=FLUID_H-2; y>=0; y--){
     const offset = (Math.random()*FLUID_W)|0;
@@ -961,8 +968,15 @@ function updateFluidStep(){
       const first = Math.random()<.5 ? -1 : 1;
       if (fluidEmpty(x+first, y+1)){ moveFluidGrain(x,y,x+first,y+1); continue; }
       if (fluidEmpty(x-first, y+1)){ moveFluidGrain(x,y,x-first,y+1); continue; }
-      if (Math.random()<.38 && fluidEmpty(x+first, y)){ moveFluidGrain(x,y,x+first,y); continue; }
-      if (Math.random()<.18 && fluidEmpty(x-first, y)) moveFluidGrain(x,y,x-first,y);
+
+      // 稳定水面不要随机抖动；只有被上方液滴挤压，且旁边有下泄路径时才横向流动。
+      if (!fluidHasPressureAbove(x,y)) continue;
+      for (const d of [first, -first]){
+        if (fluidEmpty(x+d, y) && (fluidCanDrainFrom(x+d, y) || fluidEmpty(x+d*2, y+1))){
+          moveFluidGrain(x,y,x+d,y);
+          break;
+        }
+      }
     }
   }
 }
@@ -987,7 +1001,7 @@ function resolveFluidRows(){
         y:PAD+(fy+.5)*CS/FLUID_SCALE,
         vx:(Math.random()-.5)*300*PX,
         vy:(-110-Math.random()*220)*PX,
-        r:(2+Math.random()*3)*PX,
+        r:(1.4+Math.random()*2.2)*PX,
         color:col, life:1
       });
     }
@@ -1025,10 +1039,9 @@ function drawFluid(c){
   for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
     const color = fluidGrid[fluidIndex(fx,fy)];
     if (!color) continue;
-    const wob = (((fx*17 + fy*31) % 9) - 4) * s * .035;
-    const x = PAD + (fx+.5)*s + wob;
-    const y = PAD + (fy+.5)*s - wob;
-    const r = Math.max(1.4*PX, s*.58);
+    const x = PAD + (fx+.5)*s;
+    const y = PAD + (fy+.5)*s;
+    const r = Math.max(.85*PX, s*.52);
     c.fillStyle = shade(color, 22, 8, .74);
     c.beginPath(); c.arc(x, y, r, 0, Math.PI*2); c.fill();
     if (((fx + fy) & 3) === 0){
