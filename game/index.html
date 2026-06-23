@@ -878,7 +878,7 @@ let score, lines, level, dropTimer, dropInterval, softDrop;
 let state = 'menu';
 let mode = 'classic', pendingMode = 'classic';
 let particles = [], flashes = [];
-let fluidGrid = [], fluidStepAcc = 0, fluidWave = 0;
+let fluidGrid = [], fluidFades = [], fluidStepAcc = 0, fluidWave = 0;
 let shakeY = 0, shakeV = 0;
 function addShake(v){ shakeV += v; if(shakeV>120)shakeV=120; else if(shakeV<-120)shakeV=-120; }
 let lastT = performance.now();
@@ -898,6 +898,7 @@ const FLUID_W = COLS * FLUID_SCALE, FLUID_H = ROWS * FLUID_SCALE;
 const FLUID_CELL_FILL = Math.ceil(FLUID_SCALE * FLUID_SCALE * .56);
 function resetFluid(){
   fluidGrid = Array(FLUID_W * FLUID_H).fill(null);
+  fluidFades = [];
   fluidStepAcc = 0;
   fluidWave = 0;
 }
@@ -1002,7 +1003,7 @@ function updateFluidStep(){
     }
   }
 }
-function removeFluidSpecks(maxSize=3){
+function removeFluidSpecks(maxSize=3, fade=false){
   const seen = Array(FLUID_W * FLUID_H).fill(false);
   let removed = 0;
   for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
@@ -1020,7 +1021,10 @@ function removeFluidSpecks(maxSize=3){
       }
     }
     if (comp.length <= maxSize){
-      for (const [x,y] of comp){ fluidGrid[fluidIndex(x,y)] = null; removed++; }
+      for (const [x,y] of comp){
+        if (fade) fluidFades.push({fx:x, fy:y, color, life:1});
+        fluidGrid[fluidIndex(x,y)] = null; removed++;
+      }
     }
   }
   return removed;
@@ -1058,13 +1062,14 @@ function resolveFluidRows(){
   for (let fy=0; fy<FLUID_H; fy++) for (let fx=0; fx<FLUID_W; fx++){
     const idx = fluidIndex(fx,fy), col = fluidGrid[idx];
     if (!col || !clearColors.has(col)) continue;
+    fluidFades.push({fx, fy, color:col, life:1});
     fluidGrid[idx] = null;
     cleared++;
     const gx = (fx / FLUID_SCALE)|0, gy = (fy / FLUID_SCALE)|0;
     const key = gx + ',' + gy;
     if (!flashed.has(key)){ flashed.add(key); flashes.push({x:gx, y:gy, life:1}); }
   }
-  removeFluidSpecks(FLUID_SCALE);
+  removeFluidSpecks(FLUID_SCALE, true);
   const rowsEq = Math.max(1, Math.round(cleared / (FLUID_W * FLUID_SCALE)));
   score += cleared * 6 * level;
   lines += rowsEq;
@@ -1113,6 +1118,29 @@ function drawFluid(c){
     roundRect(c, x, y, s*1.10, s*1.10, s*.34); c.fill();
   }
 
+
+  if (fluidFades.length){
+    const fadeLinks = new Set(fluidFades.map(f => f.color + '@' + f.fx + ',' + f.fy));
+    c.save();
+    c.globalCompositeOperation = 'screen';
+    for (const f of fluidFades){
+      const a = Math.max(0, Math.min(1, f.life));
+      const x = PAD + f.fx*s, y = PAD + f.fy*s;
+      c.globalAlpha = .42 * a;
+      c.fillStyle = shade(f.color, 16, 10, .78);
+      if (fadeLinks.has(f.color + '@' + (f.fx+1) + ',' + f.fy)) c.fillRect(x+s*.42, y+s*.18, s*.78, s*.64);
+      if (fadeLinks.has(f.color + '@' + f.fx + ',' + (f.fy+1))) c.fillRect(x+s*.18, y+s*.42, s*.64, s*.78);
+    }
+    for (const f of fluidFades){
+      const a = Math.max(0, Math.min(1, f.life));
+      const x = PAD + f.fx*s, y = PAD + f.fy*s;
+      const grow = (1-a) * s*.22;
+      c.globalAlpha = .82 * a;
+      c.fillStyle = shade(f.color, 20, 14, .86);
+      roundRect(c, x-s*.04-grow*.5, y-s*.04-grow*.5, s*1.08+grow, s*1.08+grow, s*.32); c.fill();
+    }
+    c.restore();
+  }
   c.globalAlpha = .66;
   c.strokeStyle = 'rgba(18,6,30,.68)';
   c.lineWidth = Math.max(1, s*.14);
@@ -1537,7 +1565,9 @@ function frame(t){
     if (mode === 'fluid') updateFluid(dt);
     for (const pt of particles){ pt.vy += 700*PX*dt; pt.x += pt.vx*dt; pt.y += pt.vy*dt; pt.life -= 1.4*dt; }
     particles = particles.filter(p => p.life > 0);
-    for (const f of flashes) f.life -= 5*dt;
+    for (const f of fluidFades) f.life -= 1.8*dt;
+    fluidFades = fluidFades.filter(f => f.life > 0);
+    for (const f of flashes) f.life -= 2.4*dt;
     flashes = flashes.filter(f => f.life > 0);
     shakeV += (-95*shakeY - 13*shakeV) * dt;
     shakeY += shakeV * dt;
