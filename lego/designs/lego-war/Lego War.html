@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>乐高战争</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
+
+  :root {
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --yellow: #f59e0b;
+    --green: #22c55e;
+    --bg: #0f172a;
+    --card: #1e293b;
+    --card-hover: #273548;
+    --text: #f1f5f9;
+    --dim: #64748b;
+    --gold: #fbbf24;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── Top Bar: Resources ── */
+  .top-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(30,41,59,0.95);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .res {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 700;
+    font-size: 15px;
+    background: rgba(255,255,255,0.06);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .res-icon { font-size: 16px; }
+  .res-val { min-width: 24px; text-align: center; }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    background: rgba(30,41,59,0.97);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 0 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--dim);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+    transition: color 0.15s;
+    position: relative;
+  }
+  .nav-btn .n-icon { font-size: 22px; }
+  .nav-btn.active { color: var(--gold); }
+  .nav-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 0 0 3px 3px;
+  }
+
+  /* ── Pages ── */
+  .page {
+    display: none;
+    padding: 16px;
+    padding-bottom: 90px;
+  }
+  .page.active { display: block; }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+  .page-sub {
+    font-size: 13px;
+    color: var(--dim);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    transition: background 0.15s;
+  }
+  .card:active { background: var(--card-hover); }
+
+  .card-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .card-icon {
+    font-size: 36px;
+    width: 50px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .card-body { flex: 1; min-width: 0; }
+  .card-name {
+    font-weight: 900;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+  .card-desc {
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.4;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.35; cursor: default; transform: none; }
+
+  .btn-gold {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+    width: 100%;
+  }
+  .btn-red {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    width: 100%;
+  }
+  .btn-green {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+  }
+  .btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.15);
+    color: var(--text);
+  }
+  .btn-sm {
+    padding: 7px 14px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+  .btn-full { width: 100%; }
+
+  /* ── Cost Tags ── */
+  .cost-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+  }
+  .cost-tag {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.07);
+  }
+  .cost-tag.ok { color: var(--green); }
+  .cost-tag.no { color: var(--red); }
+
+  /* ── Stat Chips ── */
+  .stat-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .stat {
+    font-size: 12px;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  /* ── Progress / HP Bars ── */
+  .bar-wrap {
+    height: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Level Badge ── */
+  .lv-badge {
+    font-size: 11px;
+    font-weight: 900;
+    color: #000;
+    background: var(--gold);
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+  }
+
+  /* ── Section Divider ── */
+  .divider {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dim);
+    margin: 16px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+
+  /* ── Battle Overlay ── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .overlay.hidden { display: none; }
+  .overlay-sheet {
+    background: var(--card);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 24px 20px 40px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+  }
+  .overlay-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--dim);
+    background: none;
+    border: none;
+    z-index: 10;
+  }
+
+  /* Battle Scene */
+  .battle-top {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .battle-enemy-icon {
+    font-size: 56px;
+    margin-bottom: 8px;
+    animation: bounce 1s ease infinite;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .battle-hp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .battle-hp-row .bar-wrap { flex: 1; }
+  .battle-hp-label { width: 60px; text-align: center; }
+  .battle-rounds {
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 12px 0;
+    max-height: 120px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .battle-rounds .r-atk { color: var(--green); }
+  .battle-rounds .r-def { color: var(--red); }
+  .battle-result-big {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 900;
+    margin: 16px 0;
+  }
+  .battle-rewards {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .reward-chip {
+    background: rgba(251,191,36,0.15);
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 5px 12px;
+    border-radius: 10px;
+  }
+
+  /* ── Toast ── */
+  .toast-box {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .toast-item {
+    background: rgba(30,41,59,0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    animation: toastIn 0.25s ease, toastOut 0.3s ease 2s forwards;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(-8px); } }
+
+  /* ── Floating +N ── */
+  .float-num {
+    position: fixed;
+    font-weight: 900;
+    font-size: 18px;
+    pointer-events: none;
+    z-index: 250;
+    animation: floatUp 0.8s ease forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(0.7); }
+  }
+
+  /* ── Empty State ── */
+  .empty-hint {
+    text-align: center;
+    color: var(--dim);
+    font-size: 13px;
+    padding: 30px 20px;
+    line-height: 1.6;
+  }
+
+  /* ── Forge animation ── */
+  .forge-flash {
+    animation: forgeFlash 0.4s ease;
+  }
+  @keyframes forgeFlash {
+    0% { box-shadow: 0 0 0 rgba(251,191,36,0); }
+    50% { box-shadow: 0 0 20px rgba(251,191,36,0.4); }
+    100% { box-shadow: 0 0 0 rgba(251,191,36,0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar" id="topBar"></div>
+
+<div id="pageBase" class="page active"></div>
+<div id="pageForge" class="page"></div>
+<div id="pageBattle" class="page"></div>
+<div id="pageShop" class="page"></div>
+
+<nav class="bottom-nav" id="bottomNav"></nav>
+<div class="toast-box" id="toasts"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════
+
+const BLDG = {
+  hq:       { name:'基地总部', icon:'🏰', desc:'你的核心基地', maxLv:5, cost:{},       upg:lv=>({bricks:lv*40, gold:lv*10}) },
+  workshop: { name:'积木工坊', icon:'🔧', desc:'自动产出积木', maxLv:10,cost:{bricks:50}, upg:lv=>({bricks:lv*30}), prod:lv=>2+lv*2, interval:8 },
+  barracks: { name:'兵营',     icon:'⚔️', desc:'提升军队人数上限', maxLv:10,cost:{bricks:60}, upg:lv=>({bricks:lv*40}) },
+  tower:    { name:'防御塔',   icon:'🗼', desc:'增加战斗战力', maxLv:10,cost:{bricks:80}, upg:lv=>({bricks:lv*50}), bonus:lv=>lv*10 },
+  market:   { name:'积木市场', icon:'🏪', desc:'自动产出金币', maxLv:10,cost:{bricks:60}, upg:lv=>({bricks:lv*35}), prod:lv=>3+lv*3, interval:12, isGold:true },
+  mine:     { name:'矿山',     icon:'⛏️', desc:'大量产出积木', maxLv:10,cost:{bricks:100},upg:lv=>({bricks:lv*60}), prod:lv=>5+lv*4, interval:15 },
+  lab:      { name:'研究室',   icon:'🔬', desc:'解锁高级兵种', maxLv:5, cost:{bricks:150, gold:30}, upg:lv=>({bricks:lv*80, gold:lv*20}) },
+  temple:   { name:'乐高神殿', icon:'🏛️', desc:'全产出 +20%/级', maxLv:3, cost:{bricks:300, gold:80}, upg:lv=>({bricks:lv*200, gold:lv*50}) },
+};
+
+const UNIT = {
+  scout:   { name:'侦察兵', icon:'🏃', atk:5,  hp:20, cost:{bricks:15} },
+  warrior: { name:'战士',   icon:'🗡️', atk:12, hp:40, cost:{bricks:30} },
+  archer:  { name:'弓箭手', icon:'🏹', atk:15, hp:25, cost:{bricks:25} },
+  knight:  { name:'骑士',   icon:'🛡️', atk:10, hp:70, cost:{bricks:40} },
+  mage:    { name:'法师',   icon:'🧙', atk:22, hp:18, cost:{bricks:50, gold:10}, need:'lab' },
+  dragon:  { name:'巨龙',   icon:'🐉', atk:40, hp:80, cost:{bricks:120, gold:30}, need:'lab' },
+};
+
+const ENEMIES = [
+  { id:'goblin',  name:'哥布林小队',   icon:'👹', diff:'简单', power:30,  reward:{bricks:25, gold:8} },
+  { id:'wolf',    name:'野狼群',       icon:'🐺', diff:'简单', power:50,  reward:{bricks:35, gold:10} },
+  { id:'bandit',  name:'积木盗贼团',   icon:'🥷', diff:'简单', power:70,  reward:{bricks:45, gold:15} },
+  { id:'skeleton',name:'骷髅军团',     icon:'💀', diff:'中等', power:120, reward:{bricks:70, gold:25} },
+  { id:'golem',   name:'石头傀儡',     icon:'🗿', diff:'中等', power:180, reward:{bricks:100, gold:35} },
+  { id:'witch',   name:'暗黑女巫',     icon:'🔮', diff:'中等', power:240, reward:{bricks:130, gold:50} },
+  { id:'dragon_e',name:'黑龙军团',     icon:'🐲', diff:'困难', power:350, reward:{bricks:200, gold:80} },
+  { id:'lord',    name:'黑暗乐高领主', icon:'👿', diff:'困难', power:500, reward:{bricks:350, gold:150} },
+];
+
+const SHOP = [
+  { name:'小积木包',  icon:'📦', amt:50,  price:8 },
+  { name:'中积木包',  icon:'📫', amt:120, price:18 },
+  { name:'大积木包',  icon:'🎁', amt:300, price:40 },
+  { name:'金币袋',    icon:'💰', amt:30,  price:0, isGoldBuy:true, free:true },
+];
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+
+let G = load() || {
+  bricks: 80,
+  gold: 20,
+  buildings: [
+    { id:'hq', lv:1, t:0 },
+    { id:'workshop', lv:1, t:0 },
+    { id:'barracks', lv:1, t:0 },
+  ],
+  units: { scout:3, warrior:1 },
+  cooldowns: {},
+  totalTime: 0,
+};
+
+let tab = 'base';
+let overlay = null;
+
+function load() {
+  try { const s = localStorage.getItem('legoWar2'); return s ? JSON.parse(s) : null; } catch(e) { return null; }
+}
+function save() {
+  localStorage.setItem('legoWar2', JSON.stringify(G));
+}
+
+// ═══════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════
+
+function owned(id) { return G.buildings.find(b=>b.id===id); }
+function bLv(id) { const b=owned(id); return b?b.lv:0; }
+function hasUnit(id) { return (G.units[id]||0) > 0; }
+
+function totalPower() {
+  let p = 0;
+  for (let [id,c] of Object.entries(G.units)) {
+    if (c>0 && UNIT[id]) p += (UNIT[id].atk + UNIT[id].hp/2) * c;
+  }
+  const tLv = bLv('temple');
+  if (tLv>0) p *= 1 + tLv*0.2;
+  const twLv = bLv('tower');
+  if (twLv>0) p += BLDG.tower.bonus(twLv);
+  return Math.floor(p);
+}
+
+function totalUnits() {
+  return Object.values(G.units).reduce((a,b)=>a+b,0);
+}
+
+function armyCap() {
+  return 5 + bLv('barracks') * 5;
+}
+
+function templeMul() {
+  return 1 + bLv('temple') * 0.2;
+}
+
+function canAfford(cost) {
+  if (cost.bricks && G.bricks < cost.bricks) return false;
+  if (cost.gold && G.gold < cost.gold) return false;
+  return true;
+}
+
+function spend(cost) {
+  if (cost.bricks) G.bricks -= cost.bricks;
+  if (cost.gold) G.gold -= cost.gold;
+}
+
+function costTags(cost) {
+  const tags = [];
+  if (cost.bricks) {
+    const ok = G.bricks >= cost.bricks;
+    tags.push(`<span class="cost-tag ${ok?'ok':'no'}">🧱 ${cost.bricks}</span>`);
+  }
+  if (cost.gold) {
+    const ok = G.gold >= cost.gold;
+    tags.push(`<span class="cost-tag ${ok?'ok':'no'}">💰 ${cost.gold}</span>`);
+  }
+  return tags.join('');
+}
+
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast-item';
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(), 2500);
+}
+
+function floatNum(text, x, y, color) {
+  const el = document.createElement('div');
+  el.className = 'float-num';
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  el.style.color = color || 'var(--gold)';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 800);
+}
+
+// ═══════════════════════════════════════
+//  PRODUCTION
+// ═══════════════════════════════════════
+
+function tickProduction() {
+  let totalBricks = 0;
+  let totalGold = 0;
+  for (const b of G.buildings) {
+    const def = BLDG[b.id];
+    if (!def.prod) continue;
+    const prod = def.prod(b.lv) * templeMul();
+    if (def.isGold) totalGold += prod / def.interval;
+    else totalBricks += prod / def.interval;
+  }
+  G.bricks += totalBricks;
+  G.gold += totalGold;
+}
+
+// ═══════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════
+
+function render() {
+  renderTop();
+  renderNav();
+  renderPage();
+}
+
+function renderTop() {
+  document.getElementById('topBar').innerHTML = `
+    <div class="res"><span class="res-icon">🧱</span><span class="res-val">${Math.floor(G.bricks)}</span></div>
+    <div class="res"><span class="res-icon">💰</span><span class="res-val">${Math.floor(G.gold)}</span></div>
+    <div class="res"><span class="res-icon">⚔️</span><span class="res-val">${totalPower()}</span></div>
+    <div class="res"><span class="res-icon">👥</span><span class="res-val">${totalUnits()}/${armyCap()}</span></div>
+  `;
+}
+
+function renderNav() {
+  const tabs = [
+    { id:'base',   icon:'🏠', label:'基地' },
+    { id:'forge',  icon:'🔨', label:'锻造' },
+    { id:'battle', icon:'⚔️', label:'战斗' },
+    { id:'shop',   icon:'🛒', label:'商店' },
+  ];
+  document.getElementById('bottomNav').innerHTML = tabs.map(t =>
+    `<button class="nav-btn ${tab===t.id?'active':''}" data-tab="${t.id}">
+      <span class="n-icon">${t.icon}</span>${t.label}
+    </button>`
+  ).join('');
+}
+
+function renderPage() {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el = document.getElementById('page'+tab.charAt(0).toUpperCase()+tab.slice(1));
+  if (el) { el.classList.add('active'); el.innerHTML = pages[tab](); }
+  bindPage();
+}
+
+const pages = {
+
+  // ── BASE ──
+  base() {
+    let h = `<div class="page-title">🏠 我的基地</div>
+      <p class="page-sub">点击建筑收取积木 · 积木会随时间自动生产</p>`;
+
+    for (const b of G.buildings) {
+      const def = BLDG[b.id];
+      const isProd = !!def.prod;
+      const prodRate = isProd ? Math.floor(def.prod(b.lv) * templeMul() / def.interval * 60) : 0;
+      const isGold = def.isGold;
+
+      h += `<div class="card" data-collect="${b.id}">
+        <div class="card-row">
+          <div class="card-icon">${def.icon}</div>
+          <div class="card-body">
+            <div class="card-name">${def.name} <span class="lv-badge">Lv.${b.lv}</span></div>
+            <div class="card-desc">${def.desc}</div>
+            ${isProd ? `<div class="stat-row"><span class="stat">${isGold?'💰':'🧱'} +${prodRate}/分钟</span></div>` : ''}
+            ${b.id==='temple' ? `<div class="stat-row"><span class="stat">✨ 全产出 +${b.lv*20}%</span></div>` : ''}
+            ${b.id==='tower' ? `<div class="stat-row"><span class="stat">🛡️ 战力 +${BLDG.tower.bonus(b.lv)}</span></div>` : ''}
+            ${b.id==='barracks' ? `<div class="stat-row"><span class="stat">👥 上限 ${armyCap()}</span></div>` : ''}
+          </div>
+        </div>
+        ${b.id!=='hq' && b.lv < def.maxLv ? renderUpgrade(b, def) : (b.id!=='hq' ? `<div style="text-align:right;font-size:11px;color:var(--gold);margin-top:6px">已满级</div>` : renderUpgrade(b, def))}
+      </div>`;
+    }
+
+    if (G.buildings.length < 12) {
+      h += `<div class="empty-hint">在「锻造」中建造更多建筑 ↑</div>`;
+    }
+    return h;
+  },
+
+  // ── FORGE ──
+  forge() {
+    let h = `<div class="page-title">🔨 锻造工坊</div>
+      <p class="page-sub">消耗积木锻造新建筑或训练士兵</p>`;
+
+    // Buildings to forge
+    const unbuilt = Object.entries(BLDG).filter(([id])=>!owned(id));
+    if (unbuilt.length) {
+      h += `<div class="divider">🏗️ 可建造</div>`;
+      for (const [id,def] of unbuilt) {
+        const cost = def.cost;
+        const afford = canAfford(cost);
+        h += `<div class="card">
+          <div class="card-row">
+            <div class="card-icon">${def.icon}</div>
+            <div class="card-body">
+              <div class="card-name">${def.name}</div>
+              <div class="card-desc">${def.desc}</div>
+            </div>
+          </div>
+          <div class="cost-row">${costTags(cost)}</div>
+          <button class="btn btn-gold btn-full" data-forge-b="${id}" ${afford?'':'disabled'}>建造</button>
+        </div>`;
+      }
+    }
+
+    // Soldiers
+    h += `<div class="divider">⚔️ 训练士兵</div>`;
+    for (const [id,u] of Object.entries(UNIT)) {
+      const locked = u.need && bLv(u.need)<=0;
+      const atCap = totalUnits() >= armyCap();
+      const afford = canAfford(u.cost);
+      h += `<div class="card">
+        <div class="card-row">
+          <div class="card-icon">${u.icon}</div>
+          <div class="card-body">
+            <div class="card-name">${u.name} ${locked?'<span style="color:var(--dim);font-size:11px">🔒需要'+BLDG[u.need].name+'</span>':''}</div>
+            <div class="card-desc">已持有: ${G.units[id]||0} 名</div>
+            <div class="stat-row">
+              <span class="stat">⚔️ ${u.atk}</span>
+              <span class="stat">❤️ ${u.hp}</span>
+            </div>
+          </div>
+        </div>
+        <div class="cost-row">${costTags(u.cost)}</div>
+        <button class="btn btn-gold btn-full" data-forge-u="${id}" ${locked||!afford||atCap?'disabled':''}>
+          ${locked?'未解锁':atCap?'军队已满':afford?'训练 1 名':'材料不足'}
+        </button>
+      </div>`;
+    }
+    return h;
+  },
+
+  // ── BATTLE ──
+  battle() {
+    let h = `<div class="page-title">⚔️ 出征</div>
+      <p class="page-sub">选择敌人发起战斗，赢取积木和金币奖励<br>当前战力: <strong style="color:var(--gold)">${totalPower()}</strong> · 士兵: <strong>${totalUnits()}</strong></p>`;
+
+    let lastDiff = '';
+    for (const e of ENEMIES) {
+      if (e.diff !== lastDiff) {
+        const colors = { '简单':'var(--green)', '中等':'var(--yellow)', '困难':'var(--red)' };
+        h += `<div class="divider" style="color:${colors[e.diff]}">${e.diff}</div>`;
+        lastDiff = e.diff;
+      }
+      const canFight = totalUnits() > 0;
+      const powerRatio = totalPower() / e.power;
+      const chance = powerRatio >= 1.5 ? '稳赢' : powerRatio >= 1 ? '有胜算' : powerRatio >= 0.7 ? '困难' : '危险';
+      const chanceColor = powerRatio >= 1.5 ? 'var(--green)' : powerRatio >= 1 ? 'var(--yellow)' : 'var(--red)';
+
+      h += `<div class="card">
+        <div class="card-row">
+          <div class="card-icon">${e.icon}</div>
+          <div class="card-body">
+            <div class="card-name">${e.name}</div>
+            <div class="stat-row">
+              <span class="stat">💪 ${e.power}</span>
+              <span class="stat" style="color:${chanceColor}">${chance}</span>
+            </div>
+            <div class="stat-row"><span class="stat" style="color:var(--gold)">🧱+${e.reward.bricks} 💰+${e.reward.gold}</span></div>
+          </div>
+        </div>
+        <button class="btn btn-red btn-full" data-fight="${e.id}" ${canFight?'':'disabled'}>
+          ${canFight?'出征':'无兵力'}
+        </button>
+      </div>`;
+    }
+    return h;
+  },
+
+  // ── SHOP ──
+  shop() {
+    let h = `<div class="page-title">🛒 商店</div>
+      <p class="page-sub">用金币购买积木，金币由市场产出和战斗获得</p>`;
+
+    for (let i=0; i<SHOP.length; i++) {
+      const s = SHOP[i];
+      const afford = s.free || G.gold >= s.price;
+      h += `<div class="card">
+        <div class="card-row">
+          <div class="card-icon">${s.icon}</div>
+          <div class="card-body">
+            <div class="card-name">${s.name}</div>
+            <div class="card-desc">${s.isGoldBuy?'免费获取金币':'获得 🧱 ×'+s.amt}</div>
+          </div>
+        </div>
+        <button class="btn ${s.free?'btn-green':'btn-gold'} btn-full" data-buy="${i}" ${afford?'':'disabled'}>
+          ${s.free?'免费领取':'💰 '+s.price+' 金币'}
+        </button>
+      </div>`;
+    }
+
+    // Free brick tap
+    h += `<div class="divider">🎁 额外福利</div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:40px;margin-bottom:8px">🧱</div>
+        <div class="card-name">点我白嫖</div>
+        <div class="card-desc">每点一次免费获得 1 积木</div>
+        <button class="btn btn-green btn-full" data-tap style="margin-top:8px;font-size:20px;padding:14px">🧱 点一下</button>
+      </div>`;
+
+    return h;
+  },
+};
+
+function renderUpgrade(b, def) {
+  if (b.lv >= def.maxLv) return `<div style="text-align:right;font-size:11px;color:var(--gold);margin-top:6px">已满级</div>`;
+  const cost = def.upg(b.lv+1);
+  const afford = canAfford(cost);
+  return `
+    <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+      <div style="flex:1"><div class="cost-row" style="margin:0">${costTags(cost)}</div></div>
+      <button class="btn btn-outline btn-sm" data-upg="${b.id}" ${afford?'':'disabled'}>⬆ Lv.${b.lv+1}</button>
+    </div>`;
+}
+
+// ═══════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════
+
+function bindPage() {
+  // Nav
+  document.querySelectorAll('.nav-btn').forEach(el=>{
+    el.onclick = ()=>{ tab=el.dataset.tab; render(); };
+  });
+
+  // Collect (tap building on base)
+  document.querySelectorAll('[data-collect]').forEach(el=>{
+    el.onclick = (e)=>{
+      const id = el.dataset.collect;
+      const def = BLDG[id];
+      if (!def.prod) return;
+      const prod = Math.floor(def.prod(bLv(id)) * templeMul());
+      if (def.isGold) { G.gold += prod; }
+      else { G.bricks += prod; }
+      save();
+      const rect = el.getBoundingClientRect();
+      floatNum('+'+prod, rect.left + rect.width/2 - 10, rect.top, def.isGold?'var(--gold)':'var(--green)');
+      render();
+    };
+  });
+
+  // Upgrade
+  document.querySelectorAll('[data-upg]').forEach(el=>{
+    el.onclick = ()=>{
+      const id = el.dataset.upg;
+      const b = owned(id);
+      const def = BLDG[id];
+      if (!b||!def) return;
+      if (b.lv>=def.maxLv) return;
+      const cost = def.upg(b.lv+1);
+      if (!canAfford(cost)) { toast('材料不足'); return; }
+      spend(cost);
+      b.lv++;
+      save();
+      toast(`${def.name} → Lv.${b.lv}`);
+      const card = el.closest('.card');
+      if (card) { card.classList.add('forge-flash'); setTimeout(()=>card.classList.remove('forge-flash'),400); }
+      render();
+    };
+  });
+
+  // Forge building
+  document.querySelectorAll('[data-forge-b]').forEach(el=>{
+    el.onclick = ()=>{
+      const id = el.dataset.forgeB;
+      const def = BLDG[id];
+      if (!def || owned(id)) return;
+      if (!canAfford(def.cost)) { toast('材料不足'); return; }
+      spend(def.cost);
+      G.buildings.push({id, lv:1, t:0});
+      save();
+      toast(`建造了 ${def.name}！`);
+      render();
+    };
+  });
+
+  // Forge unit
+  document.querySelectorAll('[data-forge-u]').forEach(el=>{
+    el.onclick = ()=>{
+      const id = el.dataset.forgeU;
+      const u = UNIT[id];
+      if (!u) return;
+      if (u.need && bLv(u.need)<=0) { toast('需要先建造'+BLDG[u.need].name); return; }
+      if (totalUnits()>=armyCap()) { toast('军队已满，升级兵营'); return; }
+      if (!canAfford(u.cost)) { toast('材料不足'); return; }
+      spend(u.cost);
+      G.units[id] = (G.units[id]||0)+1;
+      save();
+      toast(`训练了 ${u.name}！`);
+      render();
+    };
+  });
+
+  // Fight
+  document.querySelectorAll('[data-fight]').forEach(el=>{
+    el.onclick = ()=> startFight(el.dataset.fight);
+  });
+
+  // Buy
+  document.querySelectorAll('[data-buy]').forEach(el=>{
+    el.onclick = ()=>{
+      const s = SHOP[+el.dataset.buy];
+      if (!s) return;
+      if (!s.free && G.gold < s.price) { toast('金币不足'); return; }
+      if (!s.free) G.gold -= s.price;
+      if (s.isGoldBuy) G.gold += s.amt;
+      else G.bricks += s.amt;
+      save();
+      toast(`获得了 ${s.isGoldBuy?'💰'+s.amt:'🧱×'+s.amt}！`);
+      render();
+    };
+  });
+
+  // Tap
+  document.querySelectorAll('[data-tap]').forEach(el=>{
+    el.onclick = (e)=>{
+      G.bricks += 1;
+      floatNum('+1', e.clientX, e.clientY-20, 'var(--green)');
+      save();
+      render();
+    };
+  });
+}
+
+// ═══════════════════════════════════════
+//  BATTLE SYSTEM
+// ═══════════════════════════════════════
+
+function startFight(enemyId) {
+  const enemy = ENEMIES.find(e=>e.id===enemyId);
+  if (!enemy) return;
+  if (totalUnits()<=0) { toast('无可用兵力'); return; }
+
+  const myPow = totalPower();
+  const logs = [];
+  let myHP = myPow;
+  let eHP = enemy.power;
+
+  for (let r=1; r<=15 && myHP>0 && eHP>0; r++) {
+    const myDmg = Math.floor(myPow * (0.4 + Math.random()*0.6));
+    const eDmg = Math.floor(enemy.power * (0.4 + Math.random()*0.6));
+    eHP -= myDmg;
+    logs.push(`<span class="r-atk">第${r}回合 · 我方攻击 ${myDmg}</span>`);
+    if (eHP<=0) break;
+    myHP -= eDmg;
+    logs.push(`<span class="r-def">第${r}回合 · 敌方反击 ${eDmg}</span>`);
+  }
+
+  const win = eHP <= 0;
+
+  // Lose soldiers
+  const lossRate = win ? 0.05 + Math.random()*0.15 : 0.25 + Math.random()*0.3;
+  for (let [id,c] of Object.entries(G.units)) {
+    if (c>0) {
+      const lost = Math.min(c, Math.max(1, Math.floor(c*lossRate)));
+      G.units[id] = c - lost;
+    }
+  }
+
+  if (win) addResources(enemy.reward);
+  save();
+
+  // Show overlay
+  const ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.innerHTML = `
+    <div class="overlay-sheet">
+      <div class="battle-top">
+        <div class="battle-enemy-icon">${enemy.icon}</div>
+        <div style="font-size:18px;font-weight:900">${enemy.name}</div>
+      </div>
+      <div class="battle-hp-row">
+        <span style="color:var(--green)">我方</span>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${Math.max(0,myHP/myPow*100)}%;background:var(--green)"></div></div>
+        <span style="color:var(--red)">敌方</span>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${Math.max(0,eHP/enemy.power*100)}%;background:var(--red)"></div></div>
+      </div>
+      <div class="battle-rounds">${logs.join('<br>')}</div>
+      ${win ? `
+        <div class="battle-result-big" style="color:var(--gold)">🎉 胜利！</div>
+        <div class="battle-rewards">
+          ${enemy.reward.bricks?`<span class="reward-chip">🧱 +${enemy.reward.bricks}</span>`:''}
+          ${enemy.reward.gold?`<span class="reward-chip">💰 +${enemy.reward.gold}</span>`:''}
+        </div>
+      ` : `
+        <div class="battle-result-big" style="color:var(--red)">💀 战败</div>
+        <div style="text-align:center;color:var(--dim);font-size:13px">损失了部分士兵...</div>
+      `}
+      <button class="btn btn-gold btn-full" onclick="this.closest('.overlay').remove();render()">确定</button>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
+function addResources(r) {
+  if (r.bricks) G.bricks += r.bricks;
+  if (r.gold) G.gold += r.gold;
+}
+
+// ═══════════════════════════════════════
+//  INIT & TICK
+// ═══════════════════════════════════════
+
+render();
+
+// Tick every second
+setInterval(()=>{
+  tickProduction();
+  render();
+}, 1000);
+</script>
+</body>
+</html>

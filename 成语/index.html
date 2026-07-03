@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>成语守卫战</title>
+<style>
+:root {
+  --red: #e63946; --red-dark: #b71c1c; --red-light: #ff6b6b;
+  --blue: #2196F3; --blue-dark: #0d47a1; --blue-light: #64b5f6;
+  --gold: #ffd700; --gold-dim: #b8960f;
+  --bg: #1a1a2e; --card: rgba(255,255,255,0.06); --border: rgba(255,255,255,0.1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: var(--bg); color: #eee; min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  overflow-x: hidden; padding: 16px 12px;
+}
+h1 { font-size: 2.2rem; color: var(--gold); text-shadow: 0 0 20px rgba(255,215,0,0.3);
+  margin-bottom: 8px; letter-spacing: 0.1em; }
+.subtitle { color: #999; font-size: 0.9rem; margin-bottom: 20px; }
+.hidden { display: none !important; }
+
+/* ── Screens ── */
+#startScreen, #gameOverScreen { text-align: center; }
+#startScreen h2, #gameOverScreen h2 { font-size: 1.4rem; color: var(--gold);
+  margin-bottom: 16px; line-height: 1.8; }
+#startScreen p { color: #aaa; max-width: 520px; margin: 0 auto 12px; line-height: 1.6; font-size: 0.95rem; }
+.btn {
+  display: inline-block; padding: 12px 36px; background: linear-gradient(135deg, var(--gold), #f0c000);
+  color: #1a1a2e; border: none; border-radius: 25px; font-size: 1.1rem; font-weight: bold;
+  cursor: pointer; margin-top: 16px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(255,215,0,0.3);
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,215,0,0.5); }
+.btn2 { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+  box-shadow: 0 4px 15px rgba(102,126,234,0.3); }
+.btn2:hover { box-shadow: 0 6px 20px rgba(102,126,234,0.5); }
+
+/* ── Game Container ── */
+#game { width: 100%; max-width: 960px; }
+.game-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+}
+.hp-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 8px; background: var(--card);
+  backdrop-filter: blur(4px); flex: 1; max-width: 280px;
+}
+.hp-label { font-weight: bold; white-space: nowrap; font-size: 0.9rem; min-width: 80px; }
+.hp-track { flex: 1; height: 10px; background: rgba(255,255,255,0.08); border-radius: 5px; overflow: hidden; }
+.hp-fill { height: 100%; border-radius: 5px; transition: width 0.3s;
+  background: linear-gradient(90deg, var(--red), var(--red-light)); }
+.hp-fill.blue { background: linear-gradient(90deg, var(--blue-dark), var(--blue-light)); }
+.hp-text { font-size: 0.85rem; color: #aaa; min-width: 30px; text-align: right; }
+.stats {
+  display: flex; gap: 12px; align-items: center; padding: 8px 16px;
+  background: var(--card); border-radius: 8px;
+}
+.stats span { font-size: 0.85rem; color: #aaa; }
+.stats strong { color: var(--gold); font-size: 1.1rem; }
+
+/* ── Battlefield ── */
+.battlefield {
+  position: relative; width: 100%; height: 320px; overflow: hidden;
+  border: 2px solid var(--border); border-radius: 12px;
+  background: linear-gradient(180deg, #1e2a1e 0%, #2d3a2d 50%, #1e2a1e 100%);
+  margin-bottom: 12px;
+}
+.bg-left { position: absolute; left: 0; top: 0; bottom: 0; width: 48%;
+  background: linear-gradient(90deg, rgba(33,150,243,0.06), transparent); pointer-events: none; }
+.bg-right { position: absolute; right: 0; top: 0; bottom: 0; width: 48%;
+  background: linear-gradient(-90deg, rgba(230,57,70,0.06), transparent); pointer-events: none; }
+.bg-grass { position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+  background: linear-gradient(180deg, rgba(76,175,80,0.12), rgba(76,175,80,0.04));
+  pointer-events: none; }
+.divider {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 3px;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.25) 0 8px, transparent 8px 16px);
+  transform: translateX(-50%); pointer-events: none;
+}
+.base-zone {
+  position: absolute; top: 0; bottom: 0; width: 56px; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0.8; transition: opacity 0.3s;
+}
+.base-zone.left { left: 0; background: linear-gradient(90deg, rgba(33,150,243,0.2), transparent); }
+.base-zone.right { right: 0; background: linear-gradient(-90deg, rgba(230,57,70,0.2), transparent); }
+.base-icon { font-size: 2rem; }
+.base-label { font-size: 0.75rem; margin-top: 2px; opacity: 0.7; }
+.base-hit .base-icon { animation: shake 0.4s; filter: brightness(2); }
+.wave-notice {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,0.85); color: var(--gold); padding: 14px 36px;
+  border-radius: 8px; font-weight: bold; font-size: 1.2rem; pointer-events: none;
+  opacity: 0; transition: opacity 0.4s; white-space: nowrap; z-index: 10;
+  border: 1px solid rgba(255,215,0,0.2);
+}
+.wave-notice.show { opacity: 1; }
+
+/* ── Soldiers ── */
+.soldier {
+  position: absolute; width: 110px; height: 56px; border-radius: 6px;
+  cursor: default; display: flex; align-items: center; justify-content: center;
+  padding: 4px; z-index: 5; background: rgba(30,30,50,0.92);
+  backdrop-filter: blur(4px); transition: border-color 0.3s, box-shadow 0.3s;
+}
+.soldier.shu { border: 2px solid var(--blue); }
+.soldier.wei { border: 2px solid var(--red); }
+.soldier.def { border-style: dashed; box-shadow: inset 0 0 12px rgba(255,215,0,0.12); }
+.soldier.def::before { content: "🛡"; position: absolute; top: -10px; right: -4px; font-size: 0.8rem; }
+.soldier.clashing { animation: clash 0.5s; }
+.soldier.dying { animation: die 0.4s forwards; }
+.soldier.targeted { box-shadow: 0 0 12px rgba(255,215,0,0.5); border-color: var(--gold) !important; }
+.idiom-text {
+  font-size: 0.85rem; font-weight: 600; color: #fff; text-align: center;
+  line-height: 1.2; letter-spacing: 0.05em; white-space: nowrap;
+}
+.soldier.shu .idiom-text { color: var(--blue-light); }
+.soldier.wei .idiom-text { color: var(--red-light); }
+
+/* ── Card Hand (replaces input) ── */
+.hand-area {
+  margin-bottom: 12px; padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid var(--border); border-radius: 12px;
+}
+.hand-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.hand-header h3 { font-size: 0.95rem; color: #ccc; }
+.hand-cards {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+}
+.idiom-card {
+  position: relative; width: 130px; padding: 14px 8px 10px;
+  border-radius: 10px; text-align: center; cursor: pointer;
+  transition: all 0.2s; user-select: none;
+  border: 2px solid var(--border); background: rgba(255,255,255,0.04);
+}
+.idiom-card:hover {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
+.idiom-card:active { transform: translateY(-2px) scale(0.98); }
+.idiom-card .card-text {
+  font-size: 1.05rem; font-weight: 700; color: #fff;
+  letter-spacing: 0.12em; line-height: 1.3;
+}
+.idiom-card .card-type {
+  position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+  font-size: 0.65rem; padding: 1px 8px; border-radius: 6px;
+  font-weight: bold; white-space: nowrap;
+}
+/* Attack card */
+.idiom-card.attack { border-color: rgba(33,150,243,0.35); }
+.idiom-card.attack:hover { border-color: var(--blue); box-shadow: 0 8px 25px rgba(33,150,243,0.2); }
+.idiom-card.attack .card-text { color: var(--blue-light); }
+.idiom-card.attack .card-type { background: rgba(33,150,243,0.35); color: var(--blue-light); }
+/* Defense card */
+.idiom-card.defend {
+  border-color: rgba(255,215,0,0.4);
+  background: linear-gradient(135deg, rgba(255,215,0,0.06), rgba(255,215,0,0.02));
+  animation: defPulse 2s ease-in-out infinite;
+}
+.idiom-card.defend:hover { border-color: var(--gold); box-shadow: 0 8px 25px rgba(255,215,0,0.25); }
+.idiom-card.defend .card-text { color: var(--gold); }
+.idiom-card.defend .card-type { background: rgba(255,215,0,0.35); color: var(--gold); }
+.idiom-card.defend .card-target {
+  font-size: 0.68rem; color: var(--red-light); margin-top: 4px;
+  opacity: 0.85;
+}
+/* Playing animation */
+.idiom-card.playing { animation: cardPlay 0.3s ease-out forwards; pointer-events: none; }
+
+#refreshBtn {
+  padding: 6px 16px; font-size: 0.8rem; background: rgba(255,255,255,0.08);
+  color: #aaa; border: 1px solid var(--border); border-radius: 15px;
+  cursor: pointer; transition: all 0.2s;
+}
+#refreshBtn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+#refreshBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.hand-cooldown {
+  font-size: 0.72rem; color: #666; margin-left: 8px;
+}
+
+/* ── Enemy List ── */
+.enemy-panel {
+  margin-bottom: 12px; background: var(--card); border-radius: 10px;
+  padding: 12px 16px; border: 1px solid var(--border);
+}
+.panel-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.panel-header h3 { font-size: 0.9rem; color: var(--red-light); }
+.panel-header .hint { font-size: 0.75rem; color: #888; }
+.enemy-list { display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow-y: auto; }
+.enemy-card {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 14px; background: rgba(230,57,70,0.1);
+  border: 1px solid rgba(230,57,70,0.25); border-radius: 8px;
+  cursor: default; transition: all 0.3s;
+}
+.enemy-card:hover { background: rgba(230,57,70,0.18); }
+.enemy-card.targeted { border-color: var(--gold); box-shadow: 0 0 10px rgba(255,215,0,0.2); }
+.enemy-card .idiom { color: var(--red-light); font-weight: 600; letter-spacing: 0.05em; font-size: 0.9rem; }
+.enemy-card .antonym { color: var(--gold); font-size: 0.72rem; opacity: 0.85; }
+
+/* ── History ── */
+.history { margin-top: 8px; }
+.history-header { font-size: 0.8rem; color: #666; margin-bottom: 4px; }
+.history-list {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  max-height: 80px; overflow-y: auto; padding: 8px;
+  background: rgba(255,255,255,0.02); border-radius: 8px;
+}
+.history-item {
+  font-size: 0.75rem; padding: 3px 8px; border-radius: 4px;
+  background: rgba(255,255,255,0.05); color: #888;
+}
+.history-item.attack { border-left: 3px solid var(--blue); }
+.history-item.defend { border-left: 3px solid var(--gold); }
+.history-item.clash { border-left: 3px solid #999; }
+.history-item.breach { border-left: 3px solid var(--red); }
+
+/* ── Tooltips ── */
+.soldier[data-tip]:hover::after {
+  content: attr(data-tip); position: absolute; bottom: calc(100% + 6px);
+  left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9);
+  color: #ccc; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem;
+  white-space: nowrap; pointer-events: none; z-index: 20;
+}
+
+/* ── Game Over ── */
+#gameOverScreen .result { font-size: 1.6rem; font-weight: bold; margin: 12px 0; line-height: 1.6; }
+#gameOverScreen .result.win { color: var(--gold); }
+#gameOverScreen .result.lose { color: var(--red-light); }
+#gameOverScreen .score-line { color: #aaa; font-size: 1rem; margin-bottom: 8px; }
+.restart-btns { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+
+/* ── Animations ── */
+@keyframes spawn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes clash { 0% { transform: scale(1); } 30% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes die { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.3) translateY(20px); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes fadeIn { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
+@keyframes defPulse { 0%,100% { box-shadow: 0 0 0 rgba(255,215,0,0); } 50% { box-shadow: 0 0 14px rgba(255,215,0,0.15); } }
+@keyframes cardPlay { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.5) translateY(-30px); opacity: 0; } }
+</style>
+</head>
+<body>
+
+<h1>⚔ 成语守卫战</h1>
+<p class="subtitle">以成语为剑，以反义为盾，守护你的城池！</p>
+
+<!-- ── Start Screen ── -->
+<div id="startScreen">
+  <h2>📖 游戏规则</h2>
+  <p>🏯 <strong>你的基地</strong>在左侧，<strong>敌军基地</strong>在右侧。<br>
+  士兵从己方基地出发，向对方基地进军。</p>
+  <p>⚔ 点击 <strong style="color:#64b5f6">蓝色卡牌</strong> 派兵进攻<br>
+  🛡 点击 <strong style="color:#ffd700">金色卡牌</strong> 用反义成语拦截敌兵</p>
+  <p>💥 两军相遇则战斗，<strong>防守方有战斗加成</strong>！<br>
+  若敌兵到达你的基地，你的城池会受到<strong style="color:#e63946">伤害</strong>。<br>
+  <strong>城池生命值归零则战败！</strong>守护10波进攻即可获胜！</p>
+  <button class="btn" onclick="startGame()">⚔ 开始战斗</button>
+</div>
+
+<!-- ── Game Screen ── -->
+<div id="game" class="hidden">
+  <!-- Health Bars -->
+  <div class="game-header">
+    <div class="hp-bar" id="leftHP">
+      <span class="hp-label">🏯 蜀军城池</span>
+      <div class="hp-track"><div class="hp-fill blue" id="leftHPBar" style="width:100%"></div></div>
+      <span class="hp-text" id="leftHPText">5/5</span>
+    </div>
+    <div class="stats">
+      <span>第 <strong id="waveNum">1</strong> 波</span>
+      <span style="margin-left:8px">⏱ <strong id="timer">0:00</strong></span>
+    </div>
+    <div class="hp-bar" id="rightHP">
+      <span class="hp-label">🏯 魏军城池</span>
+      <div class="hp-track"><div class="hp-fill" id="rightHPBar" style="width:100%"></div></div>
+      <span class="hp-text" id="rightHPText">5/5</span>
+    </div>
+  </div>
+
+  <!-- Battlefield -->
+  <div class="battlefield" id="battlefield">
+    <div class="bg-left"></div><div class="bg-right"></div>
+    <div class="bg-grass"></div><div class="divider"></div>
+    <div class="base-zone left" id="leftBase"><span class="base-icon">🏯</span><span class="base-label">蜀</span></div>
+    <div class="base-zone right" id="rightBase"><span class="base-icon">🏯</span><span class="base-label">魏</span></div>
+    <div class="wave-notice" id="waveNotice"></div>
+  </div>
+
+  <!-- Card Hand -->
+  <div class="hand-area">
+    <div class="hand-header">
+      <h3>🃏 选择出兵</h3>
+      <div>
+        <button id="refreshBtn" onclick="refreshHand()">🔄 换一批</button>
+        <span class="hand-cooldown" id="handCooldown"></span>
+      </div>
+    </div>
+    <div class="hand-cards" id="handCards"></div>
+  </div>
+
+  <!-- Enemy Info -->
+  <div class="enemy-panel" id="enemyPanel">
+    <div class="panel-header">
+      <h3>🔴 敌军阵列 <span id="enemyCount">(0)</span></h3>
+      <span class="hint">💡 金色卡牌 = 可拦截的反义成语</span>
+    </div>
+    <div class="enemy-list" id="enemyList">
+      <span style="color:#666;font-size:0.85rem;">暂无敌兵…</span>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="history">
+    <div class="history-header">📜 战斗记录</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<!-- ── Game Over Screen ── -->
+<div id="gameOverScreen" class="hidden">
+  <h2 id="goTitle"></h2>
+  <div class="result" id="goResult"></div>
+  <div class="score-line" id="goScore"></div>
+  <div class="score-line" id="goStats"></div>
+  <div class="restart-btns">
+    <button class="btn" onclick="startGame()">🔄 再战一局</button>
+    <button class="btn btn2" onclick="backToMenu()">🏠 返回菜单</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  ANTONYM IDIOM DATABASE
+// ═══════════════════════════════════════════════
+const DB = [
+  { a: "大义凛然", b: "奴颜婢膝" },
+  { a: "舍生忘死", b: "贪生怕死" },
+  { a: "口若悬河", b: "沉默寡言" },
+  { a: "高瞻远瞩", b: "鼠目寸光" },
+  { a: "天翻地覆", b: "一成不变" },
+  { a: "流芳百世", b: "遗臭万年" },
+  { a: "两袖清风", b: "贪得无厌" },
+  { a: "光明磊落", b: "居心叵测" },
+  { a: "大公无私", b: "自私自利" },
+  { a: "雪中送炭", b: "落井下石" },
+  { a: "醉生梦死", b: "夙兴夜寐" },
+  { a: "奋不顾身", b: "畏缩不前" },
+  { a: "废寝忘食", b: "好逸恶劳" },
+  { a: "博古通今", b: "孤陋寡闻" },
+  { a: "低声下气", b: "趾高气扬" },
+  { a: "坚贞不屈", b: "奴颜媚骨" },
+  { a: "义正辞严", b: "理屈词穷" },
+  { a: "东山再起", b: "一蹶不振" },
+  { a: "有条不紊", b: "杂乱无章" },
+  { a: "一目了然", b: "雾里看花" },
+  { a: "口是心非", b: "心口如一" },
+  { a: "殊途同归", b: "南辕北辙" },
+  { a: "远在天涯", b: "近在咫尺" },
+  { a: "单枪匹马", b: "千军万马" },
+  { a: "聚精会神", b: "心不在焉" },
+  { a: "专心致志", b: "三心二意" },
+  { a: "一落千丈", b: "扶摇直上" },
+  { a: "高高在上", b: "平易近人" },
+  { a: "表里如一", b: "阳奉阴违" },
+  { a: "粗茶淡饭", b: "山珍海味" },
+  { a: "门庭若市", b: "门可罗雀" },
+  { a: "锦上添花", b: "雪上加霜" },
+  { a: "守口如瓶", b: "口若悬河" },
+  { a: "因祸得福", b: "乐极生悲" },
+  { a: "眼高手低", b: "脚踏实地" },
+  { a: "乘风破浪", b: "畏首畏尾" },
+  { a: "虚怀若谷", b: "妄自尊大" },
+  { a: "妙手回春", b: "庸医杀人" },
+  { a: "举足轻重", b: "微不足道" },
+  { a: "欣欣向荣", b: "每况愈下" },
+  { a: "名副其实", b: "名不副实" },
+  { a: "开天辟地", b: "墨守成规" },
+  { a: "赴汤蹈火", b: "贪生怕死" },
+  { a: "锋芒毕露", b: "深藏若虚" },
+  { a: "出类拔萃", b: "碌碌无为" },
+];
+
+// Build lookups
+const wordMap = {};
+const allPairs = [];
+const allWords = [];
+DB.forEach((pair) => {
+  allPairs.push(pair);
+  const idx = allPairs.length - 1;
+  wordMap[pair.a] = { idx, side: "a" };
+  wordMap[pair.b] = { idx, side: "b" };
+  allWords.push(pair.a, pair.b);
+});
+
+function getAntonym(word) {
+  const info = wordMap[word];
+  if (!info) return null;
+  const pair = allPairs[info.idx];
+  return info.side === "a" ? pair.b : pair.a;
+}
+
+function findAntonymTarget(playerIdiom, enemies) {
+  const info = wordMap[playerIdiom];
+  if (!info) return null;
+  const pair = allPairs[info.idx];
+  const targetWord = info.side === "a" ? pair.b : pair.a;
+  for (const e of enemies) {
+    if (e.idiom === targetWord) return e;
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════
+const MAX_HP = 5;
+const MAX_WAVE = 10;
+const BASE_LEFT = 5;
+const BASE_RIGHT = 95;
+const SOLDIER_W = 110;
+const BATTLEFIELD_H = 320;
+const HAND_SIZE = 6;
+
+let state = null;
+let nextId = 1;
+let lastTime = 0;
+
+function newState() {
+  return {
+    shuHP: MAX_HP, weiHP: MAX_HP,
+    wave: 1, waveTime: 0, totalTime: 0,
+    soldiers: [],
+    nextSpawnTime: 0,
+    history: [],
+    spawnCount: 0,
+    aiDelay: 4.0,
+    aiDefChance: 0.15,
+    running: false,
+    won: false,
+    hand: [],           // current card options
+    handUsed: new Set(), // recently used words (for variety)
+    refreshCooldown: 0,
+  };
+}
+
+// ═══════════════════════════════════════════════
+//  CARD HAND SYSTEM
+// ═══════════════════════════════════════════════
+function generateHand() {
+  if (!state) return;
+  const enemies = state.soldiers.filter(s => s.side === "wei" && !s.removing);
+  const hand = [];
+  const used = new Set();
+
+  // Phase 1: Add defense cards for each enemy (always available, ignore handUsed)
+  for (const e of enemies) {
+    if (hand.length >= HAND_SIZE) break;
+    const antonym = getAntonym(e.idiom);
+    if (antonym && !used.has(antonym)) {
+      hand.push({ word: antonym, type: "defend", targetIdiom: e.idiom });
+      used.add(antonym);
+    }
+  }
+
+  // Phase 2: Fill remaining with attack cards
+  const pool = allWords.filter(w => !used.has(w) && !state.handUsed.has(w));
+  shuffle(pool);
+  for (const w of pool) {
+    if (hand.length >= HAND_SIZE) break;
+    hand.push({ word: w, type: "attack", targetIdiom: null });
+    used.add(w);
+  }
+
+  // Fallback: if pool too small, ignore handUsed
+  if (hand.length < 3) {
+    const fallback = allWords.filter(w => !used.has(w));
+    shuffle(fallback);
+    for (const w of fallback) {
+      if (hand.length >= HAND_SIZE) break;
+      hand.push({ word: w, type: "attack", targetIdiom: null });
+    }
+  }
+
+  shuffleAttackCards(hand);
+  state.hand = hand;
+  renderHand();
+}
+
+// Keep defense cards in place, shuffle attack cards into gaps
+function shuffleAttackCards(hand) {
+  const attacks = hand.filter(c => c.type === "attack");
+  shuffle(attacks);
+  let ai = 0;
+  for (let i = 0; i < hand.length; i++) {
+    if (hand[i].type === "attack") {
+      hand[i] = attacks[ai++];
+    }
+  }
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function renderHand() {
+  const container = document.getElementById("handCards");
+  container.innerHTML = "";
+
+  for (const card of state.hand) {
+    const el = document.createElement("div");
+    el.className = `idiom-card ${card.type}`;
+    el.innerHTML = `
+      <span class="card-type">${card.type === "defend" ? "🛡 反义防守" : "⚔ 进攻"}</span>
+      <span class="card-text">${card.word}</span>
+      ${card.targetIdiom ? `<span class="card-target">拦截「${card.targetIdiom}」</span>` : ""}
+    `;
+    el.addEventListener("click", () => selectCard(card, el));
+    container.appendChild(el);
+  }
+}
+
+function selectCard(card, el) {
+  if (!state || !state.running) return;
+
+  // Play animation
+  el.classList.add("playing");
+
+  // Track used word for variety
+  state.handUsed.add(card.word);
+  if (state.handUsed.size > allWords.length * 0.6) {
+    // Reset variety pool when we've used most words
+    state.handUsed.clear();
+  }
+
+  // Execute the card
+  if (card.type === "defend") {
+    const enemies = state.soldiers.filter(s => s.side === "wei" && !s.removing);
+    const target = findAntonymTarget(card.word, enemies);
+    if (target) {
+      spawnSoldier("shu", card.word, true);
+      const spawned = state.soldiers[state.soldiers.length - 1];
+      spawned.defTarget = target;
+      target.el.classList.add("targeted");
+      target.targeted = true;
+      addHistory("defend", `🛡「${card.word}」防守「${target.idiom}」`);
+      const checkTarget = setInterval(() => {
+        if (!state || !state.soldiers.includes(target) || target.removing) {
+          if (spawned) spawned.defTarget = null;
+          clearInterval(checkTarget);
+        }
+      }, 200);
+    } else {
+      // Target gone, just attack
+      spawnSoldier("shu", card.word, false);
+      addHistory("attack", `⚔「${card.word}」进攻！`);
+    }
+  } else {
+    spawnSoldier("shu", card.word, false);
+    addHistory("attack", `⚔「${card.word}」进攻！`);
+  }
+
+  // Remove card from hand and generate new one after delay
+  setTimeout(() => {
+    state.hand = state.hand.filter(c => c !== card);
+    rebuildHand();
+  }, 300);
+}
+
+function rebuildHand() {
+  if (!state || !state.running) return;
+  const enemies = state.soldiers.filter(s => s.side === "wei" && !s.removing);
+
+  // Collect currently used words (from played cards)
+  const existing = new Set(state.handUsed);
+
+  // Separate current hand into keep (attack) and toss
+  const keepAttack = state.hand.filter(c => c.type === "attack" && !c.playing)
+    .slice(0, HAND_SIZE); // keep up to HAND_SIZE attack cards
+
+  // Build defense cards for ALL current enemies
+  const defCards = [];
+  const defTargets = new Set();
+  for (const e of enemies) {
+    const antonym = getAntonym(e.idiom);
+    if (antonym && !defTargets.has(e.idiom)) {
+      defCards.push({ word: antonym, type: "defend", targetIdiom: e.idiom });
+      defTargets.add(e.idiom);
+      existing.add(antonym);
+    }
+  }
+
+  // Fill attack cards from pool
+  const atkCards = [];
+  for (const c of keepAttack) {
+    if (!defTargets.has(c.word) && !defCards.some(d => d.word === c.word)) {
+      atkCards.push(c);
+    }
+  }
+  const pool = allWords.filter(w => !existing.has(w) && !defCards.some(d => d.word === w));
+  shuffle(pool);
+  for (const w of pool) {
+    if (atkCards.length + defCards.length >= HAND_SIZE) break;
+    atkCards.push({ word: w, type: "attack", targetIdiom: null });
+  }
+  // Fallback
+  if (atkCards.length + defCards.length < 3) {
+    const fb = allWords.filter(w => !defCards.some(d => d.word === w) && !atkCards.some(a => a.word === w));
+    shuffle(fb);
+    for (const w of fb) {
+      if (atkCards.length + defCards.length >= HAND_SIZE) break;
+      atkCards.push({ word: w, type: "attack", targetIdiom: null });
+    }
+  }
+
+  // Assemble: defense cards first, then fill with attack
+  const hand = [...defCards];
+  const atkSlots = HAND_SIZE - hand.length;
+  hand.push(...atkCards.slice(0, atkSlots));
+
+  state.hand = hand;
+  renderHand();
+}
+
+function refreshHand() {
+  if (!state || !state.running || state.refreshCooldown > 0) return;
+  state.handUsed.clear(); // Allow all words again
+  generateHand();
+  state.refreshCooldown = 15; // 15 second cooldown
+  document.getElementById("refreshBtn").disabled = true;
+}
+
+// ═══════════════════════════════════════════════
+//  GAME LOGIC
+// ═══════════════════════════════════════════════
+function startGame() {
+  document.getElementById("startScreen").classList.add("hidden");
+  document.getElementById("gameOverScreen").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+
+  const bf = document.getElementById("battlefield");
+  bf.querySelectorAll(".soldier").forEach(el => el.remove());
+
+  state = newState();
+  state.running = true;
+  state.nextSpawnTime = 6;
+  nextId = 1;
+  lastTime = 0;
+
+  document.getElementById("historyList").innerHTML = "";
+  document.getElementById("refreshBtn").disabled = false;
+  document.getElementById("handCooldown").textContent = "";
+
+  generateHand();
+  updateUI();
+  showWaveNotice("第 1 波 — 敌军来袭！");
+  scheduleAISpawn();
+  requestAnimationFrame(gameLoop);
+}
+
+function backToMenu() {
+  state = null;
+  document.getElementById("gameOverScreen").classList.add("hidden");
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("startScreen").classList.remove("hidden");
+}
+
+// ── AI Spawning ──
+function scheduleAISpawn() {
+  if (!state || !state.running) return;
+  const jitter = (Math.random() - 0.5) * state.aiDelay * 0.4;
+  state.nextSpawnTime = state.totalTime + state.aiDelay + jitter;
+}
+
+function aiTick() {
+  if (!state || !state.running || state.totalTime < state.nextSpawnTime) return;
+
+  const weiSoldiers = state.soldiers.filter(s => s.side === "wei");
+
+  // AI tries to defend
+  if (Math.random() < state.aiDefChance) {
+    const shuSoldiers = state.soldiers.filter(s => s.side === "shu" && !s.isDef);
+    if (shuSoldiers.length > 0) {
+      const target = shuSoldiers[Math.floor(Math.random() * shuSoldiers.length)];
+      const antonym = getAntonym(target.idiom);
+      if (antonym && !weiSoldiers.some(s => s.idiom === antonym)) {
+        spawnSoldier("wei", antonym, true);
+        addHistory("defend", `魏军出「${antonym}」防守「${target.idiom}」`);
+        scheduleAISpawn();
+        return;
+      }
+    }
+  }
+
+  // AI attacks
+  const usedWei = new Set(weiSoldiers.map(s => s.idiom));
+  let choices = allWords.filter(w => !usedWei.has(w));
+  if (choices.length === 0) choices = allWords;
+  const word = choices[Math.floor(Math.random() * choices.length)];
+  spawnSoldier("wei", word, false);
+  addHistory("attack", `魏军出「${word}」进攻`);
+  state.spawnCount++;
+  scheduleAISpawn();
+
+  // Wave progression
+  if (state.spawnCount % (5 + Math.floor(state.wave * 0.5)) === 0 && state.wave < MAX_WAVE) {
+    state.wave++;
+    state.aiDelay = Math.max(2.0, 4.0 - (state.wave - 1) * 0.22);
+    state.aiDefChance = Math.min(0.5, 0.15 + (state.wave - 1) * 0.04);
+    showWaveNotice(`第 ${state.wave} 波 — 敌军加强进攻！`);
+    generateHand(); // Refresh hand on new wave
+  }
+}
+
+// ── Spawn / Damage ──
+function spawnSoldier(side, idiom, isDef) {
+  const bf = document.getElementById("battlefield");
+  const bfW = bf.offsetWidth;
+  const el = document.createElement("div");
+  el.className = `soldier ${side === "shu" ? "shu" : "wei"}${isDef ? " def" : ""}`;
+  el.innerHTML = `<span class="idiom-text">${idiom}</span>`;
+  el.style.animation = "spawn 0.3s ease-out";
+  el.dataset.tip = isDef ? `🛡 防守「${idiom}」` : `⚔ 进攻「${idiom}」`;
+  bf.appendChild(el);
+
+  const yRange = BATTLEFIELD_H - 80;
+  const y = 20 + Math.random() * yRange;
+
+  const soldier = {
+    id: nextId++, side, idiom,
+    pos: side === "shu" ? BASE_LEFT : BASE_RIGHT,
+    isDef, speed: side === "shu" ? 5 : -5,
+    defTarget: null, y, el,
+  };
+
+  if (isDef) {
+    soldier.speed = side === "shu" ? 3 : -3;
+    soldier.basePos = side === "shu" ? BASE_LEFT + 15 : BASE_RIGHT - 15;
+  }
+
+  state.soldiers.push(soldier);
+  updateSoldierEl(soldier);
+  // Refresh hand to pick up new defense options when enemy spawns
+  if (side === "wei") {
+    setTimeout(() => { if (state && state.running) rebuildHand(); }, 100);
+  }
+}
+
+function updateSoldierEl(s) {
+  const bf = document.getElementById("battlefield");
+  const bfW = bf.offsetWidth;
+  const px = (s.pos / 100) * bfW - SOLDIER_W / 2;
+  s.el.style.left = Math.max(0, Math.min(bfW - SOLDIER_W, px)) + "px";
+  s.el.style.top = s.y + "px";
+}
+
+function damageBase(side) {
+  const baseId = side === "shu" ? "leftBase" : "rightBase";
+  const el = document.getElementById(baseId);
+  el.classList.add("base-hit");
+  setTimeout(() => el.classList.remove("base-hit"), 500);
+  if (side === "shu") { state.shuHP--; addHistory("breach", "💥 敌兵突破！蜀军城池 -1"); }
+  else { state.weiHP--; addHistory("breach", "💥 我军突破！魏军城池 -1"); }
+  if (state.shuHP <= 0) gameOver(false);
+  else if (state.weiHP <= 0) gameOver(true);
+}
+
+function gameOver(won) {
+  state.running = false;
+  state.won = won;
+  setTimeout(() => {
+    document.getElementById("game").classList.add("hidden");
+    document.getElementById("gameOverScreen").classList.remove("hidden");
+    document.getElementById("goTitle").textContent = won ? "🎉 大获全胜！" : "💀 城池陷落…";
+    document.getElementById("goResult").className = `result ${won ? "win" : "lose"}`;
+    document.getElementById("goResult").textContent = won ? "✅ 蜀军守住了城池！" : "❌ 蜀军城池被攻破！";
+    document.getElementById("goScore").textContent = `坚持到第 ${state.wave} 波 | 总用时 ${formatTime(state.totalTime)}`;
+    const atk = state.history.filter(h => h.type === "attack").length;
+    const def = state.history.filter(h => h.type === "defend").length;
+    document.getElementById("goStats").textContent = `⚔ 进攻 ${atk} 次 | 🛡 防守 ${def} 次`;
+  }, 600);
+}
+
+// ── Game Loop ──
+function gameLoop(timestamp) {
+  if (!state || !state.running) return;
+  if (!lastTime) lastTime = timestamp;
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+  lastTime = timestamp;
+  state.totalTime += dt;
+
+  aiTick();
+  moveSoldiers(dt);
+  checkCollisions();
+  checkBaseReach();
+  updateUI();
+
+  requestAnimationFrame(gameLoop);
+}
+
+function moveSoldiers(dt) {
+  for (const s of state.soldiers) {
+    if (s.defTarget) {
+      const dx = s.defTarget.pos - s.pos;
+      s.pos += Math.sign(dx) * 8 * dt;
+      if (Math.abs(dx) < 1.5) s.pos = s.defTarget.pos;
+    } else if (s.isDef && s.basePos != null) {
+      const dx = s.basePos - s.pos;
+      if (Math.abs(dx) > 0.5) s.pos += Math.sign(dx) * Math.abs(s.speed) * dt;
+      else {
+        s.pos = s.basePos;
+        s.el.style.transform = `translateY(${Math.sin(state.totalTime * 2 + s.id) * 2}px)`;
+      }
+    } else {
+      s.pos += s.speed * dt;
+    }
+    updateSoldierEl(s);
+  }
+}
+
+function checkCollisions() {
+  const shu = state.soldiers.filter(s => s.side === "shu" && !s.removing);
+  const wei = state.soldiers.filter(s => s.side === "wei" && !s.removing);
+  for (const a of shu) {
+    for (const b of wei) {
+      if (Math.abs(a.pos - b.pos) < 3) { resolveClash(a, b); break; }
+    }
+  }
+  for (const def of state.soldiers.filter(s => s.isDef && !s.removing)) {
+    for (const e of state.soldiers.filter(s => s.side !== def.side && !s.removing)) {
+      if (Math.abs(def.pos - e.pos) < 4 && !def.clashing && !e.clashing) {
+        resolveClash(def, e);
+      }
+    }
+  }
+}
+
+function resolveClash(a, b) {
+  if (a.clashing || b.clashing) return;
+  a.clashing = true; b.clashing = true;
+  a.el.classList.add("clashing"); b.el.classList.add("clashing");
+
+  let aChance = 0.5;
+  if (a.isDef && !b.isDef) aChance = 0.65;
+  if (b.isDef && !a.isDef) aChance = 0.35;
+
+  const aWins = Math.random() < aChance;
+  const winner = aWins ? a : b;
+  const loser = aWins ? b : a;
+  addHistory("clash", `⚔「${a.idiom}」vs「${b.idiom}」→「${winner.idiom}」胜！`);
+
+  setTimeout(() => removeSoldier(loser), 300);
+  setTimeout(() => { winner.clashing = false; winner.el.classList.remove("clashing"); }, 500);
+}
+
+function checkBaseReach() {
+  for (const s of [...state.soldiers]) {
+    if (s.removing) continue;
+    if (s.side === "shu" && s.pos >= BASE_RIGHT - 2) { removeSoldier(s); damageBase("wei"); }
+    else if (s.side === "wei" && s.pos <= BASE_LEFT + 2) { removeSoldier(s); damageBase("shu"); }
+  }
+}
+
+function removeSoldier(s) {
+  if (s.removing) return;
+  s.removing = true;
+  s.el.classList.add("dying");
+  setTimeout(() => {
+    s.el.remove();
+    state.soldiers = state.soldiers.filter(x => x.id !== s.id);
+    // Refresh hand after enemy dies (may remove obsolete defense cards)
+    if (s.side === "wei" && state && state.running) rebuildHand();
+  }, 400);
+}
+
+// ── UI Updates ──
+function updateUI() {
+  if (!state) return;
+
+  // HP bars
+  document.getElementById("leftHPBar").style.width = (state.shuHP / MAX_HP * 100) + "%";
+  document.getElementById("leftHPText").textContent = state.shuHP + "/" + MAX_HP;
+  document.getElementById("rightHPBar").style.width = (state.weiHP / MAX_HP * 100) + "%";
+  document.getElementById("rightHPText").textContent = state.weiHP + "/" + MAX_HP;
+
+  // Wave & timer
+  document.getElementById("waveNum").textContent = state.wave;
+  document.getElementById("timer").textContent = formatTime(state.totalTime);
+
+  // Refresh cooldown
+  if (state.refreshCooldown > 0) {
+    state.refreshCooldown -= 1 / 60;
+    if (state.refreshCooldown <= 0) {
+      state.refreshCooldown = 0;
+      document.getElementById("refreshBtn").disabled = false;
+      document.getElementById("handCooldown").textContent = "";
+    } else {
+      document.getElementById("handCooldown").textContent = `${Math.ceil(state.refreshCooldown)}s`;
+    }
+  }
+
+  // Enemy list
+  const wei = state.soldiers.filter(s => s.side === "wei" && !s.removing);
+  const el = document.getElementById("enemyList");
+  document.getElementById("enemyCount").textContent = `(${wei.length})`;
+  if (wei.length === 0) {
+    el.innerHTML = '<span style="color:#666;font-size:0.85rem;">暂无敌兵…</span>';
+  } else {
+    el.innerHTML = wei.map(s => {
+      const antonym = getAntonym(s.idiom);
+      return `<div class="enemy-card${s.targeted ? " targeted" : ""}">
+        <span class="idiom">${s.idiom}</span>
+        ${antonym ? `<span class="antonym">↓ ${antonym}</span>` : ""}
+      </div>`;
+    }).join("");
+  }
+}
+
+function addHistory(type, text) {
+  if (!state) return;
+  state.history.unshift({ type, text, time: state.totalTime });
+  if (state.history.length > 30) state.history.pop();
+  const list = document.getElementById("historyList");
+  const div = document.createElement("div");
+  div.className = `history-item ${type}`;
+  div.textContent = text;
+  div.style.animation = "fadeIn 0.3s";
+  list.prepend(div);
+  while (list.children.length > 20) list.lastChild.remove();
+}
+
+function showWaveNotice(text) {
+  const el = document.getElementById("waveNotice");
+  el.textContent = text;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2500);
+}
+
+function formatTime(t) {
+  const m = Math.floor(t / 60);
+  const s = Math.floor(t % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+</script>
+</body>
+</html>
