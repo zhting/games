@@ -173,7 +173,6 @@
         <button class="modeOpt" data-mode="iso">立体</button>
       </div>
       <button class="cta" id="ovBtn">开始游戏</button>
-      <a href="/game/3d" style="display:block;margin-top:14px;color:#7fe7ff;font-weight:800;font-size:14px;text-decoration:none;letter-spacing:.04em;">🍮 试试真 3D 版（物理级折射反光）→</a>
     </div>
   </div>
 
@@ -360,10 +359,10 @@ function polyArea(pts){
 
 /* ---------- 软体 ---------- */
 // 物理参数（像素 / 秒制；随格子大小缩放）
-const K_SHAPE = 110;     // 形状保持刚度（基准值；实际按块尺寸缩放，见 build）
+const K_SHAPE = 110;     // 形状保持刚度
 const K_SURF  = 420;     // 表面张力刚度（决定波在表面的传播速度）
 const K_PRESS = 3600;    // 体积压强增益
-const DAMP    = 1.6;     // 全局阻尼调低：真实果冻被戳后要晃 1~2 秒（高频由邻点相对阻尼负责平息）
+const DAMP    = 3.8;     // 阻尼
 const PHYS_H  = 1/180;   // 物理子步长
 const VMAX    = 1500*PX;
 
@@ -377,42 +376,12 @@ class SoftBody{
   /* 重建静止形态；(ox,oy) 为初始位置相对静止形态的偏移（让身体从旧处弹回来） */
   build(cells, ox, oy){
     this.cells = cells;
-    // 尺寸相关刚度：真实果冻固有频率 f ∝ 1/L —— 越大块晃得越慢、越"duang"
-    let miX=1e9,miY=1e9,maX=-1e9,maY=-1e9;
-    for (const [x,y] of cells){
-      if(x<miX)miX=x; if(x>maX)maX=x; if(y<miY)miY=y; if(y>maY)maY=y;
-    }
-    const span = Math.max(1, maX-miX+1, maY-miY+1);   // 最长维度（格）
-    this.kShape = K_SHAPE / span;                     // f ∝ √k → 频率 ∝ 1/√span
-    this.kSurf  = K_SURF / Math.sqrt(span);
     this.loops = loopPoints(cells).map(rest => ({
       rest,
       pos: rest.map(p => [p[0]+ox, p[1]+oy]),
       vel: rest.map(() => [0,0]),
       restArea: polyArea(rest),
     }));
-    // 静态重力垂坠：静止形态自带轻微下塌、底部微鼓（真实果冻静置也非完美方形）
-    for (const L of this.loops){
-      let cx=0; for (const p of L.rest) cx+=p[0]; cx/=L.rest.length;
-      let minY=1e9,maxY=-1e9;
-      for (const p of L.rest){ if(p[1]<minY)minY=p[1]; if(p[1]>maxY)maxY=p[1]; }
-      const hgt = Math.max(1, maxY-minY);
-      const sag = Math.min(0.05*CS, hgt*0.035);
-      for (let i=0;i<L.rest.length;i++){
-        const p = L.rest[i];
-        const ty = (p[1]-minY)/hgt;                   // 0顶 .. 1底
-        p[1] += (1-ty)*sag;
-        p[0] = cx + (p[0]-cx)*(1 + 0.02*ty);
-        // 夹回托盘内，避免静止形态越墙与边界钳制持续冲突
-        if (p[0] < PAD) p[0] = PAD;
-        if (p[0] > PAD+COLS*CS) p[0] = PAD+COLS*CS;
-        if (p[1] > PAD+ROWS*CS) p[1] = PAD+ROWS*CS;
-        L.pos[i][0] = p[0]+ox; L.pos[i][1] = p[1]+oy;
-      }
-      L.restArea = polyArea(L.rest);
-      // 底缘锚定掩码：位于本体最底缘的顶点视为受支撑（盘底摩擦 → 悬臂摇摆模态）
-      L.anchor = L.rest.map(p => p[1] > maxY - 1.5*PX);
-    }
     this.makeBubbles();
     this.wake();
   }
@@ -458,8 +427,6 @@ class SoftBody{
         L.pos[i][0]=L.rest[i][0]; L.pos[i][1]=L.rest[i][1];
         L.vel[i][0]=0; L.vel[i][1]=0;
       }
-      let mY=-1e9; for (const p of L.rest) if (p[1]>mY) mY=p[1];
-      L.anchor = L.rest.map(p => p[1] > mY - 1.5*PX);   // 揉圆后重建锚定掩码
     }
     this.melted = true;
     this.wake();
@@ -540,19 +507,6 @@ class SoftBody{
     for (const L of this.loops) for (const p of L.pos){ cx+=p[0]; cy+=p[1]; n++; }
     return n ? [cx/n, cy/n] : [0,0];
   }
-  /* 顶部形变位移：整体平移被抑制归零，但顶部相对底部的摆动保留 —— 用它驱动高光与折射 */
-  topDelta(){
-    let dx=0, dy=0, n=0;
-    for (const L of this.loops){
-      let minY=1e9, maxY=-1e9;
-      for (const p of L.rest){ if(p[1]<minY)minY=p[1]; if(p[1]>maxY)maxY=p[1]; }
-      const cut = minY + (maxY-minY)*0.35;
-      for (let i=0;i<L.pos.length;i++) if (L.rest[i][1] <= cut){
-        dx += L.pos[i][0]-L.rest[i][0]; dy += L.pos[i][1]-L.rest[i][1]; n++;
-      }
-    }
-    return n ? [dx/n, dy/n] : [0,0];
-  }
   centroidDelta(){
     let dx=0, dy=0, n=0;
     for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
@@ -575,19 +529,17 @@ class SoftBody{
           const p = L.pos[i], r = L.rest[i], v = L.vel[i];
           const pp = L.pos[(i-1+n)%n], pn = L.pos[(i+1)%n];
           const rp = L.rest[(i-1+n)%n], rn = L.rest[(i+1)%n];
-          // 形状保持（尺寸相关刚度：大块低频慢晃、小块高频快颤）
-          const kS = this.kShape || K_SHAPE, kF = this.kSurf || K_SURF;
-          let fx = kS*(r[0]-p[0]);
-          let fy = kS*(r[1]-p[1]);
+          // 形状保持
+          let fx = K_SHAPE*(r[0]-p[0]);
+          let fy = K_SHAPE*(r[1]-p[1]);
           // 表面张力：惩罚相对静止形态的曲率偏差（静止时严格零力，
           // 冲击仍沿轮廓传播成波，且拐角不会被拉成屈曲平衡）
-          fx += kF*(((pp[0]+pn[0])*.5 - p[0]) - ((rp[0]+rn[0])*.5 - r[0]));
-          fy += kF*(((pp[1]+pn[1])*.5 - p[1]) - ((rp[1]+rn[1])*.5 - r[1]));
-          // 表面相对阻尼：耗散邻点间的相对运动（高频微颤快速平息；
-          // 与调低的全局阻尼配合 → 高频速灭、低频绵延，即明胶的黏弹性特征）
+          fx += K_SURF*(((pp[0]+pn[0])*.5 - p[0]) - ((rp[0]+rn[0])*.5 - r[0]));
+          fy += K_SURF*(((pp[1]+pn[1])*.5 - p[1]) - ((rp[1]+rn[1])*.5 - r[1]));
+          // 表面相对阻尼：耗散邻点间的相对运动（高频微颤快速平息）
           const vp = L.vel[(i-1+n)%n], vn = L.vel[(i+1)%n];
-          fx += 13*((vp[0]+vn[0])*.5 - v[0]);
-          fy += 13*((vp[1]+vn[1])*.5 - v[1]);
+          fx += 7*((vp[0]+vn[0])*.5 - v[0]);
+          fy += 7*((vp[1]+vn[1])*.5 - v[1]);
           // 体积压强：沿外法线
           let nx = pn[1]-pp[1], ny = -(pn[0]-pp[0]);
           const nl = Math.hypot(nx,ny) || 1;
@@ -606,11 +558,6 @@ class SoftBody{
           if (p[0] < L1){ p[0]=L1; if (v[0]<0){ v[0]*=-.28; v[1]*=.85; } }
           if (p[0] > R1){ p[0]=R1; if (v[0]>0){ v[0]*=-.28; v[1]*=.85; } }
           if (p[1] > B1){ p[1]=B1; if (v[1]>0){ v[1]*=-.30; v[0]*=.82; } }
-          // 底缘锚定摩擦：底面被支撑面"粘住"，顶部相对大幅摆动（一阶剪切模态）
-          if (L.anchor && L.anchor[i]){
-            v[0] *= Math.exp(-16*h);
-            v[1] *= Math.exp(-5*h);
-          }
         }
       }
       // 刚体平移抑制：整体位置牢牢钉在网格上，只允许形状层面的颤动
@@ -622,7 +569,7 @@ class SoftBody{
       }
       if (nn){
         mdx/=nn; mdy/=nn; mvx/=nn; mvy/=nn;
-        const ap = 1-Math.exp(-18*h), av = 1-Math.exp(-8*h);   // 放松：底缘锚定已分担稳定职责
+        const ap = 1-Math.exp(-28*h), av = 1-Math.exp(-12*h);
         for (const L of this.loops) for (let i=0;i<L.pos.length;i++){
           L.pos[i][0] -= mdx*ap; L.pos[i][1] -= mdy*ap;
           L.vel[i][0] -= mvx*av; L.vel[i][1] -= mvy*av;
@@ -696,18 +643,17 @@ function buildBg(){
 }
 buildBg();
 // 在已 clip 的果冻内，把背景渐变放大上移后透出 → 凸透镜折射
-function refractFill(c, minX, minY, bw, bh, cx, cy, mag, alpha, ox=0, oy=0){
+function refractFill(c, minX, minY, bw, bh, cx, cy, mag, alpha){
   c.save();
   c.globalAlpha = alpha;
   c.translate(cx, cy); c.scale(mag, mag); c.translate(-cx, -cy);
-  c.translate(ox, -bh*0.06 + oy);   // (ox,oy)：形变引起的采样偏移 —— 晃动时背景在体内荡漾
+  c.translate(0, -bh*0.06);
   c.drawImage(bgCanvas, PAD, PAD);
   c.restore();
 }
 
 function drawJellyLoops(c, loops, color, opt={}){
   const ghost = opt.ghost, bubbles = opt.bubbles, bdx = opt.bdx||0, bdy = opt.bdy||0;
-  const tdx = opt.tdx||0, tdy = opt.tdy||0;   // 顶部形变位移：驱动高光游走/折射荡漾/焦散偏移
   for (const pts of loops){
     smoothPath(c, pts);
     if (ghost){
@@ -732,23 +678,11 @@ function drawJellyLoops(c, loops, color, opt={}){
     c.fill();
     c.restore();
 
-    // 焦散：凸透镜把光聚到果冻下方的亮斑，随顶部倾斜反向偏移
-    c.save();
-    c.globalCompositeOperation = 'screen';
-    const cax = cx - tdx*.8, cay = maxY + 2.5*PX;
-    const ca = c.createRadialGradient(cax, cay, 0, cax, cay, bw*.30);
-    ca.addColorStop(0, shade(color, 42, 6, .28));
-    ca.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = ca;
-    c.beginPath(); c.ellipse(cax, cay, bw*.30, 4.5*PX, 0, 0, Math.PI*2); c.fill();
-    c.restore();
-
     c.save();
     smoothPath(c, pts); c.clip();
 
-    // 折射：把背景放大上移后含蓄透出（凸透镜）；被压扁→透镜变厚放大率升，倾斜→采样反向偏移
-    const rMag = 1.16 + Math.min(.06, Math.abs(tdy)/Math.max(1,bh)*.5);
-    refractFill(c, minX, minY, bw, bh, cx, cy, rMag, .5, -tdx*.45, -tdy*.35);
+    // 折射：把背景放大上移后含蓄透出（凸透镜）
+    refractFill(c, minX, minY, bw, bh, cx, cy, 1.16, .5);
 
     // 主体色：饱和油亮的糖果胶冻（较浓郁，仍保留通透）
     const g = c.createLinearGradient(0, minY, 0, maxY);
@@ -807,11 +741,11 @@ function drawJellyLoops(c, loops, color, opt={}){
     hl.addColorStop(1, 'rgba(255,255,255,0)');
     c.strokeStyle = hl; c.lineWidth = 3.2*PX; c.stroke();
 
-    // 湿润光斑（左上斜置的长椭圆）：光源固定、表面晃动 → 光斑在表面上游走、随形变拉伸
+    // 湿润光斑（左上斜置的长椭圆）
     c.save();
-    c.translate(minX + bw*.32 - tdx*.7, minY + bh*.20 - tdy*.7);
-    c.rotate(-.35 - tdx/CS*.12);
-    c.scale(1.9 + Math.min(.5, Math.abs(tdx)/CS*.6), 1);
+    c.translate(minX + bw*.32, minY + bh*.20);
+    c.rotate(-.35);
+    c.scale(1.9, 1);
     const spec = c.createRadialGradient(0,0,0, 0,0, Math.min(bw,bh)*.26);
     spec.addColorStop(0, 'rgba(255,255,255,.82)');
     spec.addColorStop(.6, 'rgba(255,255,255,.22)');
@@ -819,9 +753,9 @@ function drawJellyLoops(c, loops, color, opt={}){
     c.fillStyle = spec;
     c.beginPath(); c.arc(0,0, Math.min(bw,bh)*.26, 0, Math.PI*2); c.fill();
     c.restore();
-    // 小颗反光糖点（跟随表面漂移）
+    // 小颗反光糖点
     c.fillStyle = 'rgba(255,255,255,.9)';
-    c.beginPath(); c.arc(minX+bw*.52 - tdx*.6, minY+bh*.13 - tdy*.6, 1.6*PX, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.arc(minX+bw*.52, minY+bh*.13, 1.6*PX, 0, Math.PI*2); c.fill();
 
     // 底缘回光线
     c.globalCompositeOperation = 'screen';
@@ -844,7 +778,6 @@ function drawJellyLoops(c, loops, color, opt={}){
 function drawJellyLoops3D(c, loops, color, opt={}){
   if (opt.ghost){ drawJellyLoops(c, loops, color, opt); return; }
   const bubbles = opt.bubbles, bdx = opt.bdx||0, bdy = opt.bdy||0;
-  const tdx = opt.tdx||0, tdy = opt.tdy||0;
   const D = 0.22*CS, ex = 0.22*D, ey = D;          // 厚度小一些，避免压到下方相邻块
   const layers = 4;
   for (const pts of loops){
@@ -867,23 +800,11 @@ function drawJellyLoops3D(c, loops, color, opt={}){
       c.restore();
     }
 
-    // 1.5) 焦散：透镜聚光在体块正下方地面形成亮斑，随倾斜偏移
-    c.save();
-    c.globalCompositeOperation = 'screen';
-    const cax = cx + ex - tdx*.8, cay = maxY + ey + 2*PX;
-    const ca = c.createRadialGradient(cax, cay, 0, cax, cay, bw*.28);
-    ca.addColorStop(0, shade(color, 42, 6, .26));
-    ca.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = ca;
-    c.beginPath(); c.ellipse(cax, cay, bw*.28, 4*PX, 0, 0, Math.PI*2); c.fill();
-    c.restore();
-
     // 2) 顶面：圆顶径向材质(凸起感) + 折射背景透出
     c.save();
     smoothPath(c, pts); c.clip();
-    // 折射：透过顶面看到放大上移的背景（随形变荡漾）
-    const rMag = 1.18 + Math.min(.06, Math.abs(tdy)/Math.max(1,bh)*.5);
-    refractFill(c, minX, minY, bw, bh, cx, cy, rMag, .5, -tdx*.45, -tdy*.35);
+    // 折射：透过顶面看到放大上移的背景
+    refractFill(c, minX, minY, bw, bh, cx, cy, 1.18, .5);
     // 圆顶色（饱和油亮）
     const dome = c.createRadialGradient(minX+bw*.40, minY+bh*.30, 2, cx, minY+bh*.55, Math.max(bw,bh)*.78);
     dome.addColorStop(0,  shade(color, 46, 4, .62));
@@ -923,19 +844,18 @@ function drawJellyLoops3D(c, loops, color, opt={}){
       }
     }
 
-    // 强镜面光斑(左上)：随表面形变游走、拉伸
+    // 强镜面光斑(左上)
     c.save();
-    c.translate(minX+bw*.34 - tdx*.7, minY+bh*.22 - tdy*.7);
-    c.rotate(-.4 - tdx/CS*.12); c.scale(1.7 + Math.min(.5, Math.abs(tdx)/CS*.6),1);
+    c.translate(minX+bw*.34, minY+bh*.22); c.rotate(-.4); c.scale(1.7,1);
     const sp = c.createRadialGradient(0,0,0, 0,0, Math.min(bw,bh)*.30);
     sp.addColorStop(0, 'rgba(255,255,255,.96)');
     sp.addColorStop(.5, 'rgba(255,255,255,.30)');
     sp.addColorStop(1, 'rgba(255,255,255,0)');
     c.fillStyle = sp; c.beginPath(); c.arc(0,0, Math.min(bw,bh)*.30, 0, Math.PI*2); c.fill();
     c.restore();
-    // 小颗反光糖点（跟随表面漂移）
+    // 小颗反光糖点
     c.fillStyle = 'rgba(255,255,255,.92)';
-    c.beginPath(); c.arc(minX+bw*.56 - tdx*.6, minY+bh*.14 - tdy*.6, 1.7*PX, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.arc(minX+bw*.56, minY+bh*.14, 1.7*PX, 0, Math.PI*2); c.fill();
 
     // 顶缘受光亮线
     smoothPath(c, pts);
@@ -1583,9 +1503,8 @@ function drawBoard(){
   }
   for (const p of order){
     const [bdx,bdy] = p.body.centroidDelta();
-    const [tdx,tdy] = p.body.sleeping ? [0,0] : p.body.topDelta();
     drawJelly(ctx, p.body.loops.map(L=>L.pos), p.color,
-              {bubbles:p.body.bubbles, bdx, bdy, tdx, tdy});
+              {bubbles:p.body.bubbles, bdx, bdy});
   }
   if (mode === 'fluid') drawFluid(ctx);
   if (active && (state==='play' || state==='pause')){
@@ -1593,9 +1512,8 @@ function drawBoard(){
     while (!collides(active, 0, gy+1, active.rot)) gy++;
     if (gy>0) drawJellyLoops(ctx, loopPoints(absCells(active,0,gy)), active.color, {ghost:true});
     const [bdx,bdy] = active.body.centroidDelta();
-    const [tdx,tdy] = active.body.sleeping ? [0,0] : active.body.topDelta();
     drawJelly(ctx, active.body.loops.map(L=>L.pos), active.color,
-              {bubbles:active.body.bubbles, bdx, bdy, tdx, tdy});
+              {bubbles:active.body.bubbles, bdx, bdy});
   }
   for (const pt of particles){
     ctx.globalAlpha = Math.max(0, pt.life);

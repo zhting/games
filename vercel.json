@@ -5,6 +5,26 @@
     {
       "source": "/game",
       "destination": "/game/index.html"
+    },
+    {
+      "source": "/game/3d",
+      "destination": "/game/3d/index.html"
+    },
+    {
+      "source": "/idiom",
+      "destination": "/idiom/index.html"
+    },
+    {
+      "source": "/lego",
+      "destination": "/lego/index.html"
+    },
+    {
+      "source": "/成语",
+      "destination": "/idiom/index.html"
+    },
+    {
+      "source": "/mirror",
+      "destination": "/mirror/index.html"
     }
   ],
   "headers": [

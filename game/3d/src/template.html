@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>果冻方块 · 真3D</title>
+<meta name="description" content="真 3D 渲染的果冻俄罗斯方块：物理级折射、反光与软体晃动。">
+<style>
+  :root{
+    --ink:#5b2e4f; --muted:rgba(91,46,79,.62);
+    --accent:#ff6b9d; --accent2:#3bb9e8; --bg:#ffe7f2;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;
+    font-family:ui-rounded,"PingFang SC","Hiragino Maru Gothic ProN","Microsoft YaHei",system-ui,sans-serif;
+    color:var(--ink);}
+  #gl{position:fixed;inset:0;display:block;touch-action:none;}
+
+  /* ---- HUD ---- */
+  .hud{position:fixed;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;
+    align-items:flex-start;pointer-events:none;z-index:5;}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;}
+  .stat{pointer-events:auto;background:rgba(255,255,255,.72);border:1px solid rgba(91,46,79,.14);
+    border-radius:14px;padding:8px 14px;backdrop-filter:blur(8px);min-width:74px;}
+  .stat .k{font-size:11px;letter-spacing:.14em;color:var(--muted);}
+  .stat .v{font-size:20px;font-weight:900;line-height:1.15;}
+  .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+  #next{width:84px;height:84px;background:rgba(255,255,255,.72);border:1px solid rgba(91,46,79,.14);
+    border-radius:14px;backdrop-filter:blur(8px);}
+  .mini{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(91,46,79,.16);
+    border-radius:999px;padding:7px 13px;font-size:13px;font-weight:800;color:var(--muted);
+    background:rgba(255,255,255,.72);backdrop-filter:blur(8px);cursor:pointer;text-decoration:none;}
+  .mini:hover{color:var(--ink);}
+
+  /* ---- 触屏按钮 ---- */
+  .pad{position:fixed;left:0;right:0;bottom:max(14px, env(safe-area-inset-bottom));
+    display:none;justify-content:center;gap:10px;z-index:5;}
+  body.touch .pad{display:flex;}
+  .pbtn{width:58px;height:58px;border-radius:18px;border:1px solid rgba(91,46,79,.18);
+    background:rgba(255,255,255,.78);color:var(--ink);font-size:22px;font-weight:900;
+    backdrop-filter:blur(8px);user-select:none;}
+  .pbtn:active{background:#ffd3e5;transform:scale(.94);}
+
+  /* ---- 遮罩层 ---- */
+  .overlay{position:fixed;inset:0;display:grid;place-items:center;z-index:10;
+    background:rgba(255,255,255,.4);backdrop-filter:blur(6px);}
+  .panel{max-width:420px;width:calc(100% - 48px);text-align:center;padding:34px 30px;
+    border:1px solid rgba(91,46,79,.12);border-radius:26px;
+    background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.78));
+    box-shadow:0 30px 70px rgba(214,110,160,.35);}
+  .panel h1{margin:0 0 10px;font-size:32px;}
+  .panel p{margin:0 0 22px;color:var(--muted);font-size:14.5px;line-height:1.75;}
+  .cta{min-height:50px;padding:0 30px;border:0;border-radius:16px;color:#381021;font-weight:900;font-size:16px;
+    background:linear-gradient(180deg,#ffd1df,var(--accent) 62%,#ff5d8f);
+    box-shadow:0 16px 30px rgba(255,93,143,.35),inset 0 2px 0 rgba(255,255,255,.68);cursor:pointer;
+    transition:transform .15s ease;}
+  .cta:hover{transform:translateY(-2px) scale(1.02);}
+  .keys{margin-top:16px;color:rgba(91,46,79,.5);font-size:12.5px;line-height:1.9;}
+  .hidden{display:none !important;}
+  .score-line{font-size:18px;font-weight:900;margin-bottom:6px;color:var(--accent2);}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+
+<div class="hud">
+  <div class="stats">
+    <div class="stat"><div class="k">SCORE</div><div class="v" id="hScore">0</div></div>
+    <div class="stat"><div class="k">LINES</div><div class="v" id="hLines">0</div></div>
+    <div class="stat"><div class="k">LEVEL</div><div class="v" id="hLevel">1</div></div>
+  </div>
+  <div class="right">
+    <canvas id="next" width="168" height="168"></canvas>
+    <button class="mini" id="btnPause">⏸ 暂停</button>
+    <a class="mini" href="/game">◀ 2D 版</a>
+  </div>
+</div>
+
+<div class="pad">
+  <button class="pbtn" data-act="left">◀</button>
+  <button class="pbtn" data-act="rot">⟳</button>
+  <button class="pbtn" data-act="right">▶</button>
+  <button class="pbtn" data-act="soft">▼</button>
+  <button class="pbtn" data-act="hard">⤓</button>
+</div>
+
+<div class="overlay" id="ovStart">
+  <div class="panel">
+    <h1>🍮 果冻方块 · 真3D</h1>
+    <p>物理级折射与反光的真实果冻材质。<br>每一块都被"粘"在盘底，被碰到就会<br>像真果冻一样底不动、脑袋乱晃。<br><b>拖动画面可环绕视角。</b></p>
+    <button class="cta" id="btnStart">开始游戏</button>
+    <div class="keys">← → 移动 · ↑ / X 旋转 · ↓ 软降<br>空格 硬降 · P 暂停 · R 重开</div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="ovPause">
+  <div class="panel"><h1>已暂停</h1><p>拖动画面可以环绕欣赏果冻。</p>
+  <button class="cta" id="btnResume">继续</button></div>
+</div>
+
+<div class="overlay hidden" id="ovOver">
+  <div class="panel"><h1>游戏结束</h1>
+  <div class="score-line" id="finalScore"></div>
+  <p id="bestLine"></p>
+  <button class="cta" id="btnRetry">再来一局</button></div>
+</div>
+
+<!--BUNDLE-->
+</body>
+</html>

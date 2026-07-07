@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>小游戏合集</title>
-  <meta name="description" content="果冻俄罗斯方块、成语守卫战、乐高战争——随手就能开一局的小游戏合集。">
+  <meta name="description" content="轻松打开和游玩果冻俄罗斯方块。">
   <style>
     :root {
       --ink: #fff6fb;
@@ -260,73 +260,6 @@
       background: rgba(18, 9, 30, .34);
     }
 
-    .more {
-      width: min(1180px, 100%);
-      margin: clamp(36px, 6vw, 72px) auto 0;
-      animation: reveal .8s .24s ease both;
-    }
-
-    .more h2 {
-      margin: 0 0 18px;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: .24em;
-      color: var(--accent-2);
-      text-transform: uppercase;
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 18px;
-    }
-
-    .game-card {
-      display: grid;
-      gap: 10px;
-      padding: 24px 24px 22px;
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)),
-        rgba(255, 255, 255, .045);
-      box-shadow: 0 22px 48px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .2);
-      backdrop-filter: blur(8px);
-      transition: transform .2s ease, background .2s ease;
-    }
-
-    .game-card:hover {
-      transform: translateY(-4px);
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .05)),
-        rgba(255, 255, 255, .07);
-    }
-
-    .game-card .icon {
-      font-size: 34px;
-      line-height: 1;
-    }
-
-    .game-card .name {
-      font-size: 20px;
-      font-weight: 900;
-    }
-
-    .game-card .desc {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14.5px;
-      line-height: 1.65;
-    }
-
-    .game-card .go {
-      margin-top: 6px;
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: .1em;
-      color: var(--accent-2);
-    }
-
     footer {
       padding: 0 clamp(20px, 5vw, 72px) 26px;
       color: rgba(255, 246, 251, .48);
@@ -412,10 +345,9 @@
         <div class="copy">
           <p class="eyebrow">Now Playing</p>
           <h1>果冻俄罗斯方块</h1>
-          <p class="intro">软弹的方块、清脆的消除、随手就能开一局。往下滑还有成语对战和乐高经营等你来玩。</p>
+          <p class="intro">软弹的方块、清脆的消除、随手就能开一局。当前站点先收录这一款小游戏。</p>
           <div class="actions">
             <a class="play" href="/game">开始游戏</a>
-            <a class="nav-link" href="/game/3d">🍮 真 3D 版</a>
             <span class="hint">键盘和触屏都可以玩</span>
           </div>
         </div>
@@ -449,39 +381,9 @@
           </a>
         </div>
       </section>
-
-      <section class="more" aria-label="更多游戏">
-        <h2>More Games</h2>
-        <div class="card-grid">
-          <a class="game-card" href="/idiom">
-            <span class="icon">📜</span>
-            <span class="name">成语守卫战</span>
-            <p class="desc">出成语卡牌派兵防守，用反义词克制敌军。守住十波进攻，顺便把成语记牢。</p>
-            <span class="go">开始防守 →</span>
-          </a>
-          <a class="game-card" href="/mirror">
-            <span class="icon">🪞</span>
-            <span class="name">岁月之镜</span>
-            <p class="desc">你玩的不是游戏，是父母的未来。十四段老年生活体验，十几分钟就是她们普通的一天。</p>
-            <span class="go">进入体验 →</span>
-          </a>
-          <a class="game-card" href="/lego">
-            <span class="icon">🧱</span>
-            <span class="name">乐高战争</span>
-            <p class="desc">升级建筑、囤积砖块、训练小人军团。放置经营，离线也在悄悄产出。</p>
-            <span class="go">开始经营 →</span>
-          </a>
-          <a class="game-card" href="/game">
-            <span class="icon">🍮</span>
-            <span class="name">果冻俄罗斯方块</span>
-            <p class="desc">软体物理驱动的方块消除，经典 / 融化 / 流体三种模式，怎么晃都好玩。</p>
-            <span class="go">开始游戏 →</span>
-          </a>
-        </div>
-      </section>
     </main>
 
-    <footer>games.tangletang.top</footer>
+    <footer>chatgpt.tangletang.top/game</footer>
   </div>
 </body>
 </html>
