@@ -1,18 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>小游戏合集</title>
-  <meta name="description" content="果冻俄罗斯方块、成语守卫战、乐高战争——随手就能开一局的小游戏合集。">
+  <meta name="theme-color" content="#11130f">
+  <title>小游戏合集 · 随手一局</title>
+  <meta name="description" content="六款打开即玩的自研小游戏：果冻方块、成语守卫战、乐高战争、岁月之镜、萌兵军棋。">
   <style>
     :root {
-      --ink: #fff6fb;
-      --muted: rgba(255, 246, 251, .68);
-      --line: rgba(255, 255, 255, .14);
-      --accent: #ff7aa6;
-      --accent-2: #7fe7ff;
-      --bg: #12091e;
+      --ink: #f6f3eb;
+      --muted: rgba(246, 243, 235, .68);
+      --coal: #11130f;
+      --coal-soft: #1a1d17;
+      --paper: #f1eee6;
+      --paper-deep: #e6e2d8;
+      --paper-muted: #777970;
+      --line: rgba(246, 243, 235, .18);
+      --line-dark: rgba(17, 19, 15, .16);
+      --acid: #d9f26a;
+      --coral: #ff8063;
+      --radius: 22px;
+      --shadow: 0 28px 70px rgba(17, 19, 15, .18);
     }
 
     * {
@@ -20,19 +28,16 @@
     }
 
     html {
-      min-height: 100%;
-      background: var(--bg);
+      scroll-behavior: smooth;
+      background: var(--coal);
     }
 
     body {
       margin: 0;
-      min-height: 100vh;
       color: var(--ink);
-      font-family: ui-rounded, "PingFang SC", "Hiragino Maru Gothic ProN", "Yuanti SC", "Microsoft YaHei", system-ui, sans-serif;
-      background:
-        radial-gradient(900px 520px at 82% 15%, rgba(255, 122, 166, .28), transparent 58%),
-        radial-gradient(760px 460px at 18% 92%, rgba(127, 231, 255, .18), transparent 54%),
-        linear-gradient(150deg, #170b27 0%, #351142 55%, #0f081a 100%);
+      background: var(--paper);
+      font-family: "Arial", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
 
@@ -41,653 +46,994 @@
       text-decoration: none;
     }
 
-    .shell {
-      min-height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      position: relative;
-      isolation: isolate;
+    button {
+      font: inherit;
     }
 
-    .shell::before,
-    .shell::after {
-      content: "";
-      position: fixed;
-      inset: auto;
-      border-radius: 999px;
-      pointer-events: none;
-      z-index: -1;
-      filter: blur(.2px);
+    ::selection {
+      color: var(--coal);
+      background: var(--acid);
     }
 
-    .shell::before {
-      width: 42vw;
-      max-width: 560px;
-      aspect-ratio: 1;
-      right: -12vw;
-      top: 8vh;
-      background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, .62), rgba(255, 122, 166, .34) 26%, rgba(255, 122, 166, .08) 64%, transparent 72%);
-      animation: floatOrb 8s ease-in-out infinite;
-    }
-
-    .shell::after {
-      width: 28vw;
-      max-width: 360px;
-      aspect-ratio: 1;
-      left: 8vw;
-      bottom: 7vh;
-      background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, .58), rgba(127, 231, 255, .26) 28%, rgba(127, 231, 255, .07) 68%, transparent 76%);
-      animation: floatOrb 9s ease-in-out infinite reverse;
-    }
-
-    header {
+    .site-header {
+      position: absolute;
+      z-index: 10;
+      top: 0;
+      left: 0;
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 28px clamp(20px, 5vw, 72px);
-      animation: reveal .7s ease both;
+      padding: 27px clamp(20px, 5vw, 72px);
+      color: var(--ink);
+      animation: headerIn .8s .05s ease both;
     }
 
     .brand {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: .16em;
-    }
-
-    .nav-link {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 10px 16px;
-      color: var(--muted);
-      background: rgba(255, 255, 255, .045);
-      transition: transform .18s ease, color .18s ease, background .18s ease;
-    }
-
-    .nav-link:hover {
-      color: var(--ink);
-      background: rgba(255, 255, 255, .09);
-      transform: translateY(-2px);
-    }
-
-    main {
-      display: grid;
+      display: inline-flex;
       align-items: center;
-      padding: 18px clamp(20px, 5vw, 72px) 56px;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--acid);
+      box-shadow: 0 0 0 5px rgba(217, 242, 106, .12), 0 0 22px rgba(217, 242, 106, .45);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .header-meta {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .header-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .header-link::after {
+      content: "↘";
+      display: inline-grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      border: 1px solid rgba(246, 243, 235, .34);
+      border-radius: 50%;
+      font-size: 15px;
+      transition: transform .2s ease, background .2s ease, color .2s ease;
+    }
+
+    .header-link:hover::after,
+    .header-link:focus-visible::after {
+      color: var(--coal);
+      background: var(--acid);
+      border-color: var(--acid);
+      transform: rotate(8deg) translate(2px, 2px);
     }
 
     .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1.02fr) minmax(280px, .78fr);
-      gap: clamp(32px, 6vw, 86px);
-      align-items: center;
-      width: min(1180px, 100%);
-      margin: 0 auto;
+      position: relative;
+      display: flex;
+      align-items: stretch;
+      min-height: min(900px, 94svh);
+      overflow: hidden;
+      isolation: isolate;
+      background: var(--coal);
     }
 
-    .copy {
-      max-width: 680px;
-      animation: reveal .8s .08s ease both;
+    .hero::before {
+      content: "";
+      position: absolute;
+      z-index: -2;
+      inset: 0;
+      background-image:
+        linear-gradient(90deg, rgba(10, 12, 10, .98) 0%, rgba(10, 12, 10, .92) 27%, rgba(10, 12, 10, .58) 53%, rgba(10, 12, 10, .08) 100%),
+        linear-gradient(0deg, rgba(10, 12, 10, .58) 0%, transparent 46%),
+        url("assets/covers/jelly-block.png");
+      background-position: center, center, 62% center;
+      background-size: cover;
+      animation: heroDrift 16s ease-in-out infinite alternate;
+      transform: scale(1.03);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 78% 25%, rgba(255, 128, 99, .16), transparent 28%),
+        linear-gradient(180deg, transparent 80%, rgba(10, 12, 10, .88));
+      mix-blend-mode: screen;
+      opacity: .72;
+    }
+
+    .hero-inner {
+      position: relative;
+      display: flex;
+      flex: 0 1 auto;
+      flex-direction: column;
+      justify-content: flex-end;
+      width: min(1200px, calc(100% - 40px));
+      min-height: inherit;
+      margin: 0 auto;
+      padding: clamp(148px, 20vh, 214px) 0 clamp(42px, 7vw, 78px);
+    }
+
+    .hero-copy {
+      max-width: 620px;
+      animation: contentIn .9s .18s ease both;
     }
 
     .eyebrow {
-      margin: 0 0 18px;
-      color: var(--accent-2);
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: .28em;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin: 0 0 21px;
+      color: var(--acid);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .22em;
+      line-height: 1.4;
       text-transform: uppercase;
     }
 
-    h1 {
+    .eyebrow::before {
+      content: "";
+      width: 30px;
+      height: 1px;
+      background: currentColor;
+      opacity: .85;
+    }
+
+    .hero h1 {
+      max-width: 680px;
       margin: 0;
-      font-size: clamp(54px, 9vw, 118px);
-      line-height: .9;
-      letter-spacing: 0;
+      color: var(--ink);
+      font-family: ui-serif, "Songti SC", "Noto Serif SC", serif;
+      font-size: clamp(57px, 9.7vw, 132px);
+      font-weight: 500;
+      letter-spacing: -.065em;
+      line-height: .92;
       text-wrap: balance;
     }
 
-    .intro {
+    .hero h1 em {
+      color: var(--acid);
+      font-style: normal;
+    }
+
+    .hero-lede {
+      max-width: 510px;
       margin: 28px 0 0;
-      max-width: 520px;
       color: var(--muted);
-      font-size: clamp(17px, 2vw, 22px);
-      line-height: 1.7;
+      font-size: clamp(15px, 1.55vw, 19px);
+      line-height: 1.8;
     }
 
-    .actions {
+    .hero-actions {
       display: flex;
       flex-wrap: wrap;
-      gap: 14px;
       align-items: center;
-      margin-top: 34px;
+      gap: 13px;
+      margin-top: 33px;
     }
 
-    .play {
+    .button {
       display: inline-flex;
+      min-height: 50px;
       align-items: center;
       justify-content: center;
-      min-height: 52px;
-      border-radius: 16px;
-      padding: 0 24px;
-      color: #381021;
-      font-weight: 900;
-      background: linear-gradient(180deg, #ffd1df, var(--accent) 62%, #ff5d8f);
-      box-shadow: 0 18px 34px rgba(255, 93, 143, .34), inset 0 2px 0 rgba(255, 255, 255, .68);
-      transition: transform .16s cubic-bezier(.34, 1.56, .64, 1), box-shadow .16s ease;
-    }
-
-    .play:hover {
-      transform: translateY(-3px) scale(1.02);
-      box-shadow: 0 22px 42px rgba(255, 93, 143, .44), inset 0 2px 0 rgba(255, 255, 255, .72);
-    }
-
-    .hint {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .badge-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 24px;
-    }
-
-    .badge-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
+      border: 1px solid transparent;
       border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-      background: rgba(255, 255, 255, .045);
-      border: 1px solid rgba(255, 255, 255, .1);
-    }
-
-    .stage {
-      position: relative;
-      min-height: 520px;
-      animation: reveal .8s .18s ease both;
-    }
-
-    /* 多游戏合集展台卡片 */
-    .showcase-tile {
-      position: absolute;
-      inset: 50% auto auto 50%;
-      width: min(420px, 86vw);
-      aspect-ratio: .88;
-      transform: translate(-50%, -50%) rotate(-2deg);
-      border: 1px solid rgba(255, 255, 255, .18);
-      border-radius: 28px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .035)),
-        rgba(20, 10, 32, .55);
-      box-shadow: 0 34px 80px rgba(0, 0, 0, .46), inset 0 1px 0 rgba(255, 255, 255, .25);
-      backdrop-filter: blur(14px);
-      overflow: hidden;
-      transition: transform .25s ease, box-shadow .25s ease;
-      display: flex;
-      flex-direction: column;
-      padding: 16px;
-      box-sizing: border-box;
-    }
-
-    .showcase-tile:hover {
-      transform: translate(-50%, -51%) rotate(0deg);
-      box-shadow: 0 38px 90px rgba(0, 0, 0, .54), inset 0 1px 0 rgba(255, 255, 255, .32);
-    }
-
-    .showcase-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 10px;
-      flex: 1;
-    }
-
-    .mini-game {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 14px;
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, .12);
-      background: rgba(255, 255, 255, .04);
-      position: relative;
-      overflow: hidden;
-      transition: transform .18s ease, border-color .18s ease, background .18s ease;
-      cursor: pointer;
-    }
-
-    .mini-game:hover {
-      transform: translateY(-3px);
-      border-color: rgba(255, 255, 255, .32);
-      background: rgba(255, 255, 255, .08);
-    }
-
-    /* 单独游戏卡片配色微调 */
-    .mini-game.mg-tetris {
-      background: radial-gradient(circle at 100% 0%, rgba(255, 122, 166, .2), transparent 70%), rgba(255, 255, 255, .04);
-    }
-    .mini-game.mg-mirror {
-      background: radial-gradient(circle at 100% 0%, rgba(233, 169, 79, .2), transparent 70%), rgba(255, 255, 255, .04);
-    }
-    .mini-game.mg-idiom {
-      background: radial-gradient(circle at 100% 0%, rgba(127, 231, 255, .18), transparent 70%), rgba(255, 255, 255, .04);
-    }
-    .mini-game.mg-lego {
-      background: radial-gradient(circle at 100% 0%, rgba(140, 255, 191, .18), transparent 70%), rgba(255, 255, 255, .04);
-    }
-
-    .mg-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .mg-icon {
-      font-size: 24px;
-      line-height: 1;
-    }
-
-    .mg-tag {
-      font-size: 11px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 999px;
-      color: rgba(255, 255, 255, .75);
-      background: rgba(255, 255, 255, .1);
-      border: 1px solid rgba(255, 255, 255, .08);
-    }
-
-    .mg-preview {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      margin: 4px 0;
-    }
-
-    /* 果冻动效小方块 */
-    .jelly-cluster {
-      display: flex;
-      gap: 6px;
-    }
-    .mini-jelly {
-      width: 14px;
-      height: 14px;
-      border-radius: 35% 45% 38% 42%;
-      animation: wobble 3.6s ease-in-out infinite;
-    }
-
-    /* 台灯呼吸微光 */
-    .mini-lamp {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #FBE3B3 0%, #E9A94F 40%, rgba(233,169,79,0) 75%);
-      box-shadow: 0 0 16px rgba(233, 169, 79, .6);
-      animation: lampGlow 3s ease-in-out infinite;
-    }
-
-    /* 成语卷轴/印章小标 */
-    .mini-scroll {
+      padding: 0 21px;
       font-size: 13px;
       font-weight: 900;
-      letter-spacing: .12em;
-      color: #7fe7ff;
-      border: 1px dashed rgba(127, 231, 255, .4);
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(127, 231, 255, .06);
+      letter-spacing: .03em;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
     }
 
-    /* 乐高小积木堆 */
-    .mini-bricks {
-      display: flex;
-      gap: 4px;
-      align-items: flex-end;
-    }
-    .mini-brick {
-      border-radius: 3px;
-      background: var(--c);
-      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .4);
+    .button-primary {
+      color: var(--coal);
+      background: var(--acid);
+      box-shadow: 0 12px 28px rgba(217, 242, 106, .18);
     }
 
-    .mg-info .mg-title {
-      font-size: 14.5px;
-      font-weight: 800;
+    .button-primary::after {
+      content: "↘";
+      margin-left: 12px;
+      font-size: 16px;
+      transition: transform .2s ease;
+    }
+
+    .button-secondary {
       color: var(--ink);
-      line-height: 1.2;
-    }
-    .mg-info .mg-desc {
-      font-size: 11.5px;
-      color: var(--muted);
-      margin-top: 3px;
+      border-color: rgba(246, 243, 235, .28);
+      background: rgba(246, 243, 235, .07);
+      backdrop-filter: blur(12px);
     }
 
-    .showcase-footer {
+    .button:hover,
+    .button:focus-visible {
+      transform: translateY(-3px);
+    }
+
+    .button-primary:hover::after,
+    .button-primary:focus-visible::after {
+      transform: translate(3px, 3px);
+    }
+
+    .button-secondary:hover,
+    .button-secondary:focus-visible {
+      color: var(--coal);
+      border-color: var(--acid);
+      background: var(--acid);
+    }
+
+    .hero-bottom {
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: space-between;
-      margin-top: 10px;
-      padding: 8px 10px 0;
-      border-top: 1px solid rgba(255, 255, 255, .1);
-      font-size: 12.5px;
+      gap: 30px;
+      margin-top: clamp(66px, 10vw, 126px);
+      animation: contentIn .9s .32s ease both;
+    }
+
+    .hero-fact {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      max-width: 320px;
       color: var(--muted);
-      font-weight: 700;
+      font-size: 12px;
+      line-height: 1.6;
     }
 
-    .showcase-footer .action-hint {
-      color: var(--accent-2);
-      font-weight: 800;
+    .hero-fact strong {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 900;
     }
 
-    @keyframes lampGlow {
-      0%, 100% { opacity: .7; transform: scale(.95); }
-      50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 10px rgba(233, 169, 79, .8)); }
+    .hero-fact-index {
+      flex: 0 0 auto;
+      color: var(--acid);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .14em;
     }
 
-    .more {
-      width: min(1180px, 100%);
-      margin: clamp(36px, 6vw, 72px) auto 0;
-      animation: reveal .8s .24s ease both;
+    .hero-feature {
+      display: grid;
+      min-width: min(330px, 100%);
+      grid-template-columns: 1fr auto;
+      gap: 28px;
+      align-items: end;
+      padding: 16px 0 0 20px;
+      border-top: 1px solid rgba(246, 243, 235, .28);
     }
 
-    .more h2 {
-      margin: 0 0 18px;
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: .24em;
-      color: var(--accent-2);
+    .hero-feature-label {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .17em;
       text-transform: uppercase;
     }
 
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 18px;
-    }
-
-    .game-card {
-      display: grid;
-      gap: 10px;
-      padding: 24px 24px 22px;
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)),
-        rgba(255, 255, 255, .045);
-      box-shadow: 0 22px 48px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .2);
-      backdrop-filter: blur(8px);
-      transition: transform .2s ease, background .2s ease;
-    }
-
-    .game-card:hover {
-      transform: translateY(-4px);
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .05)),
-        rgba(255, 255, 255, .07);
-    }
-
-    .game-card .icon {
-      font-size: 34px;
-      line-height: 1;
-    }
-
-    .game-card .name {
-      font-size: 20px;
+    .hero-feature-title {
+      display: block;
+      margin-top: 7px;
+      color: var(--ink);
+      font-size: 16px;
       font-weight: 900;
     }
 
-    .game-card .desc {
+    .hero-feature-arrow {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid rgba(246, 243, 235, .28);
+      border-radius: 50%;
+      color: var(--acid);
+      font-size: 19px;
+      transition: color .2s ease, background .2s ease, transform .2s ease;
+    }
+
+    .hero-feature:hover .hero-feature-arrow,
+    .hero-feature:focus-visible .hero-feature-arrow {
+      color: var(--coal);
+      background: var(--acid);
+      transform: translate(2px, 2px);
+    }
+
+    .library {
+      color: var(--coal);
+      background:
+        radial-gradient(circle at 84% 4%, rgba(255, 128, 99, .12), transparent 22%),
+        var(--paper);
+    }
+
+    .library-shell {
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: clamp(74px, 10vw, 132px) 0 clamp(84px, 10vw, 138px);
+    }
+
+    .library-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+      align-items: end;
+      gap: 42px;
+    }
+
+    .eyebrow-dark {
+      color: var(--coral);
+    }
+
+    .library h2 {
+      max-width: 620px;
       margin: 0;
-      color: var(--muted);
-      font-size: 14.5px;
-      line-height: 1.65;
+      font-family: ui-serif, "Songti SC", "Noto Serif SC", serif;
+      font-size: clamp(42px, 6.6vw, 88px);
+      font-weight: 500;
+      letter-spacing: -.065em;
+      line-height: .95;
     }
 
-    .game-card .go {
-      margin-top: 6px;
-      font-size: 13px;
+    .library-intro {
+      margin: 0 0 5px;
+      color: var(--paper-muted);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+      margin-top: 46px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line-dark);
+    }
+
+    .filter-label {
+      margin-right: 7px;
+      color: var(--paper-muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .filter-button {
+      border: 1px solid var(--line-dark);
+      border-radius: 999px;
+      padding: 8px 14px;
+      color: var(--paper-muted);
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
       font-weight: 800;
-      letter-spacing: .1em;
-      color: var(--accent-2);
+      transition: color .2s ease, background .2s ease, border-color .2s ease, transform .2s ease;
     }
 
-    footer {
-      padding: 0 clamp(20px, 5vw, 72px) 26px;
-      color: rgba(255, 246, 251, .48);
+    .filter-button:hover,
+    .filter-button:focus-visible,
+    .filter-button.is-active {
+      color: var(--paper);
+      border-color: var(--coal);
+      background: var(--coal);
+      transform: translateY(-2px);
+    }
+
+    .filter-count {
+      margin-left: auto;
+      color: var(--paper-muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .14em;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(30px, 4vw, 52px) 22px;
+      margin-top: 35px;
+    }
+
+    .game-card {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      color: var(--coal);
+      transition: opacity .25s ease, transform .25s ease;
+    }
+
+    .game-card.is-featured {
+      grid-column: span 2;
+    }
+
+    .game-card.is-hidden {
+      display: none;
+    }
+
+    .game-card__media {
+      position: relative;
+      aspect-ratio: 1 / 1.08;
+      overflow: hidden;
+      background: var(--paper-deep);
+      isolation: isolate;
+    }
+
+    .is-featured .game-card__media {
+      aspect-ratio: 1.72 / 1;
+    }
+
+    .game-card__media::after {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(17, 19, 15, .08), transparent 44%, rgba(17, 19, 15, .63));
+      pointer-events: none;
+    }
+
+    .game-card__image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .65s cubic-bezier(.2, .65, .2, 1), filter .35s ease;
+    }
+
+    .game-card:hover .game-card__image,
+    .game-card:focus-within .game-card__image {
+      filter: saturate(1.1);
+      transform: scale(1.055);
+    }
+
+    .game-card__badge,
+    .game-card__number {
+      position: absolute;
+      z-index: 2;
+      top: 17px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .game-card__badge {
+      left: 17px;
+      padding: 7px 10px;
+      border: 1px solid rgba(246, 243, 235, .26);
+      border-radius: 999px;
+      color: var(--ink);
+      background: rgba(17, 19, 15, .34);
+      backdrop-filter: blur(10px);
+    }
+
+    .game-card__number {
+      right: 17px;
+      color: var(--ink);
+      opacity: .84;
+    }
+
+    .game-card__play {
+      position: absolute;
+      z-index: 2;
+      right: 17px;
+      bottom: 16px;
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid rgba(246, 243, 235, .34);
+      border-radius: 50%;
+      color: var(--ink);
+      background: rgba(17, 19, 15, .3);
+      font-size: 18px;
+      backdrop-filter: blur(10px);
+      transition: color .2s ease, background .2s ease, transform .2s ease;
+    }
+
+    .game-card:hover .game-card__play,
+    .game-card:focus-within .game-card__play {
+      color: var(--coal);
+      background: var(--acid);
+      border-color: var(--acid);
+      transform: translate(2px, 2px);
+    }
+
+    .game-card__copy {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px 20px;
+      padding-top: 17px;
+      border-bottom: 1px solid var(--line-dark);
+    }
+
+    .game-card__title {
+      margin: 0;
+      font-size: clamp(18px, 2vw, 25px);
+      font-weight: 900;
+      letter-spacing: -.045em;
+    }
+
+    .is-featured .game-card__title {
+      font-size: clamp(22px, 2.4vw, 31px);
+    }
+
+    .game-card__type {
+      align-self: center;
+      color: var(--paper-muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .game-card__desc {
+      grid-column: 1 / -1;
+      max-width: 540px;
+      margin: 0 0 17px;
+      color: var(--paper-muted);
       font-size: 13px;
-      animation: reveal .8s .28s ease both;
+      line-height: 1.7;
     }
 
-    @keyframes reveal {
-      from {
-        opacity: 0;
-        transform: translateY(16px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .final-cta {
+      color: var(--ink);
+      background: var(--coal);
     }
 
-    @keyframes wobble {
-      0%, 100% {
-        border-radius: 35% 45% 38% 42%;
-      }
-      50% {
-        border-radius: 46% 34% 44% 36%;
-      }
+    .final-cta__inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 35px;
+      width: min(1200px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: clamp(70px, 10vw, 120px) 0 clamp(74px, 9vw, 106px);
     }
 
-    @keyframes floatOrb {
-      0%, 100% {
-        transform: translate3d(0, 0, 0) scale(1);
-      }
-      50% {
-        transform: translate3d(0, -18px, 0) scale(1.03);
-      }
+    .final-cta h2 {
+      max-width: 660px;
+      margin: 0;
+      font-family: ui-serif, "Songti SC", "Noto Serif SC", serif;
+      font-size: clamp(40px, 6vw, 78px);
+      font-weight: 500;
+      letter-spacing: -.06em;
+      line-height: .96;
+    }
+
+    .final-cta h2 em {
+      color: var(--acid);
+      font-style: normal;
+    }
+
+    .final-cta__action {
+      flex: 0 0 auto;
+    }
+
+    .site-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 0 clamp(20px, 5vw, 72px) 24px;
+      color: rgba(246, 243, 235, .43);
+      background: var(--coal);
+      font-size: 11px;
+      letter-spacing: .08em;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--acid);
+      outline-offset: 5px;
+    }
+
+    @keyframes headerIn {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes contentIn {
+      from { opacity: 0; transform: translateY(22px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes heroDrift {
+      from { transform: scale(1.03) translate3d(0, 0, 0); }
+      to { transform: scale(1.08) translate3d(-1.2%, -1%, 0); }
     }
 
     @media (max-width: 820px) {
-      header {
-        padding-top: 22px;
+      .header-meta {
+        display: none;
       }
 
       .hero {
+        min-height: max(720px, 92svh);
+      }
+
+      .hero::before {
+        background-position: center, center, 68% center;
+      }
+
+      .hero-inner {
+        width: min(100% - 40px, 620px);
+      }
+
+      .hero-bottom {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 26px;
+        margin-top: 58px;
+      }
+
+      .hero-feature {
+        width: 100%;
+      }
+
+      .library-heading {
+        grid-template-columns: 1fr;
+        gap: 22px;
+      }
+
+      .game-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .game-card.is-featured {
+        grid-column: span 2;
+      }
+
+      .final-cta__inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .site-header {
+        padding-top: 20px;
+      }
+
+      .brand {
+        font-size: 10px;
+        letter-spacing: .12em;
+      }
+
+      .header-link {
+        font-size: 11px;
+      }
+
+      .hero h1 {
+        font-size: clamp(53px, 17vw, 82px);
+      }
+
+      .hero-lede {
+        margin-top: 22px;
+        font-size: 14px;
+      }
+
+      .hero-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .button {
+        width: 100%;
+      }
+
+      .hero-feature {
+        padding-left: 0;
+      }
+
+      .filter-count {
+        width: 100%;
+        margin: 5px 0 0;
+      }
+
+      .game-grid {
         grid-template-columns: 1fr;
       }
 
-      .stage {
-        min-height: min(520px, 88vw);
-        order: -1;
+      .game-card.is-featured {
+        grid-column: auto;
       }
 
-      h1 {
-        font-size: clamp(48px, 17vw, 88px);
+      .game-card__media,
+      .is-featured .game-card__media {
+        aspect-ratio: 1.22 / 1;
       }
 
-      .intro {
-        margin-top: 20px;
+      .game-card__copy {
+        padding-top: 14px;
       }
 
-      .showcase-tile {
-        width: min(360px, 86vw);
+      .site-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 9px;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
       *,
       *::before,
       *::after {
-        animation: none !important;
-        transition: none !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
       }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <a class="brand" href="/">GAMES · 小游戏合集</a>
-      <a class="nav-link" href="#games-list">全部游戏 ▾</a>
-    </header>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="返回小游戏合集首页">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>GAMES · 小游戏合集</span>
+    </a>
+    <div class="header-right">
+      <span class="header-meta">06 titles · no download</span>
+      <a class="header-link" href="#games-list">浏览游戏库</a>
+    </div>
+  </header>
 
-    <main>
-      <section class="hero" aria-label="小游戏合集主页">
-        <div class="copy">
-          <p class="eyebrow">MINI-GAME HUB · 随开随玩</p>
-          <h1>小游戏合集</h1>
-          <p class="intro">精选 6 款自研休闲、策略、体验与物理类网页小游戏。从 XPBD 软体物理切开的真-果冻方块，到触动心弦的岁月生活体验；从反义词相克的成语攻防与轻松放置的乐高战争，再到国潮双人暗棋萌兵军棋——无需下载，秒开即玩。</p>
-          <div class="actions">
-            <a class="play" href="#games-list">挑选游戏 ▾</a>
-            <button class="nav-link" id="randomGameBtn" type="button" style="cursor:pointer;font-weight:700;">🎲 随机开一局</button>
-          </div>
-          <div class="badge-row">
-            <span class="badge-item">🎮 6 款精选玩法</span>
-            <span class="badge-item">⚡ 极速秒开</span>
-            <span class="badge-item">📱 手机/电脑自适应</span>
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <p class="eyebrow">Tang Tang / Game Collection</p>
+          <h1 id="hero-title">今晚，<em>玩点</em><br>不一样的。</h1>
+          <p class="hero-lede">六款自研小游戏，打开浏览器就能开局。想晃一晃果冻，还是守住城池？把几分钟交给下一局。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#games-list">挑一款开始</a>
+            <button class="button button-secondary" id="randomGameBtn" type="button">随机开一局</button>
           </div>
         </div>
 
-        <div class="stage" aria-label="游戏合集展台">
-          <div class="showcase-tile">
-            <div class="showcase-grid">
-              <a class="mini-game mg-tetris" href="/games/game" title="进入 果冻俄罗斯方块">
-                <div class="mg-header">
-                  <span class="mg-icon">🍮</span>
-                  <span class="mg-tag">软体物理</span>
-                </div>
-                <div class="mg-preview">
-                  <div class="jelly-cluster">
-                    <span class="mini-jelly" style="background:#ff7aa6;animation-delay:.0s"></span>
-                    <span class="mini-jelly" style="background:#ffd166;animation-delay:.2s"></span>
-                    <span class="mini-jelly" style="background:#7fe7ff;animation-delay:.1s"></span>
-                  </div>
-                </div>
-                <div class="mg-info">
-                  <div class="mg-title">果冻方块</div>
-                  <div class="mg-desc">弹性物理 2D/3D</div>
-                </div>
-              </a>
+        <div class="hero-bottom">
+          <div class="hero-fact">
+            <span class="hero-fact-index">01 / 06</span>
+            <span><strong>每一局都不太一样</strong>休闲、策略、物理和生活体验，给今天的心情留个入口。</span>
+          </div>
+          <a class="hero-feature" href="/games/jelly-block/" aria-label="进入真-果冻俄罗斯方块">
+            <span>
+              <span class="hero-feature-label">Featured / 软体物理</span>
+              <span class="hero-feature-title">真·果冻俄罗斯方块</span>
+            </span>
+            <span class="hero-feature-arrow" aria-hidden="true">↘</span>
+          </a>
+        </div>
+      </div>
+    </section>
 
-              <a class="mini-game mg-mirror" href="/games/mirror" title="进入 岁月之镜">
-                <div class="mg-header">
-                  <span class="mg-icon">🪞</span>
-                  <span class="mg-tag">生活体验</span>
-                </div>
-                <div class="mg-preview">
-                  <div class="mini-lamp"></div>
-                </div>
-                <div class="mg-info">
-                  <div class="mg-title">岁月之镜</div>
-                  <div class="mg-desc">14段老年生活体验</div>
-                </div>
-              </a>
+    <section class="library" id="games-list" aria-labelledby="library-title">
+      <div class="library-shell">
+        <div class="library-heading reveal">
+          <div>
+            <p class="eyebrow eyebrow-dark">Choose your mood / 选个心情</p>
+            <h2 id="library-title">六种快乐，<br>六种节奏。</h2>
+          </div>
+          <p class="library-intro">不做复杂的菜单，也不需要下载。每张封面下面，都是一款可以立刻开始的小游戏。</p>
+        </div>
 
-              <a class="mini-game mg-idiom" href="/games/idiom" title="进入 成语守卫战">
-                <div class="mg-header">
-                  <span class="mg-icon">📜</span>
-                  <span class="mg-tag">策略塔防</span>
-                </div>
-                <div class="mg-preview">
-                  <div class="mini-scroll">反义词相克</div>
-                </div>
-                <div class="mg-info">
-                  <div class="mg-title">成语守卫战</div>
-                  <div class="mg-desc">卡牌出兵反制</div>
-                </div>
-              </a>
+        <div class="filter-bar reveal" aria-label="游戏筛选">
+          <span class="filter-label">Filter</span>
+          <button class="filter-button is-active" type="button" data-filter="all">全部</button>
+          <button class="filter-button" type="button" data-filter="relax">放松一下</button>
+          <button class="filter-button" type="button" data-filter="think">动脑一会</button>
+          <button class="filter-button" type="button" data-filter="story">沉浸其中</button>
+          <span class="filter-count" id="filterCount" aria-live="polite">06 TITLES</span>
+        </div>
 
-              <a class="mini-game mg-lego" href="/games/lego" title="进入 乐高战争">
-                <div class="mg-header">
-                  <span class="mg-icon">🧱</span>
-                  <span class="mg-tag">挂机放置</span>
-                </div>
-                <div class="mg-preview">
-                  <div class="mini-bricks">
-                    <span class="mini-brick" style="--c:#ffd166;width:12px;height:12px;"></span>
-                    <span class="mini-brick" style="--c:#ff5d8f;width:14px;height:18px;"></span>
-                    <span class="mini-brick" style="--c:#7fe7ff;width:12px;height:24px;"></span>
-                  </div>
-                </div>
-                <div class="mg-info">
-                  <div class="mg-title">乐高战争</div>
-                  <div class="mg-desc">建造/训练/放置</div>
-                </div>
-              </a>
+        <div class="game-grid" id="gameGrid">
+          <a class="game-card is-featured reveal" data-type="relax" href="/games/jelly-block/">
+            <div class="game-card__media">
+              <img class="game-card__image" src="assets/covers/jelly-block.png" alt="晶莹的粉色、蓝色和黄色果冻方块在反光台面上堆叠" loading="eager" decoding="async">
+              <span class="game-card__badge">软体物理 · 进阶</span>
+              <span class="game-card__number">01 / 06</span>
+              <span class="game-card__play" aria-hidden="true">↘</span>
             </div>
-            <div class="showcase-footer">
-              <span>🕹️ 4 款精选小游戏</span>
-              <span class="action-hint">点击卡片直达 →</span>
+            <div class="game-card__copy">
+              <h3 class="game-card__title">真-果冻俄罗斯方块</h3>
+              <span class="game-card__type">XPBD / WEBGL2</span>
+              <p class="game-card__desc">不是网格吸附，是会受力、会融化、会继续跌落的果冻堆叠。适合想看东西软乎乎地失控一会儿的时候。</p>
             </div>
-          </div>
-        </div>
-      </section>
+          </a>
 
-      <section class="more" id="games-list" aria-label="全部游戏清单">
-        <h2>All Games · 全部游戏</h2>
-        <div class="card-grid">
-          <a class="game-card" href="/games/idiom">
-            <span class="icon">📜</span>
-            <span class="name">成语守卫战</span>
-            <p class="desc">出成语卡牌派兵防守，用反义词克制敌军。守住十波进攻，顺便把成语记牢。</p>
-            <span class="go">开始防守 →</span>
+          <a class="game-card reveal" data-type="relax" href="/games/game/">
+            <div class="game-card__media">
+              <img class="game-card__image" src="assets/covers/jelly-tetris.png" alt="霓虹方框中堆叠着彩色果冻俄罗斯方块" loading="lazy" decoding="async">
+              <span class="game-card__badge">休闲 · 经典</span>
+              <span class="game-card__number">02 / 06</span>
+              <span class="game-card__play" aria-hidden="true">↘</span>
+            </div>
+            <div class="game-card__copy">
+              <h3 class="game-card__title">果冻方块</h3>
+              <span class="game-card__type">2D / 3 MODES</span>
+              <p class="game-card__desc">经典、融化、流体，三种方式让熟悉的方块重新变得有点黏。</p>
+            </div>
           </a>
-          <a class="game-card" href="/games/mirror">
-            <span class="icon">🪞</span>
-            <span class="name">岁月之镜</span>
-            <p class="desc">你玩的不是游戏，是父母的未来。十四段老年生活体验，十几分钟就是她们普通的一天。</p>
-            <span class="go">进入体验 →</span>
+
+          <a class="game-card reveal" data-type="think" href="/games/idiom/">
+            <div class="game-card__media">
+              <img class="game-card__image" src="assets/covers/idiom.png" alt="夕阳下的中国古城门与手持玉盾的守卫者" loading="lazy" decoding="async">
+              <span class="game-card__badge">策略 · 塔防</span>
+              <span class="game-card__number">03 / 06</span>
+              <span class="game-card__play" aria-hidden="true">↘</span>
+            </div>
+            <div class="game-card__copy">
+              <h3 class="game-card__title">成语守卫战</h3>
+              <span class="game-card__type">10 WAVES</span>
+              <p class="game-card__desc">出成语卡牌派兵防守，用反义词克制敌军，守住城池也顺便把成语记牢。</p>
+            </div>
           </a>
-          <a class="game-card" href="/games/lego">
-            <span class="icon">🧱</span>
-            <span class="name">乐高战争</span>
-            <p class="desc">升级建筑、囤积砖块、训练小人军团。放置经营，离线也在悄悄产出。</p>
-            <span class="go">开始经营 →</span>
+
+          <a class="game-card reveal" data-type="relax" href="/games/lego/">
+            <div class="game-card__media">
+              <img class="game-card__image" src="assets/covers/lego.png" alt="阳光下由彩色积木搭成的城堡、桥梁和小士兵" loading="lazy" decoding="async">
+              <span class="game-card__badge">放置 · 建造</span>
+              <span class="game-card__number">04 / 06</span>
+              <span class="game-card__play" aria-hidden="true">↘</span>
+            </div>
+            <div class="game-card__copy">
+              <h3 class="game-card__title">乐高战争</h3>
+              <span class="game-card__type">IDLE / BUILD</span>
+              <p class="game-card__desc">升级建筑、囤积砖块、训练小人军团。离线以后，城堡也还在慢慢长大。</p>
+            </div>
           </a>
-          <a class="game-card" href="/games/game">
-            <span class="icon">🍮</span>
-            <span class="name">果冻俄罗斯方块</span>
-            <p class="desc">软体物理驱动的方块消除，经典 / 融化 / 流体三种模式，怎么晃都好玩。</p>
-            <span class="go">开始游戏 →</span>
+
+          <a class="game-card reveal" data-type="story" href="/games/mirror/">
+            <div class="game-card__media">
+              <img class="game-card__image" src="assets/covers/mirror.png" alt="暮色房间里站在镜子前的老人，镜中映出年轻时的身影" loading="lazy" decoding="async">
+              <span class="game-card__badge">体验 · 故事</span>
+              <span class="game-card__number">05 / 06</span>
+              <span class="game-card__play" aria-hidden="true">↘</span>
+            </div>
+            <div class="game-card__copy">
+              <h3 class="game-card__title">岁月之镜</h3>
+              <span class="game-card__type">14 MOMENTS</span>
+              <p class="game-card__desc">你玩的不是游戏，是父母的未来，也是你自己的明天。十几分钟，走过她们普通的一天。</p>
+            </div>
           </a>
-          <a class="game-card" href="/games/junqi/">
-            <span class="icon">🎖️</span>
-            <span class="name">萌兵军棋</span>
-            <p class="desc">国潮 Q 版两国暗棋，排位匹配、好友开房与人机对战。运筹帷幄，决胜千里。</p>
-            <span class="go">开始对弈 →</span>
-          </a>
-          <a class="game-card" href="/games/jelly-block/">
-            <span class="icon">🧊</span>
-            <span class="name">真-果冻俄罗斯方块</span>
-            <p class="desc">基于 XPBD 软体动力学与 WebGL2 真实折射光效。消除时整行横切融化，残块继续受力跌落。</p>
-            <span class="go">开启硬核堆叠 →</span>
+
+          <a class="game-card reveal" data-type="think" href="/games/junqi/">
+            <div class="game-card__media">
+              <img class="game-card__image" src="assets/covers/junqi.png" alt="红蓝两方萌系军棋棋子在中式棋盘上对峙" loading="lazy" decoding="async">
+              <span class="game-card__badge">对战 · 军棋</span>
+              <span class="game-card__number">06 / 06</span>
+              <span class="game-card__play" aria-hidden="true">↘</span>
+            </div>
+            <div class="game-card__copy">
+              <h3 class="game-card__title">萌兵军棋</h3>
+              <span class="game-card__type">PVP / AI</span>
+              <p class="game-card__desc">国潮 Q 版两国暗棋，好友开房、人机练习与在线对战，运筹帷幄，决胜千里。</p>
+            </div>
           </a>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
 
-    <footer>games.tangletang.top</footer>
-  </div>
+    <section class="final-cta" aria-labelledby="cta-title">
+      <div class="final-cta__inner reveal">
+        <div>
+          <p class="eyebrow">One more round / 再来一局</p>
+          <h2 id="cta-title">没有最优解，<br>只有<em>下一局。</em></h2>
+        </div>
+        <button class="button button-primary final-cta__action" id="randomGameBtnBottom" type="button">交给骰子</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>GAMES · TANGTANG.TOP</span>
+    <span>自研小游戏合集 · 2026</span>
+  </footer>
 
   <script>
     const games = [
-      '/games/game',
-      '/games/mirror',
-      '/games/idiom',
-      '/games/lego',
-      '/games/junqi',
-      '/games/jelly-block'
+      '/games/jelly-block/',
+      '/games/game/',
+      '/games/idiom/',
+      '/games/lego/',
+      '/games/mirror/',
+      '/games/junqi/'
     ];
-    document.getElementById('randomGameBtn')?.addEventListener('click', () => {
+
+    const randomGame = () => {
       const pick = games[Math.floor(Math.random() * games.length)];
       window.location.href = pick;
+    };
+
+    document.getElementById('randomGameBtn')?.addEventListener('click', randomGame);
+    document.getElementById('randomGameBtnBottom')?.addEventListener('click', randomGame);
+
+    const filterButtons = [...document.querySelectorAll('[data-filter]')];
+    const gameCards = [...document.querySelectorAll('.game-card')];
+    const filterCount = document.getElementById('filterCount');
+
+    filterButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+        filterButtons.forEach((item) => item.classList.toggle('is-active', item === button));
+
+        let visible = 0;
+        gameCards.forEach((card) => {
+          const show = filter === 'all' || card.dataset.type === filter;
+          card.classList.toggle('is-hidden', !show);
+          if (show) visible += 1;
+        });
+
+        filterCount.textContent = `${String(visible).padStart(2, '0')} TITLES`;
+      });
     });
+
+    const revealItems = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries, currentObserver) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-visible');
+          currentObserver.unobserve(entry.target);
+        });
+      }, { threshold: .12, rootMargin: '0px 0px -30px' });
+
+      revealItems.forEach((item) => observer.observe(item));
+    } else {
+      revealItems.forEach((item) => item.classList.add('is-visible'));
+    }
   </script>
 </body>
 </html>
