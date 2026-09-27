@@ -1,0 +1,20 @@
+{
+  "name": "jelly-tetris-ad-generator",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "capture": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-local.ps1 capture",
+    "audio": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-local.ps1 audio",
+    "render": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-local.ps1 render",
+    "make-ad": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-local.ps1 all",
+    "preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-local.ps1 preview"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.489",
+    "playwright": "1.61.1",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "remotion": "4.0.489"
+  }
+}

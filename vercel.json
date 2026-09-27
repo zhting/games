@@ -4,27 +4,71 @@
   "rewrites": [
     {
       "source": "/game",
-      "destination": "/game/index.html"
+      "destination": "/games/game/index.html"
     },
     {
       "source": "/game/3d",
-      "destination": "/game/3d/index.html"
+      "destination": "/games/game/3d/index.html"
     },
     {
       "source": "/idiom",
-      "destination": "/idiom/index.html"
+      "destination": "/games/idiom/index.html"
     },
     {
       "source": "/lego",
-      "destination": "/lego/index.html"
+      "destination": "/games/lego/index.html"
     },
     {
       "source": "/成语",
-      "destination": "/idiom/index.html"
+      "destination": "/games/idiom/index.html"
     },
     {
       "source": "/mirror",
-      "destination": "/mirror/index.html"
+      "destination": "/games/mirror/index.html"
+    },
+    {
+      "source": "/games/game",
+      "destination": "/games/game/index.html"
+    },
+    {
+      "source": "/games/game/3d",
+      "destination": "/games/game/3d/index.html"
+    },
+    {
+      "source": "/games/idiom",
+      "destination": "/games/idiom/index.html"
+    },
+    {
+      "source": "/games/lego",
+      "destination": "/games/lego/index.html"
+    },
+    {
+      "source": "/games/mirror",
+      "destination": "/games/mirror/index.html"
+    },
+    {
+      "source": "/junqi",
+      "destination": "/games/junqi/index.html"
+    },
+    {
+      "source": "/军棋",
+      "destination": "/games/junqi/index.html"
+    },
+    {
+      "source": "/games/junqi",
+      "destination": "/games/junqi/index.html"
+    },
+    {
+      "source": "/games/jelly-block",
+      "destination": "/games/jelly-block/index.html"
+    },
+    {
+      "source": "/jelly-block",
+      "destination": "/games/jelly-block/index.html"
+    },
+    {
+      "source": "/真果冻",
+      "destination": "/games/jelly-block/index.html"
     }
   ],
   "headers": [

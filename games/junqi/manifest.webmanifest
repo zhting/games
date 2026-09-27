@@ -1,0 +1,14 @@
+{
+  "name": "萌兵军棋 · 在线对战",
+  "short_name": "萌兵军棋",
+  "description": "国潮 Q 版两国暗棋，浏览器里就能和好友在线对战",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B7566",
+  "theme_color": "#0B7566",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B7566">
+<meta name="description" content="萌兵军棋 · 国潮 Q 版两国暗棋，浏览器里就能和好友在线对战">
+<!-- 字体地址：国内网络可改成 https://fonts.loli.net/css2?... 镜像 -->
+<meta name="mbjq-fonts" content="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700;900&amp;family=ZCOOL+QingKe+HuangYou&amp;display=swap">
+<script>
+if (!location.pathname.endsWith('/') && !location.pathname.split('/').pop().includes('.')) {
+  location.replace(location.pathname + '/' + location.search + location.hash);
+}
+</script>
+<title>萌兵军棋 · 在线对战</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/style.css">
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v15H5.5c-.8 0-1.5.7-1.5 1.5zM20 5.5c0-.8-.7-1.5-1.5-1.5H13v15h5.5c.8 0 1.5.7 1.5 1.5z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"></circle><circle cx="12" cy="12" r="6.6"></circle><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.9 1.9M16.6 16.6l1.9 1.9M5.5 18.5l1.9-1.9M16.6 7.4l1.9-1.9"></path></g></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"></path></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"></path></g></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"></path><path d="M16 9.5l5 5M21 9.5l-5 5"></path></g></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></g></symbol>
+    <symbol id="i-stopwatch" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 1.5M9.5 2.5h5"></path></g></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"></path><path d="M8 6H4.5c0 3 1.5 4.5 3.5 4.5M16 6h3.5c0 3-1.5 4.5-3.5 4.5M12 13v4M8.5 20h7"></path></g></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></g></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="9" cy="8.5" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M15.5 5.2a3.4 3.4 0 0 1 0 6.6M17.5 14.3c2.4.6 4 2.6 4 5.7"></path></g></symbol>
+    <symbol id="i-robot" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="8" width="15" height="11" rx="3.5"></rect><path d="M12 8V4.5M9.2 13h.1M14.8 13h.1M9.5 16.2h5M2.5 12.5v2.5M21.5 12.5v2.5"></path><circle cx="12" cy="3.6" r="1.1" fill="currentColor" stroke="none"></circle></g></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11" fill="none"></path><circle cx="4.5" cy="6" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="4.5" cy="18" r="1.3" fill="currentColor" stroke="none"></circle></g></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M7 20h10M4 8h16"></path><path d="M6 8l-3 6h6zM18 8l-3 6h6z"></path></g></symbol>
+    <symbol id="i-whiteflag" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"></path><path d="M6 4.5c3-1.5 5 1.5 8 0s4-1 4-1v8s-1-.5-4 1-5-1.5-8 0"></path></g></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2.4"></rect><g fill="currentColor"><circle cx="9" cy="9" r="1.4"></circle><circle cx="15" cy="15" r="1.4"></circle><circle cx="15" cy="9" r="1.4"></circle><circle cx="9" cy="15" r="1.4"></circle></g></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"></path><path d="M8 4v5h7V4M8 20v-6h8v6"></path></g></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"></path><path d="M20 4v5h-5"></path></g></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="3"></rect><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"></path></g></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13.5 6.5l4 4"></path></g></symbol>
+    <symbol id="i-signal" viewBox="0 0 14 12"><path d="M1 11V8M5 11V6M9 11V3.5M13 11V1" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></symbol>
+    <symbol id="i-pointer" viewBox="0 0 40 40"><path d="M12 6l18 16-8 1.5 5 10-4 2-5-10-6 5z" fill="#FFC83D" stroke="#2A1D3D" stroke-width="2.5" stroke-linejoin="round"></path></symbol>
+    <symbol id="i-flag" viewBox="0 0 44 44"><path d="M11 40V5" stroke="#2A1D3D" stroke-width="4" stroke-linecap="round"></path><path d="M13 6h24l-6 8 6 8H13z" fill="#E8453A" stroke="#2A1D3D" stroke-width="3" stroke-linejoin="round"></path><path d="M23 10.5l1.4 2.9 3.1.4-2.3 2.1.6 3.1-2.8-1.6-2.8 1.6.6-3.1-2.3-2.1 3.1-.4z" fill="#FFC83D"></path></symbol>
+    <symbol id="i-okcircle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#22B893" stroke="#2A1D3D" stroke-width="2"></circle><path d="M7.5 12.3l3 3 6-6.3" fill="none" stroke="#FFF6E3" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path></symbol>
+    <symbol id="i-up" viewBox="0 0 16 16"><path d="M8 2l5 6H9.5v6h-3V8H3z" fill="#22B893" stroke="#2A1D3D" stroke-width="1.5" stroke-linejoin="round"></path></symbol>
+    <symbol id="i-fire" viewBox="0 0 12 14"><path d="M6.5 0C7 3 11 5 11 9a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5.3 1.5 1 2.5 2 2.5C5 5 5 2 6.5 0z" fill="#FFC83D" stroke="#2A1D3D" stroke-width="1.2"></path></symbol>
+    <symbol id="i-star" viewBox="0 0 20 20"><path d="M10 1.5l2.6 5.3 5.9.8-4.3 4.1 1 5.8L10 14.7l-5.2 2.8 1-5.8L1.5 7.6l5.9-.8z" fill="currentColor"></path></symbol>
+    <symbol id="i-cloud" viewBox="0 0 150 64"><path d="M18 58c-12 0-15-15-4-19-2-13 11-21 22-14 4-13 24-16 31-3 8-11 28-9 30 5 12-3 23 7 19 18 10 1 12 13 0 13z" fill="#FFF6E3" stroke="#2A1D3D" stroke-width="3" stroke-linejoin="round"></path><path d="M44 44c-2-7 8-10 10-4 1 4-4 6-6 3" fill="none" stroke="#9FDCCB" stroke-width="3" stroke-linecap="round"></path></symbol>
+    <symbol id="i-xiangyun" viewBox="0 0 220 90"><path d="M22 70c-14 0-18-17-6-23-4-15 12-25 25-17 3-15 25-20 35-7 8-13 32-12 36 5 14-5 29 6 24 21 13 1 16 21 2 21z" fill="currentColor"></path></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 20 20"><path d="M10 0c1 6 4 9 10 10-6 1-9 4-10 10-1-6-4-9-10-10 6-1 9-4 10-10z" fill="currentColor"></path></symbol>
+    <symbol id="i-burst" viewBox="0 0 150 150"><path d="M75 75L75 0L94.4 2.6ZM75 75L112.5 10L128 22ZM75 75L140 37.5L147.4 55.6ZM75 75L150 75L147.4 94.4ZM75 75L140 112.5L128 128ZM75 75L112.5 140L94.4 147.4ZM75 75L75 150L55.6 147.4ZM75 75L37.5 140L22 128ZM75 75L10 112.5L2.6 94.4ZM75 75L0 75L2.6 55.6ZM75 75L10 37.5L22 22ZM75 75L37.5 10L55.6 2.6Z" fill="currentColor"></path></symbol>
+    <symbol id="i-hills" viewBox="0 0 1440 260" preserveAspectRatio="none"><path d="M0 260V130c60-40 120-70 180-60s100 50 160 40 110-80 190-80 120 60 190 70 110-40 180-40 120 50 190 50 100-40 170-50 130 20 180 40V260z" fill="#0D8171"></path><path d="M0 260V180c80-30 150-40 230-20s130 30 210 10 140-50 230-40 150 40 240 40 140-30 230-40 170 10 300 40V260z" fill="#10917F"></path></symbol>
+  </defs>
+</svg>
+
+<div id="app">
+
+<!-- ================= 大厅 ================= -->
+<section class="screen scr-lobby scroll" id="scr-lobby" data-tab="home" aria-label="大厅">
+  <div class="scene" aria-hidden="true">
+    <svg class="cloud" style="left:24%;top:2%;width:300px;height:123px;color:#0D7E6F"><use href="#i-xiangyun"></use></svg>
+    <svg class="cloud" style="right:3%;bottom:20%;width:240px;height:98px;color:#0E8373"><use href="#i-xiangyun"></use></svg>
+    <svg class="hills" preserveAspectRatio="none"><use href="#i-hills"></use></svg>
+    <svg class="cloud" style="left:72%;top:16%;width:20px;height:20px;color:#FFC83D"><use href="#i-sparkle"></use></svg>
+    <svg class="cloud" style="left:36%;top:24%;width:14px;height:14px;color:#FFF6E3"><use href="#i-sparkle"></use></svg>
+  </div>
+  <div class="lobby">
+    <header class="lobby-head">
+      <div class="brand">
+        <h1 class="logo">萌兵军棋</h1>
+        <span class="seal" aria-hidden="true"><span>双人</span><span>对战</span></span>
+      </div>
+      <div class="head-right">
+        <button type="button" class="player-chip" data-act="rename" aria-label="修改昵称">
+          <span id="meAvatar" class="av-slot"></span>
+          <span class="pc-txt">
+            <span class="n"><span id="meName">连接中…</span><svg class="edit" width="14" height="14" aria-hidden="true"><use href="#i-edit"></use></svg></span>
+            <span class="t"><span id="meBadge"></span><span id="meTier">列兵</span></span>
+          </span>
+        </button>
+        <div style="display:flex;gap:12px">
+          <button type="button" class="icon-btn rules-btn" data-open="rules" aria-label="玩法规则"><svg aria-hidden="true"><use href="#i-book"></use></svg></button>
+          <button type="button" class="icon-btn" data-open="settings" aria-label="设置"><svg aria-hidden="true"><use href="#i-gear"></use></svg></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="lobby-main">
+      <section class="col-rank tabpane" data-pane="home" aria-label="排位">
+        <div class="season-row"><span class="chip">经典暗棋</span><span id="onlineLine">正在连接服务器…</span></div>
+        <div class="panel rank-card">
+          <div class="rank-top">
+            <div class="rank-badge">
+              <svg class="burst" viewBox="0 0 150 150" aria-hidden="true" style="color:#FFE3A3"><use href="#i-burst"></use></svg>
+              <span class="b" id="rankBadge"></span>
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+              <div class="season-mini" style="align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;color:var(--ink-2)">
+                <span id="onlineMini">经典暗棋 · 系统裁判</span>
+                <span class="chip c-red streak-chip" style="height:22px;font-size:11px;padding:0 8px" hidden><span class="streakN">0</span> 连胜</span>
+              </div>
+              <div class="label-sm only-wide">当前军衔</div>
+              <div class="rank-name"><span class="cn" id="rankCn">列兵</span><span class="lv" id="rankLv"></span></div>
+              <span class="chip c-red only-wide streak-chip" style="align-self:flex-start" hidden><svg width="12" height="14" aria-hidden="true"><use href="#i-fire"></use></svg><span class="streakN">0</span> 连胜</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="prog-head"><b style="font-size:15px">军功</b><span class="num" style="font-size:20px;font-weight:600"><span id="progNum">0</span> <span class="muted" style="font-size:15px">/ 100</span></span></div>
+            <div class="bar" id="progBar" role="progressbar" aria-label="军功进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i style="width:0%"></i></div>
+            <div class="prog-note"><svg width="16" height="16" aria-hidden="true"><use href="#i-up"></use></svg><span id="progNote">打一局排位赛开始积累军功</span></div>
+          </div>
+          <div class="grid3">
+            <div class="stat"><span class="v" id="stRate">—</span><span class="k">排位胜率</span></div>
+            <div class="stat"><span class="v" id="stGames">0</span><span class="k">总场次</span></div>
+            <div class="stat"><span class="v" id="stPos">—</span><span class="k">排行名次</span></div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary cta-rank" data-act="queue" data-mode="rank">
+          <svg width="44" height="44" aria-hidden="true"><use href="#i-flag"></use></svg>
+          <span class="stack"><span class="big">开始排位</span><small>经典暗棋 · 系统裁判</small></span>
+        </button>
+        <button type="button" class="btn cta-casual" data-act="queue" data-mode="casual">休闲对战 <small>不计军功</small></button>
+        <div class="cta-row">
+          <button type="button" class="btn" data-act="friend"><svg width="24" height="24" aria-hidden="true"><use href="#i-users"></use></svg>好友房</button>
+          <button type="button" class="btn" data-act="bot"><svg width="24" height="24" aria-hidden="true"><use href="#i-robot"></use></svg>人机练习</button>
+        </div>
+        <p class="lobby-note" id="lobbyNote">正在连接服务器…</p>
+      </section>
+
+      <section class="col-hero tabpane" data-pane="home" aria-hidden="true">
+        <div class="hero-sun"></div>
+        <div class="hero-orbit"></div>
+        <div class="hero-board" id="heroBoard"></div>
+        <span class="hero-tip"><i></i>工兵可沿铁路转弯</span>
+        <svg class="cloud-a float" viewBox="0 0 150 64" style="height:64px"><use href="#i-cloud"></use></svg>
+        <svg class="cloud-b float" viewBox="0 0 150 64" style="height:52px"><use href="#i-cloud"></use></svg>
+      </section>
+
+      <section class="col-side">
+        <div class="panel lb-panel tabpane" data-pane="rank" aria-label="排行榜">
+          <span class="ribbon r-red"><svg width="18" height="18" aria-hidden="true"><use href="#i-trophy"></use></svg>军功排行</span>
+          <div id="lbRows" class="lb-rows"></div>
+          <div class="lb-row lb-me">
+            <span class="chip" id="lbMePos">未上榜</span>
+            <span class="lb-name" id="lbMeName">我</span>
+            <span id="lbMeBadge"></span>
+            <span class="lb-pts" id="lbMePts">0</span>
+          </div>
+        </div>
+        <div class="panel rec-panel tabpane" data-pane="record" aria-label="最近战绩">
+          <span class="ribbon r-blue"><svg width="18" height="18" aria-hidden="true"><use href="#i-clock"></use></svg>最近战绩</span>
+          <div id="recRows" class="rec-rows"></div>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel ladder tabpane" data-pane="me" aria-label="军衔之路">
+      <div class="ladder-title">
+        <span class="disp">军衔之路</span>
+        <span class="muted">排位胜 +24 · 负 −18 · 每级 100 军功</span>
+      </div>
+      <div class="ladder-track">
+        <div class="rail"></div>
+        <div class="fill" id="ladderFill"></div>
+        <div class="ladder-grid" id="ladderGrid"></div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="tabbar" aria-label="大厅导航">
+    <button type="button" data-tab="home" aria-current="page"><span class="ic"><svg aria-hidden="true"><use href="#i-home"></use></svg></span>大厅</button>
+    <button type="button" data-tab="rank"><span class="ic"><svg aria-hidden="true"><use href="#i-trophy"></use></svg></span>排行</button>
+    <button type="button" data-tab="record"><span class="ic"><svg aria-hidden="true"><use href="#i-clock"></use></svg></span>战绩</button>
+    <button type="button" data-tab="me"><span class="ic"><svg aria-hidden="true"><use href="#i-user"></use></svg></span>我的</button>
+  </nav>
+</section>
+
+<!-- ================= 匹配 / 好友房 / 对阵 ================= -->
+<section class="screen scr-match scroll" id="scr-match" data-phase="searching" aria-label="匹配">
+  <div class="scene" aria-hidden="true">
+    <svg class="hills" preserveAspectRatio="none"><use href="#i-hills"></use></svg>
+  </div>
+  <div class="match-search">
+    <div class="mode-chip"><span class="r" id="modeName">排位赛</span><span id="modeSub">经典暗棋 · 系统裁判</span></div>
+    <div class="radar" aria-hidden="true">
+      <div class="c1"></div>
+      <div class="c2"></div>
+      <div class="wave"></div>
+      <div class="wave w2"></div>
+      <svg class="sweep" viewBox="0 0 380 380"><path d="M190 190L190 0A190 190 0 0 1 324.4 55.6Z" fill="#5FD0B7" opacity=".35"></path><path d="M190 190V0" stroke="#8FF0CB" stroke-width="3"></path></svg>
+      <span class="blip" style="left:9%;top:17%">?</span>
+      <span class="blip" style="left:80%;top:68%;width:26px;height:26px;font-size:13px;animation-delay:1.3s">?</span>
+      <div class="me"><div id="radarMe"></div></div>
+    </div>
+    <h2 class="search-title outline-text" id="searchTitle">正在寻找对手</h2>
+    <div class="search-clock num" id="searchClock" role="timer" aria-label="已等待时间">00:00</div>
+    <div class="search-range" id="searchRange">正在匹配军功相近的对手</div>
+    <div class="panel room-card" id="roomCard" hidden>
+      <span class="ribbon r-blue">房间号</span>
+      <div class="room-code num" id="roomCode">----</div>
+      <div class="room-btns">
+        <button type="button" class="btn btn-primary" data-act="copy-link"><svg width="22" height="22" aria-hidden="true"><use href="#i-copy"></use></svg>复制邀请链接</button>
+      </div>
+      <div class="muted room-note" id="roomNote">把房间号或链接发给好友，对方输入后立即开战</div>
+    </div>
+    <div class="panel tip-card">
+      <div class="pair" aria-hidden="true">
+        <span style="left:0;top:0" data-piece="sl" data-scale=".6"></span>
+        <span style="left:22px;top:14px" data-piece="jq" data-scale=".6"></span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <span class="t">小贴士</span>
+        <span class="d" id="tipText">司令阵亡后，他那一方的军旗位置会被亮出</span>
+      </div>
+    </div>
+    <button type="button" class="btn bot-suggest" id="botSuggest" data-act="bot" hidden><svg width="22" height="22" aria-hidden="true"><use href="#i-robot"></use></svg>人不多？先和人机练练</button>
+    <button type="button" class="btn cancel-btn" data-act="cancel-wait"><svg width="18" height="18" aria-hidden="true"><use href="#i-x"></use></svg><span id="cancelText">取消匹配</span></button>
+  </div>
+
+  <div class="match-vs">
+    <div class="vs-bg" aria-hidden="true">
+      <svg class="bolt" viewBox="0 0 120 900" preserveAspectRatio="none"><path d="M78 0L42 300 86 420 36 640 52 900" fill="none" stroke="#2A1D3D" stroke-width="22" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path><path d="M78 0L42 300 86 420 36 640 52 900" fill="none" stroke="#FFC83D" stroke-width="12" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path></svg>
+    </div>
+    <div class="vs-title"><svg width="24" height="24" aria-hidden="true"><use href="#i-okcircle"></use></svg><h2 id="vsTitle">排位赛 · 匹配成功</h2></div>
+    <div class="vs-row">
+      <section class="vs-player l" aria-label="我方">
+        <div class="av"><div id="vsMeAv"></div></div>
+        <div class="vs-name" id="vsMeName">我</div>
+        <div class="vs-tier" id="vsMeTier"></div>
+        <div class="vs-stats" id="vsMeStats"></div>
+      </section>
+      <div class="vs-disc" aria-hidden="true">
+        <svg class="burst" viewBox="0 0 150 150" style="color:#FFC83D;opacity:.55"><use href="#i-burst"></use></svg>
+        <div class="face"><span>VS</span></div>
+      </div>
+      <section class="vs-player r" aria-label="对手">
+        <div class="av"><div id="vsOppAv"></div></div>
+        <div class="vs-name" id="vsOppName">对手</div>
+        <div class="vs-tier" id="vsOppTier"></div>
+        <div class="vs-stats" id="vsOppStats"></div>
+      </section>
+    </div>
+    <section class="panel vs-rules" aria-label="对局规则">
+      <div class="chips">
+        <span class="chip c-red">经典暗棋</span>
+        <span class="chip">系统裁判</span>
+        <span class="chip rule-deploy">布阵 90 秒</span>
+        <span class="chip rule-turn">每步 30 秒</span>
+        <span class="chip">超时 3 次判负</span>
+        <span class="chip stakes-chip">军功 <span class="num" style="color:var(--jade-d)">胜 +24</span> <span class="num" style="color:var(--red-d)">负 −18</span></span>
+      </div>
+      <div class="vs-go">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="count-disc num" id="vsCount">3</div>
+          <div class="txt"><div class="disp">秒后进入布阵</div><div class="muted" style="font-size:13px" id="vsConn">双方均已连接，房间已锁定</div></div>
+        </div>
+        <button type="button" class="btn btn-primary" data-act="enter-deploy">进入布阵<svg width="26" height="26" aria-hidden="true"><use href="#i-arrow"></use></svg></button>
+      </div>
+    </section>
+  </div>
+
+  <div class="match-sheet">
+    <div class="sheet" role="dialog" aria-label="匹配成功">
+      <div class="found-h"><svg width="26" height="26" aria-hidden="true"><use href="#i-okcircle"></use></svg><span class="disp">匹配成功！</span></div>
+      <div class="pair-row">
+        <div class="p"><span id="sheetMeAv"></span><b>我</b></div>
+        <span class="vs">VS</span>
+        <div class="p">
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0">
+            <b style="font-size:14px;line-height:1.2" id="sheetOppName">对手</b>
+            <span style="display:flex;align-items:center;gap:3px;font-size:12px;color:var(--ink-2)" id="sheetOppTier"></span>
+          </div>
+          <span id="sheetOppAv"></span>
+        </div>
+      </div>
+      <div class="stakes"><span class="stakes-chip">胜 <b class="num" style="color:var(--jade-d)">+24</b> 军功 · 负 <b class="num" style="color:var(--red-d)">−18</b> 军功 · </span><span id="sheetCount">3</span> 秒后自动进入布阵</div>
+      <button type="button" class="btn btn-primary" data-act="enter-deploy">进入布阵<svg width="24" height="24" aria-hidden="true"><use href="#i-arrow"></use></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 布阵 ================= -->
+<section class="screen scr-deploy" id="scr-deploy" data-ready="false" aria-label="布阵">
+  <div class="scene" aria-hidden="true">
+    <svg class="cloud" style="left:3%;bottom:14%;width:280px;height:114px;color:#0D7E6F"><use href="#i-xiangyun"></use></svg>
+    <svg class="hills" preserveAspectRatio="none" style="height:180px"><use href="#i-hills"></use></svg>
+  </div>
+  <div class="game">
+    <header class="game-head">
+      <div class="gh-side">
+        <button type="button" class="icon-btn menu" data-open="menu" aria-label="菜单"><svg aria-hidden="true"><use href="#i-menu"></use></svg></button>
+        <div class="gh-title">
+          <div class="t">布阵阶段</div>
+          <div class="s"><span class="only-wide" id="dpSub">经典暗棋 · 对手看不到你的阵型</span><span class="narrow-sub" id="dpSubNarrow">点两枚棋子互换位置</span></div>
+        </div>
+      </div>
+      <div class="timer-pill" role="timer" aria-label="布阵剩余时间">
+        <svg width="26" height="26" aria-hidden="true" style="color:var(--red-d)"><use href="#i-stopwatch"></use></svg>
+        <span class="lb">布阵倒计时</span>
+        <span class="v num" id="deployClock">01:30</span>
+      </div>
+      <div class="gh-side right">
+        <div class="opp-chip">
+          <span id="dpOppAv"></span>
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+            <span class="n" id="dpOppName">对手</span>
+            <span class="s" id="dpOppStatus">布阵中<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span></span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <aside class="side-col dp-left only-wide" aria-label="布阵说明">
+      <div class="panel sel-card" id="dpSel"></div>
+      <div class="panel" style="padding:28px 16px 16px;display:flex;flex-direction:column;gap:10px">
+        <span class="ribbon r-ink">布阵规则</span>
+        <div class="check-row"><svg width="22" height="22" aria-hidden="true"><use href="#i-okcircle"></use></svg><span><b>军旗</b> 必须放在大本营</span></div>
+        <div class="check-row"><svg width="22" height="22" aria-hidden="true"><use href="#i-okcircle"></use></svg><span><b>地雷</b> 只能放在最后两排</span></div>
+        <div class="check-row"><svg width="22" height="22" aria-hidden="true"><use href="#i-okcircle"></use></svg><span><b>炸弹</b> 不能放在第一排</span></div>
+        <div class="check-row"><svg width="22" height="22" aria-hidden="true"><use href="#i-okcircle"></use></svg><span><b>行营</b> 开局必须空着</span></div>
+        <div class="count-row"><span>25 枚棋子已就位</span><span class="num" style="color:var(--jade-d)">25/25</span></div>
+      </div>
+    </aside>
+
+    <div class="board-wrap">
+      <div class="sun"></div>
+      <div class="board" id="deployBoard" role="group" aria-label="我方阵地，点两枚棋子交换位置"></div>
+    </div>
+
+    <aside class="dp-right only-wide" aria-label="阵型">
+      <div class="panel" style="padding:28px 14px 14px;display:flex;flex-direction:column;gap:12px;flex:none">
+        <span class="ribbon r-blue">阵型库</span>
+        <div class="forms-grid" id="formsGrid"></div>
+        <div class="legend">
+          <span><i style="background:#FFC83D"></i>军旗</span>
+          <span><i style="background:#2A1D3D"></i>地雷</span>
+          <span><i style="background:#E8453A"></i>炸弹</span>
+          <span><i style="background:#FF9F2E"></i>司令/军长/师长</span>
+          <span><i style="background:#22B893"></i>工兵</span>
+        </div>
+        <div class="two-btns">
+          <button type="button" class="btn" data-act="random"><svg width="20" height="20" aria-hidden="true"><use href="#i-dice"></use></svg>随机布阵</button>
+          <button type="button" class="btn save-btn" data-act="save" aria-pressed="false"><svg width="20" height="20" aria-hidden="true"><use href="#i-save"></use></svg><span>保存阵型</span></button>
+        </div>
+      </div>
+      <div class="cta-stack">
+        <button type="button" class="btn btn-primary deploy-done" data-act="deploy-submit"><svg width="34" height="34" aria-hidden="true"><use href="#i-okcircle"></use></svg><span>布阵完成</span></button>
+        <div class="hint" id="dpHint">双方都就绪后自动开战</div>
+      </div>
+    </aside>
+
+    <section class="dp-sheet" aria-label="布阵操作">
+      <div id="dpSelNarrow"></div>
+      <div class="dp-chips" id="dpChips"></div>
+      <button type="button" class="btn btn-primary done deploy-done" data-act="deploy-submit"><svg width="28" height="28" aria-hidden="true"><use href="#i-okcircle"></use></svg><span>布阵完成</span></button>
+    </section>
+  </div>
+</section>
+
+<!-- ================= 对战 ================= -->
+<section class="screen scr-battle" id="scr-battle" data-turn="me" aria-label="对战">
+  <div class="scene" aria-hidden="true">
+    <svg class="cloud" style="left:3%;top:62%;width:260px;height:106px;color:#0D7E6F"><use href="#i-xiangyun"></use></svg>
+    <svg class="cloud" style="right:3%;top:70%;width:240px;height:98px;color:#0D7E6F"><use href="#i-xiangyun"></use></svg>
+    <svg class="hills" preserveAspectRatio="none" style="height:180px"><use href="#i-hills"></use></svg>
+  </div>
+  <div class="game">
+    <header class="game-head">
+      <div class="gh-side">
+        <button type="button" class="icon-btn menu" data-open="menu" aria-label="菜单"><svg aria-hidden="true"><use href="#i-menu"></use></svg></button>
+        <div class="gh-title">
+          <div class="t" id="battleTitle">排位赛 · 经典暗棋</div>
+          <div class="s"><span class="num">第 <span class="moveNo">0</span> 手</span> · 系统裁判 · 碰子只报胜负</div>
+        </div>
+        <div class="opp-strip">
+          <span id="osAv"></span>
+          <div class="mid">
+            <span class="n" id="osName">对手</span>
+            <span class="t"><span id="osBadge"></span><span id="osTier">列兵</span> · 损失 <span class="foeLost">0</span> 子</span>
+          </div>
+          <span class="chip" id="osChip">等待中</span>
+          <span class="sec num" id="osSec"></span>
+        </div>
+      </div>
+      <button type="button" class="turn-banner only-wide" id="turnBanner" data-act="turn-banner">
+        <span class="t" id="turnText">轮到你走棋</span>
+        <span class="ring-timer" role="timer" aria-label="本步剩余秒数"><svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="#FFF6E3" stroke="#2A1D3D" stroke-width="3"></circle><circle cx="22" cy="22" r="14" fill="none" stroke="#F1D7A6" stroke-width="6"></circle><circle class="arc" cx="22" cy="22" r="14" fill="none" stroke="#E8453A" stroke-width="6" stroke-dasharray="88 88" transform="rotate(-90 22 22)"></circle></svg><b class="secs">30</b></span>
+      </button>
+      <div class="gh-side right only-wide">
+        <button type="button" class="icon-btn" data-open="rules" aria-label="玩法规则"><svg aria-hidden="true"><use href="#i-book"></use></svg></button>
+        <button type="button" class="icon-btn sound-btn" data-act="sound" aria-label="音效" aria-pressed="true"><svg aria-hidden="true"><use href="#i-sound"></use></svg></button>
+        <button type="button" class="icon-btn" data-open="settings" aria-label="设置"><svg aria-hidden="true"><use href="#i-gear"></use></svg></button>
+      </div>
+    </header>
+
+    <div class="bt-toast" role="status"><div><span class="no num" id="toastNo">#0</span><span class="tx" id="toastTx">对局开始</span></div></div>
+    <div class="duel-bar" id="duelBar" role="status" aria-live="polite" hidden></div>
+
+    <aside class="side-col bt-left only-wide" aria-label="双方信息">
+      <div class="panel pcard" id="oppCard">
+        <span class="ribbon r-blue">蓝方 · 对手</span>
+        <div class="who">
+          <span id="oppAv"></span>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+            <span class="n" id="oppName">对手</span>
+            <span class="t"><span id="oppBadge"></span><span id="oppTier">列兵</span> · <span class="ping" id="oppNet"><svg width="14" height="12" aria-hidden="true"><use href="#i-signal"></use></svg>在线</span></span>
+          </div>
+        </div>
+        <div class="st">
+          <span class="chip" id="oppState">等待中</span>
+          <span class="chip num" style="color:var(--ink-2)"><svg width="14" height="14" aria-hidden="true"><use href="#i-clock"></use></svg><span id="oppSecs">—</span></span>
+          <span class="to">超时 <b class="num" id="oppTimeouts">0/3</b></span>
+        </div>
+      </div>
+      <div class="panel cas">
+        <span class="ribbon r-ink">阵亡棋子</span>
+        <div class="cas-h"><span>我方</span><span class="num" style="font-size:16px;color:var(--red-d)">−<span id="myLostN">0</span></span></div>
+        <div class="cas-row" id="casMine"></div>
+        <hr>
+        <div class="cas-h"><span>对方</span><span class="num" style="font-size:16px;color:var(--jade-d)">−<span class="foeLost">0</span></span></div>
+        <div class="cas-row" id="casFoe"></div>
+        <div class="note" style="font-size:12px;line-height:1.5;color:var(--ink-2)">暗棋不公开对方阵亡棋子身份</div>
+        <div class="grid2">
+          <div class="stat"><span class="v" style="font-size:20px;color:var(--red-d)" id="myAlive">25</span><span class="k">我方在场</span></div>
+          <div class="stat"><span class="v" style="font-size:20px;color:var(--blue-t)" id="foeAlive">25</span><span class="k">对方在场</span></div>
+        </div>
+      </div>
+      <div class="panel pcard" id="myCard" style="margin-top:auto">
+        <span class="ribbon r-red">红方 · 我</span>
+        <div class="who">
+          <span id="myAv"></span>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+            <span class="n" id="myName">我</span>
+            <span class="t"><span id="myBadge"></span><span id="myTier">列兵</span> · <span class="ping" id="myNet"><svg width="14" height="12" aria-hidden="true"><use href="#i-signal"></use></svg><span id="myPing">—</span></span></span>
+          </div>
+        </div>
+        <div class="st">
+          <span class="chip" id="myState">等待中</span>
+          <span class="chip num" style="background:var(--cream);color:var(--red-d)"><svg width="14" height="14" aria-hidden="true"><use href="#i-clock"></use></svg><span id="mySecs">—</span></span>
+          <span class="to">超时 <b class="num timeouts">0/3</b></span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="board-wrap">
+      <div class="sun"></div>
+      <div class="board" id="battleBoard" role="group" aria-label="棋盘：下方红方为我方"></div>
+    </div>
+
+    <aside class="side-col bt-right only-wide" aria-label="战况">
+      <div class="panel sel-card" id="btSel"></div>
+      <div class="panel log-panel">
+        <span class="ribbon r-red">战报</span>
+        <ol class="log-list" id="logList" aria-live="polite"></ol>
+      </div>
+      <div class="mark-hint">
+        <span class="ic" aria-hidden="true"><i></i><b>炸</b></span>
+        <span>点对方棋子可贴上<b>猜测标记</b>，只有你自己看得到</span>
+      </div>
+      <div class="bt-btns">
+        <button type="button" class="btn draw-btn" data-act="draw"><svg width="22" height="22" aria-hidden="true"><use href="#i-scale"></use></svg>求和</button>
+        <button type="button" class="btn btn-danger" data-act="resign"><svg width="22" height="22" aria-hidden="true"><use href="#i-whiteflag"></use></svg>认输</button>
+      </div>
+    </aside>
+
+    <div class="bt-me">
+      <span id="meAvS"></span>
+      <div class="mid">
+        <span class="n" id="meNameS">我</span>
+        <span class="t" id="meSub">损失 0 子 · 超时 0/3</span>
+      </div>
+      <button type="button" class="chip" id="meChip" data-act="turn-banner" disabled><span class="blinker"></span><span id="meChipTx">你的回合</span></button>
+      <div class="ring-timer" role="timer" aria-label="本步剩余秒数"><svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19" fill="#FFF6E3" stroke="#2A1D3D" stroke-width="3"></circle><circle cx="22" cy="22" r="14" fill="none" stroke="#F1D7A6" stroke-width="6"></circle><circle class="arc" cx="22" cy="22" r="14" fill="none" stroke="#E8453A" stroke-width="6" stroke-dasharray="88 88" transform="rotate(-90 22 22)"></circle></svg><b class="secs">30</b></div>
+    </div>
+
+    <nav class="bt-actions" aria-label="对局操作">
+      <button type="button" class="btn" data-act="log"><svg aria-hidden="true"><use href="#i-list"></use></svg>战报</button>
+      <button type="button" class="btn draw-btn" data-act="draw"><svg aria-hidden="true"><use href="#i-scale"></use></svg>求和</button>
+      <button type="button" class="btn btn-danger" data-act="resign"><svg aria-hidden="true"><use href="#i-whiteflag"></use></svg>认输</button>
+    </nav>
+  </div>
+</section>
+
+<!-- ================= 结算 ================= -->
+<section class="screen scr-result scroll" id="scr-result" data-mode="win" aria-label="结算">
+  <div class="scene" aria-hidden="true">
+    <svg style="position:absolute;left:50%;top:-330px;width:1200px;height:1200px;margin-left:-600px;color:#0E8373;animation:jqSpin 60s linear infinite" viewBox="0 0 150 150"><use href="#i-burst"></use></svg>
+    <svg class="confetti" style="position:absolute;left:0;top:0;width:100%;height:300px" viewBox="0 0 1440 300" preserveAspectRatio="xMidYMin slice">
+      <rect x="160" y="80" width="16" height="10" rx="2" fill="#FFC83D" transform="rotate(24 168 85)"></rect>
+      <rect x="260" y="210" width="12" height="8" rx="2" fill="#FFF6E3" transform="rotate(-30 266 214)"></rect>
+      <rect x="1180" y="120" width="16" height="10" rx="2" fill="#E8453A" transform="rotate(40 1188 125)"></rect>
+      <rect x="1290" y="60" width="12" height="8" rx="2" fill="#FFC83D" transform="rotate(-18 1296 64)"></rect>
+      <rect x="1080" y="240" width="14" height="9" rx="2" fill="#6F93FF" transform="rotate(12 1087 244)"></rect>
+      <rect x="380" y="40" width="14" height="9" rx="2" fill="#6F93FF" transform="rotate(-40 387 44)"></rect>
+    </svg>
+    <svg class="hills" preserveAspectRatio="none"><use href="#i-hills"></use></svg>
+  </div>
+  <div class="result">
+    <div class="res-ribbon">
+      <svg viewBox="0 0 640 160" aria-hidden="true">
+        <path class="tail" d="M4 64H110V150H4L34 107Z" fill="#B3322A" stroke="#2A1D3D" stroke-width="4" stroke-linejoin="round"></path>
+        <path class="tail" d="M636 64H530V150H636L606 107Z" fill="#B3322A" stroke="#2A1D3D" stroke-width="4" stroke-linejoin="round"></path>
+        <path class="fold" d="M80 130L110 150V130Z" fill="#6E1810" stroke="#2A1D3D" stroke-width="4" stroke-linejoin="round"></path>
+        <path class="fold" d="M560 130L530 150V130Z" fill="#6E1810" stroke="#2A1D3D" stroke-width="4" stroke-linejoin="round"></path>
+        <path class="band" d="M80 26H560V130H80Z" fill="#E8453A" stroke="#2A1D3D" stroke-width="4" stroke-linejoin="round"></path>
+        <path d="M98 40H542M98 116H542" stroke="#FFC83D" stroke-width="3" stroke-dasharray="1 9" stroke-linecap="round"></path>
+      </svg>
+      <h1 id="resTitle">胜利</h1>
+      <div class="res-stamp" id="resStamp"><span>夺旗</span><span>成功</span></div>
+    </div>
+    <p class="res-sub" id="resSub">夺得对方军旗，获胜</p>
+    <section class="panel res-card" aria-label="本局结算">
+      <div class="res-promo">
+        <div class="promo-row" id="promoRow"></div>
+        <div class="promo-title" id="promoTitle"></div>
+        <div class="promo-bar">
+          <div style="display:flex;align-items:baseline;justify-content:space-between">
+            <span style="display:flex;align-items:baseline;gap:8px"><span class="delta num" id="resDelta">+24</span><b style="font-size:15px" id="resDeltaLabel">军功</b></span>
+            <span class="num" style="font-size:18px;font-weight:600"><span id="resPts">0</span> <span class="muted" style="font-size:14px">/ 100</span></span>
+          </div>
+          <div class="bar jade" id="resBar" role="progressbar" aria-label="军功进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i style="width:0%"></i></div>
+          <div class="muted" style="font-size:13px" id="resNote"></div>
+        </div>
+      </div>
+      <div class="res-divider"></div>
+      <div class="res-right">
+        <div class="res-stats">
+          <div class="cell"><span class="k">用时</span><span class="v" id="rsTime">00:00</span></div>
+          <div class="cell"><span class="k">手数</span><span class="v" id="rsMoves">0</span></div>
+          <div class="cell"><span class="k">吃子</span><span class="v" id="rsKills" style="color:var(--jade-d)">0</span></div>
+          <div class="cell"><span class="k">损失</span><span class="v" id="rsLost" style="color:var(--red-d)">0</span></div>
+        </div>
+        <div class="mvp" id="resMvp">
+          <span class="tag"><svg width="16" height="16" aria-hidden="true" style="color:var(--yellow)"><use href="#i-star"></use></svg><span id="mvpTag">本局 MVP</span></span>
+          <div class="pcw" id="mvpPiece"></div>
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+            <span class="nm" id="mvpName">工兵</span>
+            <span style="font-size:14px;line-height:1.5" id="mvpLine"></span>
+            <span class="muted" style="font-size:13px;line-height:1.5" id="mvpNote"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="res-actions">
+      <button type="button" class="btn btn-primary again" data-act="again"><svg width="30" height="30" aria-hidden="true"><use href="#i-refresh"></use></svg><span id="againText">再来一局</span></button>
+      <button type="button" class="btn home" data-act="home"><svg width="26" height="26" aria-hidden="true"><use href="#i-home"></use></svg>返回大厅</button>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div class="net-bar" id="netBar" role="status" hidden><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span id="netText">正在连接服务器…</span></div>
+
+<div class="dlg-wrap" id="dlg" hidden>
+  <div class="panel dlg" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <span class="ribbon" id="dlgTitle">菜单</span>
+    <div class="dlg-body" id="dlgBody"></div>
+    <div class="dlg-actions" id="dlgActions"></div>
+  </div>
+</div>
+<div class="sheet-wrap" id="logSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="logSheetTitle">
+    <div class="sheet-head"><b id="logSheetTitle">战报</b><button type="button" class="icon-btn" data-close-sheet aria-label="关闭战报"><svg aria-hidden="true"><use href="#i-x"></use></svg></button></div>
+    <ol class="log-list" id="logListSheet"></ol>
+  </div>
+</div>
+<div id="toastHost"></div>
+<noscript><div class="noscript">萌兵军棋需要开启 JavaScript 才能游玩。</div></noscript>
+</body>
+</html>

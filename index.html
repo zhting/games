@@ -186,78 +186,208 @@
       font-size: 14px;
     }
 
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .badge-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .045);
+      border: 1px solid rgba(255, 255, 255, .1);
+    }
+
     .stage {
       position: relative;
       min-height: 520px;
       animation: reveal .8s .18s ease both;
     }
 
-    .game-tile {
+    /* 多游戏合集展台卡片 */
+    .showcase-tile {
       position: absolute;
       inset: 50% auto auto 50%;
-      width: min(370px, 78vw);
-      aspect-ratio: .72;
-      transform: translate(-50%, -50%) rotate(-3deg);
+      width: min(420px, 86vw);
+      aspect-ratio: .88;
+      transform: translate(-50%, -50%) rotate(-2deg);
       border: 1px solid rgba(255, 255, 255, .18);
-      border-radius: 30px;
+      border-radius: 28px;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .035)),
-        rgba(255, 255, 255, .055);
-      box-shadow: 0 34px 80px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .28);
-      backdrop-filter: blur(10px);
+        linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .035)),
+        rgba(20, 10, 32, .55);
+      box-shadow: 0 34px 80px rgba(0, 0, 0, .46), inset 0 1px 0 rgba(255, 255, 255, .25);
+      backdrop-filter: blur(14px);
       overflow: hidden;
-      transition: transform .25s ease;
-    }
-
-    .game-tile:hover {
-      transform: translate(-50%, -51%) rotate(-2deg);
-    }
-
-    .board {
-      position: absolute;
-      inset: 22px;
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      grid-auto-rows: 1fr;
-      gap: 8px;
-    }
-
-    .jelly {
-      border-radius: 35% 45% 38% 42%;
-      background: var(--c);
-      box-shadow: inset 8px 8px 16px rgba(255, 255, 255, .32), inset -8px -10px 18px rgba(44, 8, 38, .18), 0 10px 22px rgba(0, 0, 0, .16);
-      opacity: .96;
-      animation: wobble 4.2s ease-in-out infinite;
-      animation-delay: var(--d);
-    }
-
-    .jelly:nth-child(3n) {
-      transform: translateY(18px);
-    }
-
-    .jelly:nth-child(4n) {
-      transform: translateY(-10px);
-    }
-
-    .status {
-      position: absolute;
-      left: 24px;
-      right: 24px;
-      bottom: 24px;
+      transition: transform .25s ease, box-shadow .25s ease;
       display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      color: rgba(255, 246, 251, .84);
-      font-weight: 800;
-      font-size: 14px;
-      letter-spacing: .06em;
+      flex-direction: column;
+      padding: 16px;
+      box-sizing: border-box;
     }
 
-    .status span {
+    .showcase-tile:hover {
+      transform: translate(-50%, -51%) rotate(0deg);
+      box-shadow: 0 38px 90px rgba(0, 0, 0, .54), inset 0 1px 0 rgba(255, 255, 255, .32);
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .mini-game {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 14px;
+      border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, .12);
+      background: rgba(255, 255, 255, .04);
+      position: relative;
+      overflow: hidden;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      cursor: pointer;
+    }
+
+    .mini-game:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, .32);
+      background: rgba(255, 255, 255, .08);
+    }
+
+    /* 单独游戏卡片配色微调 */
+    .mini-game.mg-tetris {
+      background: radial-gradient(circle at 100% 0%, rgba(255, 122, 166, .2), transparent 70%), rgba(255, 255, 255, .04);
+    }
+    .mini-game.mg-mirror {
+      background: radial-gradient(circle at 100% 0%, rgba(233, 169, 79, .2), transparent 70%), rgba(255, 255, 255, .04);
+    }
+    .mini-game.mg-idiom {
+      background: radial-gradient(circle at 100% 0%, rgba(127, 231, 255, .18), transparent 70%), rgba(255, 255, 255, .04);
+    }
+    .mini-game.mg-lego {
+      background: radial-gradient(circle at 100% 0%, rgba(140, 255, 191, .18), transparent 70%), rgba(255, 255, 255, .04);
+    }
+
+    .mg-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mg-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .mg-tag {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
       border-radius: 999px;
-      padding: 9px 12px;
-      background: rgba(18, 9, 30, .34);
+      color: rgba(255, 255, 255, .75);
+      background: rgba(255, 255, 255, .1);
+      border: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .mg-preview {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      margin: 4px 0;
+    }
+
+    /* 果冻动效小方块 */
+    .jelly-cluster {
+      display: flex;
+      gap: 6px;
+    }
+    .mini-jelly {
+      width: 14px;
+      height: 14px;
+      border-radius: 35% 45% 38% 42%;
+      animation: wobble 3.6s ease-in-out infinite;
+    }
+
+    /* 台灯呼吸微光 */
+    .mini-lamp {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #FBE3B3 0%, #E9A94F 40%, rgba(233,169,79,0) 75%);
+      box-shadow: 0 0 16px rgba(233, 169, 79, .6);
+      animation: lampGlow 3s ease-in-out infinite;
+    }
+
+    /* 成语卷轴/印章小标 */
+    .mini-scroll {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      color: #7fe7ff;
+      border: 1px dashed rgba(127, 231, 255, .4);
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(127, 231, 255, .06);
+    }
+
+    /* 乐高小积木堆 */
+    .mini-bricks {
+      display: flex;
+      gap: 4px;
+      align-items: flex-end;
+    }
+    .mini-brick {
+      border-radius: 3px;
+      background: var(--c);
+      box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .4);
+    }
+
+    .mg-info .mg-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .mg-info .mg-desc {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .showcase-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+      padding: 8px 10px 0;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      font-size: 12.5px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .showcase-footer .action-hint {
+      color: var(--accent-2);
+      font-weight: 800;
+    }
+
+    @keyframes lampGlow {
+      0%, 100% { opacity: .7; transform: scale(.95); }
+      50% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 10px rgba(233, 169, 79, .8)); }
     }
 
     .more {
@@ -385,8 +515,8 @@
         margin-top: 20px;
       }
 
-      .game-tile {
-        width: min(330px, 78vw);
+      .showcase-tile {
+        width: min(360px, 86vw);
       }
     }
 
@@ -403,79 +533,140 @@
 <body>
   <div class="shell">
     <header>
-      <a class="brand" href="/">GAMES</a>
-      <a class="nav-link" href="/game">进入游戏</a>
+      <a class="brand" href="/">GAMES · 小游戏合集</a>
+      <a class="nav-link" href="#games-list">全部游戏 ▾</a>
     </header>
 
     <main>
-      <section class="hero" aria-label="小游戏主页">
+      <section class="hero" aria-label="小游戏合集主页">
         <div class="copy">
-          <p class="eyebrow">Now Playing</p>
-          <h1>果冻俄罗斯方块</h1>
-          <p class="intro">软弹的方块、清脆的消除、随手就能开一局。往下滑还有成语对战和乐高经营等你来玩。</p>
+          <p class="eyebrow">MINI-GAME HUB · 随开随玩</p>
+          <h1>小游戏合集</h1>
+          <p class="intro">精选 6 款自研休闲、策略、体验与物理类网页小游戏。从 XPBD 软体物理切开的真-果冻方块，到触动心弦的岁月生活体验；从反义词相克的成语攻防与轻松放置的乐高战争，再到国潮双人暗棋萌兵军棋——无需下载，秒开即玩。</p>
           <div class="actions">
-            <a class="play" href="/game">开始游戏</a>
-            <a class="nav-link" href="/game/3d">🍮 真 3D 版</a>
-            <span class="hint">键盘和触屏都可以玩</span>
+            <a class="play" href="#games-list">挑选游戏 ▾</a>
+            <button class="nav-link" id="randomGameBtn" type="button" style="cursor:pointer;font-weight:700;">🎲 随机开一局</button>
+          </div>
+          <div class="badge-row">
+            <span class="badge-item">🎮 6 款精选玩法</span>
+            <span class="badge-item">⚡ 极速秒开</span>
+            <span class="badge-item">📱 手机/电脑自适应</span>
           </div>
         </div>
 
-        <div class="stage" aria-hidden="true">
-          <a class="game-tile" href="/game" tabindex="-1">
-            <div class="board">
-              <span class="jelly" style="--c:#ff7aa6;--d:.0s"></span>
-              <span class="jelly" style="--c:#ffd166;--d:.2s"></span>
-              <span class="jelly" style="--c:#7fe7ff;--d:.1s"></span>
-              <span class="jelly" style="--c:#b388ff;--d:.3s"></span>
-              <span class="jelly" style="--c:#8cffbf;--d:.4s"></span>
-              <span class="jelly" style="--c:#ff7aa6;--d:.2s"></span>
-              <span class="jelly" style="--c:#7fe7ff;--d:.5s"></span>
-              <span class="jelly" style="--c:#b388ff;--d:.1s"></span>
-              <span class="jelly" style="--c:#ffd166;--d:.35s"></span>
-              <span class="jelly" style="--c:#8cffbf;--d:.15s"></span>
-              <span class="jelly" style="--c:#ff7aa6;--d:.45s"></span>
-              <span class="jelly" style="--c:#7fe7ff;--d:.25s"></span>
-              <span class="jelly" style="--c:#b388ff;--d:.05s"></span>
-              <span class="jelly" style="--c:#ffd166;--d:.4s"></span>
-              <span class="jelly" style="--c:#8cffbf;--d:.2s"></span>
-              <span class="jelly" style="--c:#ff7aa6;--d:.5s"></span>
-              <span class="jelly" style="--c:#7fe7ff;--d:.3s"></span>
-              <span class="jelly" style="--c:#b388ff;--d:.1s"></span>
+        <div class="stage" aria-label="游戏合集展台">
+          <div class="showcase-tile">
+            <div class="showcase-grid">
+              <a class="mini-game mg-tetris" href="/games/game" title="进入 果冻俄罗斯方块">
+                <div class="mg-header">
+                  <span class="mg-icon">🍮</span>
+                  <span class="mg-tag">软体物理</span>
+                </div>
+                <div class="mg-preview">
+                  <div class="jelly-cluster">
+                    <span class="mini-jelly" style="background:#ff7aa6;animation-delay:.0s"></span>
+                    <span class="mini-jelly" style="background:#ffd166;animation-delay:.2s"></span>
+                    <span class="mini-jelly" style="background:#7fe7ff;animation-delay:.1s"></span>
+                  </div>
+                </div>
+                <div class="mg-info">
+                  <div class="mg-title">果冻方块</div>
+                  <div class="mg-desc">弹性物理 2D/3D</div>
+                </div>
+              </a>
+
+              <a class="mini-game mg-mirror" href="/games/mirror" title="进入 岁月之镜">
+                <div class="mg-header">
+                  <span class="mg-icon">🪞</span>
+                  <span class="mg-tag">生活体验</span>
+                </div>
+                <div class="mg-preview">
+                  <div class="mini-lamp"></div>
+                </div>
+                <div class="mg-info">
+                  <div class="mg-title">岁月之镜</div>
+                  <div class="mg-desc">14段老年生活体验</div>
+                </div>
+              </a>
+
+              <a class="mini-game mg-idiom" href="/games/idiom" title="进入 成语守卫战">
+                <div class="mg-header">
+                  <span class="mg-icon">📜</span>
+                  <span class="mg-tag">策略塔防</span>
+                </div>
+                <div class="mg-preview">
+                  <div class="mini-scroll">反义词相克</div>
+                </div>
+                <div class="mg-info">
+                  <div class="mg-title">成语守卫战</div>
+                  <div class="mg-desc">卡牌出兵反制</div>
+                </div>
+              </a>
+
+              <a class="mini-game mg-lego" href="/games/lego" title="进入 乐高战争">
+                <div class="mg-header">
+                  <span class="mg-icon">🧱</span>
+                  <span class="mg-tag">挂机放置</span>
+                </div>
+                <div class="mg-preview">
+                  <div class="mini-bricks">
+                    <span class="mini-brick" style="--c:#ffd166;width:12px;height:12px;"></span>
+                    <span class="mini-brick" style="--c:#ff5d8f;width:14px;height:18px;"></span>
+                    <span class="mini-brick" style="--c:#7fe7ff;width:12px;height:24px;"></span>
+                  </div>
+                </div>
+                <div class="mg-info">
+                  <div class="mg-title">乐高战争</div>
+                  <div class="mg-desc">建造/训练/放置</div>
+                </div>
+              </a>
             </div>
-            <div class="status">
-              <span>JELLY</span>
-              <span>TETRIS</span>
+            <div class="showcase-footer">
+              <span>🕹️ 4 款精选小游戏</span>
+              <span class="action-hint">点击卡片直达 →</span>
             </div>
-          </a>
+          </div>
         </div>
       </section>
 
-      <section class="more" aria-label="更多游戏">
-        <h2>More Games</h2>
+      <section class="more" id="games-list" aria-label="全部游戏清单">
+        <h2>All Games · 全部游戏</h2>
         <div class="card-grid">
-          <a class="game-card" href="/idiom">
+          <a class="game-card" href="/games/idiom">
             <span class="icon">📜</span>
             <span class="name">成语守卫战</span>
             <p class="desc">出成语卡牌派兵防守，用反义词克制敌军。守住十波进攻，顺便把成语记牢。</p>
             <span class="go">开始防守 →</span>
           </a>
-          <a class="game-card" href="/mirror">
+          <a class="game-card" href="/games/mirror">
             <span class="icon">🪞</span>
             <span class="name">岁月之镜</span>
             <p class="desc">你玩的不是游戏，是父母的未来。十四段老年生活体验，十几分钟就是她们普通的一天。</p>
             <span class="go">进入体验 →</span>
           </a>
-          <a class="game-card" href="/lego">
+          <a class="game-card" href="/games/lego">
             <span class="icon">🧱</span>
             <span class="name">乐高战争</span>
             <p class="desc">升级建筑、囤积砖块、训练小人军团。放置经营，离线也在悄悄产出。</p>
             <span class="go">开始经营 →</span>
           </a>
-          <a class="game-card" href="/game">
+          <a class="game-card" href="/games/game">
             <span class="icon">🍮</span>
             <span class="name">果冻俄罗斯方块</span>
             <p class="desc">软体物理驱动的方块消除，经典 / 融化 / 流体三种模式，怎么晃都好玩。</p>
             <span class="go">开始游戏 →</span>
+          </a>
+          <a class="game-card" href="/games/junqi/">
+            <span class="icon">🎖️</span>
+            <span class="name">萌兵军棋</span>
+            <p class="desc">国潮 Q 版两国暗棋，排位匹配、好友开房与人机对战。运筹帷幄，决胜千里。</p>
+            <span class="go">开始对弈 →</span>
+          </a>
+          <a class="game-card" href="/games/jelly-block/">
+            <span class="icon">🧊</span>
+            <span class="name">真-果冻俄罗斯方块</span>
+            <p class="desc">基于 XPBD 软体动力学与 WebGL2 真实折射光效。消除时整行横切融化，残块继续受力跌落。</p>
+            <span class="go">开启硬核堆叠 →</span>
           </a>
         </div>
       </section>
@@ -483,5 +674,20 @@
 
     <footer>games.tangletang.top</footer>
   </div>
+
+  <script>
+    const games = [
+      '/games/game',
+      '/games/mirror',
+      '/games/idiom',
+      '/games/lego',
+      '/games/junqi',
+      '/games/jelly-block'
+    ];
+    document.getElementById('randomGameBtn')?.addEventListener('click', () => {
+      const pick = games[Math.floor(Math.random() * games.length)];
+      window.location.href = pick;
+    });
+  </script>
 </body>
 </html>

@@ -1,6 +1,9 @@
 .vercel
 node_modules
+ad-generator/public/capture/.raw/
+ad-generator/output/*.mp4
 .DS_Store
 Thumbs.db
 果冻俄罗斯方块/
 playlist.m3u
+games/junqi/data/players.json
