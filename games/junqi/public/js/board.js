@@ -1,6 +1,6 @@
 // 2.5D 棋盘：透视投影 + SVG 棋盘底座 + 立起来的棋子按钮。
 // 控制器提供 view()（当前要画什么）和 act(动作, 位置, 值)（点击回调）。
-import * as R from '../shared/rules.js';
+import * as R from '../shared/rules.js?v=20261006-rules';
 import { INK, esc, pieceHTML, pieceBox } from './art.js';
 
 export const MARKS = ['司', '军', '师', '旅', '团', '营', '连', '排', '工', '雷', '炸', '旗'];

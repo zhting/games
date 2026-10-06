@@ -1,6 +1,6 @@
 // 萌兵军棋 · 客户端主程序
 // 所有对局状态都以服务器为准：这里只负责把服务器推来的状态画出来，并把玩家的操作发回去。
-import * as R from '../shared/rules.js';
+import * as R from '../shared/rules.js?v=20261006-rules';
 import { esc, badgeSVG, avatarSVG, pieceBox, hydrate, putAvatar, putBadge, looksOf } from './art.js';
 import { Board, MARKS } from './board.js';
 import { Net } from './net.js';
