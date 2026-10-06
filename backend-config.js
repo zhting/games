@@ -1,6 +1,7 @@
-/* 只需在这里设置一次腾讯云后台的 HTTPS 地址；所有联网游戏共用。 */
+/* 所有联网游戏共用腾讯云后台；本地 HTTP 预览仍连接当前服务。 */
 window.GAMES_BACKEND = {
-  url: '',
+  url: (location.protocol === 'http:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname))
+    ? '' : 'https://api.tangletang.top',
   gandengyanPath: '/games/gandengyan/socket.io',
   junqiPath: '/games/junqi/ws'
 };
