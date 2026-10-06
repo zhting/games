@@ -1,0 +1,251 @@
+/* Generated art lives below live labels and controls. Reference canvas: 1170 × 666. */
+#scr-battle {
+  --bu: min(.08547vw, .15015vh);
+  --card-w: calc(98 * var(--bu));
+  --card-h: calc(146 * var(--bu));
+}
+#scr-battle .topbar {
+  /* Scale the rail to 1.5× its original layout while keeping live text unscaled. */
+  --hud-width: min(100vw, calc(1151.243 * var(--bu)));
+  flex: 0 0 auto; width: var(--hud-width);
+  height: auto; aspect-ratio: 1736 / 190; margin-inline: auto; padding: 0;
+  display: grid; grid-template-columns: 345.76fr 368.64fr 307.2fr 368.64fr 345.76fr; gap: 0;
+  overflow: visible;
+}
+#scr-battle .topbar-art {
+  inset: 0; width: 100%; height: 100%;
+  transform: none; object-fit: contain;
+}
+#scr-battle .topbar > :not(.topbar-art) {
+  justify-self: center; align-self: start; margin: 0;
+  padding: calc(var(--hud-width) * .03937 - 10 * var(--bu)) 0 0;
+  font-family: 'Microsoft YaHei', sans-serif; font-size: calc(20 * var(--bu));
+  line-height: 1; letter-spacing: calc(2 * var(--bu)); color: #8cd0e8;
+}
+#scr-battle .topbar .tb-exit { padding-left: calc(var(--hud-width) * .01728); }
+#scr-battle .tb-exit .tb-back { display: none; }
+#scr-battle .topbar .battle-menu {
+  color: #fff; font-size: calc(30 * var(--bu)); font-weight: 800;
+  padding-top: calc(var(--hud-width) * .05751 - 15 * var(--bu));
+  text-shadow: 0 2px 2px #1e2337, 0 0 5px #c6d8e9;
+}
+#scr-battle .bb-info { font-size: calc(20 * var(--bu)); }
+#scr-battle .bb-info b { font: inherit; color: inherit; }
+#scr-battle .topbar .tb-clock { font-family: Consolas, monospace; padding-left: calc(var(--hud-width) * .02304); }
+
+#scr-battle .battle-main { position: absolute; inset: calc(140 * var(--bu)) calc(18 * var(--bu)) 42%; padding: 0; }
+#scr-battle .opponents {
+  position: absolute; inset: 0; width: 100%;
+  display: grid; grid-template-columns: repeat(2, calc(260 * var(--bu)));
+  grid-template-rows: repeat(2, calc(122 * var(--bu)));
+  justify-content: space-between; align-content: space-between; gap: 0; padding: 0;
+  z-index: auto;
+  pointer-events: none;
+}
+#scr-battle .opp {
+  display: block; width: calc(260 * var(--bu)); height: calc(122 * var(--bu));
+  flex: none; min-height: 0; pointer-events: auto;
+  padding: 0; border-radius: 0; transform: none; background: none; box-shadow: none;
+}
+#scr-battle .opp-left { grid-column: 1; }
+#scr-battle .opp-right { grid-column: 2; }
+#scr-battle .opp-far { grid-row: 1; }
+#scr-battle .opp-near { grid-row: 2; }
+#scr-battle .opp-right .op-ava { margin-left: auto; }
+#scr-battle .opp-right .op-name { left: auto; right: calc(6 * var(--bu)); }
+#scr-battle .opp-right .op-count { left: auto; right: calc(129 * var(--bu)); }
+#scr-battle .opp-right .op-timer { left: auto; right: calc(190 * var(--bu)); }
+#scr-battle .opp-right .op-dealer { left: auto; right: calc(49.5 * var(--bu)); transform: translateX(50%); }
+#scr-battle .opp-right .op-bubble { left: auto; right: calc(104 * var(--bu)); background-image: none; }
+#scr-battle .opp-right .op-bubble::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  background: url('/games/gandengyan/assets/layers/battle-v2/pass-bubble.png') center / 100% 100% no-repeat; transform: scaleX(-1);
+}
+#scr-battle .opp.active .op-count { filter: drop-shadow(0 0 6px #22e7f9); }
+#scr-battle .op-ava { width: calc(99 * var(--bu)); height: calc(100 * var(--bu)); }
+#scr-battle .battle-portrait { display: block; position: relative; width: 100%; height: 100%; }
+#scr-battle .battle-portrait-art {
+  display: block; width: 100%; height: 100%; object-fit: fill;
+  filter: hue-rotate(var(--battle-avatar-hue, 0deg)); pointer-events: none;
+}
+#scr-battle .battle-custom-head { position: absolute; inset: 3% 15% auto; height: 60%; }
+#scr-battle .battle-custom-head .avatar {
+  width: 100%; height: 100%; background: transparent; border: 0; box-shadow: none;
+}
+#scr-battle .op-name {
+  /* Anchor the text's center to the plaque's center, rather than its top edge. */
+  position: absolute; top: calc(85 * var(--bu)); left: calc(6 * var(--bu));
+  transform: translateY(-50%);
+  width: calc(87 * var(--bu)); max-width: none; text-align: center;
+  font-size: calc(11 * var(--bu)); line-height: 1.3; letter-spacing: 0;
+  background: transparent; border: 0; color: #263b4b; text-shadow: 0 1px #e3edf5;
+}
+#scr-battle .op-count {
+  position: absolute; top: calc(25 * var(--bu)); left: calc(129 * var(--bu));
+  width: calc(53 * var(--bu)); height: calc(80 * var(--bu)); min-width: 0;
+  display: grid; place-items: center; padding: 0; border: 0; outline: 0; clip-path: none;
+  background: url('/games/gandengyan/assets/layers/battle-v2/count-badge.png') center / 100% 100% no-repeat;
+  font: 700 calc(29 * var(--bu))/1 Consolas, monospace; color: #fff; text-shadow: 0 2px 2px #000;
+}
+#scr-battle .op-timer {
+  top: calc(29 * var(--bu)); left: calc(190 * var(--bu)); right: auto;
+  width: calc(66 * var(--bu)); height: calc(66 * var(--bu));
+  background: none;
+}
+#scr-battle .op-timer svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: none; overflow: visible; }
+#scr-battle .op-timer-num {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: #3489b9; font: 500 calc(24 * var(--bu))/1 Bahnschrift, 'Segoe UI', sans-serif; text-shadow: 0 1px #eff5f8;
+}
+#scr-battle .op-dealer, #scr-battle .self-dealer {
+  width: calc(52 * var(--bu)); height: calc(36 * var(--bu));
+  align-items: center; justify-content: center; padding-bottom: calc(6 * var(--bu));
+  border: 0; border-radius: 0; clip-path: none; transform: translateX(-50%);
+  background: url('/games/gandengyan/assets/layers/battle-v2/dealer-badge.svg') center / 100% 100% no-repeat;
+  color: #fff; box-shadow: none; filter: drop-shadow(0 2px 1px #152433);
+  font: 800 calc(15 * var(--bu))/1 'Microsoft YaHei', sans-serif;
+  text-shadow: 0 1px 2px #41515d;
+}
+#scr-battle .op-dealer { top: calc(-9 * var(--bu)); left: calc(49.5 * var(--bu)); }
+#scr-battle .op-auto { bottom: 26%; right: 0; font-size: calc(9 * var(--bu)); }
+#scr-battle .op-bubble {
+  z-index: 20; pointer-events: none; animation: bubbleIn .15s ease;
+  top: calc(6 * var(--bu)); left: calc(104 * var(--bu));
+  width: calc(170 * var(--bu)); height: calc(55 * var(--bu));
+  display: grid; place-items: center; padding: 0 12%; border-radius: 0;
+  background: url('/games/gandengyan/assets/layers/battle-v2/pass-bubble.png') center / 100% 100% no-repeat;
+  font-size: calc(18 * var(--bu)); color: #1f2b36; box-shadow: none; white-space: nowrap;
+}
+#scr-battle .op-bubble::before { display: none; }
+#scr-battle .table-center { position: absolute; inset: 0 calc(280 * var(--bu)); align-items: flex-end; padding-bottom: 0; }
+#scr-battle .pile-area { margin-bottom: calc(5 * var(--bu)); }
+#scr-battle .pile-label { margin-bottom: calc(4 * var(--bu)); font-size: calc(12 * var(--bu)); }
+#scr-battle .pile-cards .card { --card-w: calc(76 * var(--bu)); --card-h: calc(112 * var(--bu)); margin-inline: calc(-25 * var(--bu)); }
+#scr-battle .pile-cards .card:first-child { margin-left: 0; }
+#scr-battle .pile-cards .card:last-child { margin-right: 0; }
+
+#scr-battle .action-bar {
+  position: absolute; top: 58.5%; left: 50%; transform: translateX(-50%);
+  width: calc(1058 * var(--bu)); height: calc(110 * var(--bu));
+  display: flex; gap: 0; padding: 0; align-items: center; justify-content: center;
+  isolation: isolate;
+}
+#scr-battle .act-btn {
+  position: relative; z-index: 1;
+  flex: 1 1 0; width: 0; min-width: 0; height: calc(88 * var(--bu)); padding: 0;
+  border: 0; box-shadow: none; clip-path: none;
+  background-position: center; background-size: 100% 100%; background-repeat: no-repeat;
+  font: 800 calc(34 * var(--bu))/1 'Microsoft YaHei', sans-serif;
+  letter-spacing: calc(2 * var(--bu)); text-indent: calc(2 * var(--bu)); color: #55f9ff;
+  text-shadow: 0 2px 1px #254269, 0 0 8px #20d7f5; filter: none;
+}
+#scr-battle .act-pass { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-pass.png'); color: #fff; text-shadow: 0 2px 2px #3e4551; }
+#scr-battle .act-hint { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-hint.png'); color: #faff31; text-shadow: 0 2px 2px #763486; }
+#scr-battle .act-clear { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-clear.png'); }
+#scr-battle .act-play { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-play.png'); }
+#scr-battle .act-btn:disabled { filter: saturate(.65) brightness(.65); cursor: default; }
+#scr-battle .action-bar:not(.my-turn) .act-btn { filter: saturate(.7) brightness(.72); }
+#scr-battle .act-btn:hover:not(:disabled) { filter: brightness(1.18); }
+#scr-battle .act-btn:focus-visible, #scr-battle .tb-item:focus-visible { outline: 2px solid #91f9ff; outline-offset: -5px; }
+#scr-battle .turn-timer {
+  position: relative; z-index: 0;
+  width: calc(112 * var(--bu)); height: calc(112 * var(--bu));
+  background: none;
+}
+#scr-battle .turn-timer svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: none; overflow: visible; }
+#scr-battle .tt-bg, #scr-battle .ot-bg {
+  fill: none; stroke: #435d6a; stroke-width: 40;
+}
+#scr-battle .tt-fg, #scr-battle .ot-fg {
+  stroke-width: 30; opacity: 1; filter: none;
+}
+#scr-battle .timer-track-bevel { fill: none; }
+#scr-battle [data-timer-progress] {
+  fill: none; stroke-linecap: butt;
+  stroke-dasharray: 100; stroke-dashoffset: 100; visibility: hidden;
+  transition: none;
+}
+#scr-battle .timer-progress-shadow { opacity: .85; }
+#scr-battle .turn-timer b {
+  color: #3489b9; font-size: calc(39 * var(--bu)); font-family: Bahnschrift, 'Segoe UI', sans-serif;
+  font-weight: 500; text-shadow: 0 1px #eff5f8, 0 -1px #5185a0;
+}
+#scr-battle .action-bar:not(.my-turn) .turn-timer { opacity: .78; }
+
+#scr-battle .hand-area {
+  position: absolute; top: 76%; bottom: 1%; left: 12%; right: 12%;
+  min-height: 0; padding: 0; align-items: flex-end;
+}
+#scr-battle .hand-area .card { margin: 0 calc(-25 * var(--bu)); }
+#scr-battle .card:not(.back) {
+  border: 0; border-radius: 0; background: url('/games/gandengyan/assets/layers/battle-v2/card-face-v4.png') center / 100% 100% no-repeat;
+  box-shadow: none; filter: drop-shadow(0 3px 4px #06101e);
+}
+#scr-battle .card .corner { top: 7%; left: 11%; font-size: calc(23 * var(--bu)); }
+#scr-battle .card .corner i { font-size: calc(19 * var(--bu)); }
+#scr-battle .card .corner.c2 { top: auto; left: auto; bottom: 11%; right: 16%; }
+#scr-battle .card .pip { font-size: calc(46 * var(--bu)); }
+#scr-battle .card .jk-label {
+  top: 8%; left: 12%; font: 700 calc(13 * var(--bu))/1 Consolas, monospace;
+  writing-mode: vertical-rl; text-orientation: upright; letter-spacing: calc(-1 * var(--bu)); color: #f3242b;
+}
+.card .jk-crown img { display: block; width: 66%; height: 55%; object-fit: contain; }
+#scr-battle .card .jk-crown { padding: 14% 8% 0 22%; }
+#scr-battle .card .jk-corner { display: none; }
+#scr-battle .card.joker-small .jk-crown img { filter: grayscale(1) brightness(.45); }
+#scr-battle .card.joker-small .jk-label { color: #20313e; }
+#scr-battle .hand-area .card.sel {
+  box-shadow: none; filter: drop-shadow(0 0 5px #51f7ff) drop-shadow(0 3px 5px #06101e);
+}
+#scr-battle .battle-self-profile {
+  position: absolute; left: calc(15 * var(--bu)); bottom: 3%;
+  width: calc(128 * var(--bu)); height: calc(145 * var(--bu)); z-index: 13;
+}
+#scr-battle .battle-self-profile .op-ava { width: 100%; height: 100%; }
+#scr-battle .battle-self-profile .op-name { top: 85%; left: 6%; width: 88%; font-size: calc(12 * var(--bu)); }
+#scr-battle .battle-self-profile .self-bubble { left: 100%; top: 2%; }
+#scr-battle .self-dealer { left: calc(79 * var(--bu)); bottom: calc(3% + 119 * var(--bu)); z-index: 15; }
+#scr-battle .deal-tip { z-index: 15; }
+#scr-waiting .wseat:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+@media (orientation: portrait) {
+  #scr-battle { --bu: .14vw; --card-w: 72px; --card-h: 105px; }
+  #scr-battle .topbar { width: 100%; height: auto; }
+  #scr-battle .topbar-art { height: 100%; top: 0; }
+  #scr-battle .topbar > :not(.topbar-art) { font-size: 12px; letter-spacing: 0; padding-top: 11px; }
+  #scr-battle .topbar .battle-menu { font-size: 17px; padding-top: 16px; }
+  #scr-battle .topbar .tb-exit { padding-left: 7px; }
+  #scr-battle .topbar .tb-clock { padding-left: 9px; }
+  #scr-battle .battle-main { inset: 70px 12px 40% 12px; flex-direction: column; }
+  #scr-battle .opponents { grid-template-columns: repeat(2, 108px); grid-template-rows: repeat(2, 112px); }
+  #scr-battle .opp { width: 108px; height: 112px; }
+  #scr-battle .op-ava { width: 69px; height: 73px; }
+  #scr-battle .op-name { top: 62px; left: 4px; width: 61px; font-size: 8px; }
+  #scr-battle .op-dealer { top: -6px; left: 34.5px; width: 32px; height: 23px; padding-bottom: 4px; font-size: 11px; }
+  #scr-battle .op-count { left: 70px; top: 20px; width: 28px; height: 40px; font-size: 17px; }
+  #scr-battle .op-timer { left: 70px; top: 76px; width: 28px; height: 28px; }
+  #scr-battle .op-timer-num { font-size: 13px; }
+  #scr-battle .op-bubble { top: 76px; left: 0; width: 69px; height: 24px; padding: 0 4px; transform: none; font-size: 11px; }
+  #scr-battle .opp-right .op-name { right: 4px; }
+  #scr-battle .opp-right .op-count, #scr-battle .opp-right .op-timer { right: 70px; }
+  #scr-battle .opp-right .op-dealer { right: 34.5px; }
+  #scr-battle .opp-right .op-bubble { right: 0; }
+  #scr-battle .table-center { inset: 0 110px; justify-content: center; min-height: 0; }
+  #scr-battle .pile-area { margin: 0; }
+  #scr-battle .pile-label { font-size: 11px; }
+  #scr-battle .pile-cards .card { --card-w: 60px; --card-h: 88px; margin-inline: -18px; }
+  #scr-battle .action-bar { top: auto; bottom: 150px; width: calc(100% - 12px); height: 58px; }
+  #scr-battle .act-btn { height: 39px; font-size: 16px; letter-spacing: 1px; }
+  #scr-battle .turn-timer { width: 47px; height: 47px; }
+  #scr-battle .turn-timer b { font-size: 20px; }
+  #scr-battle .hand-area { top: auto; bottom: 16px; height: 120px; left: 22%; right: 6%; }
+  #scr-battle .hand-area .card { margin-inline: -24px; }
+  #scr-battle .card .corner { font-size: 18px; }
+  #scr-battle .card .corner i { font-size: 13px; }
+  #scr-battle .card .pip { font-size: 31px; }
+  #scr-battle .card .jk-label { font-size: 10px; }
+  #scr-battle .battle-self-profile { left: 6px; bottom: 22px; width: 74px; height: 85px; }
+  #scr-battle .battle-self-profile .op-name { font-size: 8px; }
+  #scr-battle .battle-self-profile .self-bubble { left: 0; top: -35px; width: 98px; height: 30px; }
+  #scr-battle .self-dealer { left: 43px; bottom: 89px; width: 38px; height: 27px; padding-bottom: 5px; font-size: 12px; }
+}

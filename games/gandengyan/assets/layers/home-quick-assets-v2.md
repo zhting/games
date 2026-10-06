@@ -1,0 +1,18 @@
+# 首页快捷入口图标
+
+生成方式：内置 image_gen，按用户效果图分别生成，保留真实透明通道。原图存于本目录：
+
+- home-missions-emblem-v2.png：1254 × 1254，银灰机甲任务徽章，青色灯条。
+- home-leaderboard-emblem-v2.png：1327 × 1185，银色双翼、圆形勋章、青绿色五角宝石。
+
+下方“接任务”“英雄榜”仍为 HTML 文字，未画入图片。页面不叠加圆角方框；data-act 和原点击处理保持不变。
+
+## 原始提示词
+
+### missions
+
+Use case: stylized-concept. Asset: single production-ready sci-fi game UI icon on genuinely transparent background. Input reference image: design and material guide, use ONLY the requested icon and completely remove all lettering, starfield, planets, surrounding machinery and the other icon. Faithful shape/material reconstruction with clean softly shaded classic 3D game UI look, cool matte silver-gray alloy, broad smooth beveled faces, dark gray recesses, restrained turquoise luminous accents, front orthographic view, small shallow extrusion, soft top-left lighting. Not gritty photoreal, not a line icon, no square app tile, no surrounding button frame. High resolution, centered single isolated emblem occupying 94% of canvas with 3% alpha margins, all silhouette points visible. No text, numbers, labels, watermarks, perspective, backgrounds, extra objects. Subject: ONLY LEFT mission/task badge in reference. Compact vertical bilateral symmetric armored insignia like a futuristic shield/backpack. Main chunky gray central plate has shoulders wide at top and a tapered lower point; a small charcoal trapezoid inset near top with one tiny silver down-chevron, and a larger soft gray down-chevron on bottom face. Three-layer folded metallic armor wings hug both sides, not extended wide; cyan illuminated small horizontal top cap, cyan narrow vertical strips near the shoulder and outer side armor. Precisely follow reference proportions and silhouette, aspect roughly100:100. Gray beveled low-poly plate with simple flat broad surfaces and subtle edge highlights, restrained detail; no extra screws, blue outline, facial eyes, characters, checkmark or added star.
+
+### leaderboard
+
+Use case: stylized-concept. Asset: single production-ready sci-fi game UI icon on genuinely transparent background. Input reference image: design and material guide, use ONLY the requested icon and completely remove all lettering, starfield, planets, surrounding machinery and the other icon. Faithful shape/material reconstruction with clean softly shaded classic 3D game UI look, cool matte silver-gray alloy, broad smooth beveled faces, dark gray recesses, restrained turquoise luminous accents, front orthographic view, small shallow extrusion, soft top-left lighting. Not gritty photoreal, not a line icon, no square app tile, no surrounding button frame. High resolution, centered single isolated emblem occupying 94% of canvas with 3% alpha margins, all silhouette points visible. No text, numbers, labels, watermarks, perspective, backgrounds, extra objects. Subject: ONLY RIGHT ranking/leaderboard winged star medal in reference. Wide symmetric silver-wing badge. At center a pale silver round domed medallion containing a vivid turquoise-teal five-point faceted gemstone star. Two silver angular wings extend diagonally up/outward behind disc, with two clearly separated layered pointed feathers each side, long outer feathers pointing high and out. Two short folded silver tail/ribbon points extend diagonally downward from behind disc. Small turquoise metallic support beneath center. Broad smooth gray-silver faces with softly beveled polygon edges and simple shading. Match silhouette and proportions of reference, about112:100 aspect. No eagle head, crown, wreath, extra shields, wires, purple or golden accent. Five-point star must be centered and clearly legible at small size.

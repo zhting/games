@@ -1,0 +1,161 @@
+/* 接任务：共用完整顶部栏，左侧分类与每页三张透明装甲任务牌。 */
+#modal-root .modal-mask:has(.ms-dialog) {
+  padding: 0 !important;
+  background: linear-gradient(180deg, rgba(2, 7, 14, .12), rgba(2, 7, 14, .2)), url('/games/gandengyan/assets/battle-bg.png') center / cover no-repeat !important;
+}
+#modal-root .sci-frame.ms-dialog {
+  --home-rail-height: calc(100vw * 190 / 1736);
+  width: 100vw !important;
+  height: 100svh !important;
+  max-width: none;
+  max-height: none;
+  container-type: inline-size;
+  isolation: isolate;
+}
+#modal-root .ms-dialog > .sd-deco { display: none !important; }
+#modal-root .ms-dialog .sci-dialog {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0;
+  max-height: none;
+  padding: 0 !important;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+#modal-root .ms-dialog .sd-body { position: absolute; inset: 0; }
+#modal-root .ms-dialog > .ms-header { position: absolute; top: 0; left: 0; right: 0; z-index: 30; }
+#modal-root .ms-dialog .ms-body {
+  position: absolute;
+  inset: calc(var(--home-rail-height) + 32px) 2% 16px 1.2%;
+  display: grid;
+  grid-template-columns: 22% minmax(0, 1fr);
+  gap: 2%;
+}
+.ms-tabs { display: flex; flex-direction: column; gap: 2cqw; padding-top: 5cqw; }
+.ms-tab {
+  appearance: none;
+  width: 100%;
+  height: 6cqw;
+  max-height: 78px;
+  flex: 0 0 auto;
+  padding: 0 10px;
+  border: 1px solid #64748e;
+  border-radius: 1.5cqw;
+  background: linear-gradient(180deg, #e0e6f0 0%, #b1bad0 30%, #939cbd 70%, #7a84a5 100%);
+  box-shadow: inset 0 2px 2px #f1f5f8, inset 0 -2px 2px #53607b, 0 4px 5px #040811;
+  color: #27334c;
+  font: 500 clamp(17px, 2.4cqw, 31px)/1 'Microsoft YaHei', sans-serif;
+  letter-spacing: .05em;
+  cursor: pointer;
+  transition: filter .14s, transform .12s;
+}
+.ms-tab.on {
+  border-color: #41578f;
+  background: linear-gradient(180deg, #8496e1 0%, #596cb1 36%, #323f7c 74%, #202750 100%);
+  box-shadow: inset 0 2px 2px #9eafe8, inset 0 -2px 2px #111935, 0 4px 5px #040811;
+  color: #ffdf25;
+  font-weight: 700;
+  text-shadow: 0 1px 2px #4b4b20;
+}
+.ms-tab:hover { filter: brightness(1.1); }
+.ms-tab:active { transform: translateY(1px); }
+.ms-dialog button:focus-visible { outline: 2px solid #66e8ec; outline-offset: 4px; }
+.ms-workspace {
+  width: min(64cqw, calc((100svh - var(--home-rail-height) - 152px) * 792 / 370 + 4cqw));
+  max-width: 100%;
+  min-width: 0;
+}
+#modal-root .ms-dialog .ms-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2cqw; }
+#modal-root .ms-dialog .ms-card {
+  position: relative;
+  display: block;
+  min-width: 0;
+  aspect-ratio: 264 / 370;
+  padding: 0;
+  container-type: inline-size;
+  border: 1px solid rgba(146, 169, 182, .68);
+  border-radius: 16px;
+  background: rgba(28, 36, 50, .72);
+  box-shadow: 0 3px 4px rgba(3, 8, 16, .5);
+  text-align: center;
+}
+#modal-root .ms-dialog .ms-card.ready { border-color: #3de6e0; box-shadow: 0 0 12px rgba(38, 223, 222, .2); }
+.ms-corner-tl, .ms-corner-br { position: absolute; z-index: 2; height: auto; pointer-events: none; }
+.ms-corner-tl { top: -5%; left: -4%; width: 43%; }
+.ms-corner-br { bottom: -3%; right: -4%; width: 30%; }
+#modal-root .ms-dialog .ms-title {
+  position: absolute;
+  top: 14%;
+  left: 4%;
+  right: 4%;
+  margin: 0;
+  color: #16e4df;
+  font: 600 12cqw/1.2 'Microsoft YaHei', sans-serif;
+  letter-spacing: .03em;
+}
+#modal-root .ms-dialog .ms-goal {
+  position: absolute;
+  top: 38%;
+  left: 3%;
+  right: 3%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqw;
+  color: #f4f6f8;
+  font: 600 10cqw/1 'Microsoft YaHei', sans-serif;
+  white-space: nowrap;
+}
+.ms-goal strong { color: #ffcf00; font: 500 30cqw/1 Consolas, monospace; }
+.ms-progress-label { position: absolute; top: 63%; left: 10%; right: 10%; color: #bccdd8; font: 500 5cqw/1.2 'Microsoft YaHei', sans-serif; }
+.ms-progress-label b { color: #39e4e5; font-family: Consolas, monospace; }
+#modal-root .ms-dialog .ms-progress { position: absolute; top: 70%; left: 17%; width: 66%; height: 3px; border-radius: 0; background: rgba(6, 14, 25, .7); }
+#modal-root .ms-dialog .ms-progress i { height: 100%; background: #29d8da; }
+#modal-root .ms-dialog .ms-reward { position: absolute; bottom: 14%; left: 3%; right: 3%; color: #f4f6f8; font-size: 7.5cqw; font-weight: 600; white-space: nowrap; }
+#modal-root .ms-dialog .ms-reward b { color: #16e4df; font: 500 13cqw/1.1 Consolas, monospace; }
+.ms-action { position: absolute; bottom: 3%; left: 0; right: 0; height: 13cqw; display: flex; justify-content: center; align-items: center; }
+.ms-state, .ms-claimed { font: 500 5cqw/1 'Microsoft YaHei', sans-serif; color: #b6cad4; }
+.ms-claimed { color: #3be2d7; }
+#modal-root .ms-dialog .ms-btn.btn-cylinder { --cylinder-height: 13cqw; width: 55%; min-width: 0; min-height: 0; padding: 0 3cqw; font-size: 5.5cqw; }
+.ms-pagination { margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 16px; color: #c1d6e5; font: 500 14px/1 Consolas, monospace; }
+.ms-pagination button { padding: 7px 12px; border: 1px solid #536b81; background: rgba(21, 37, 54, .84); color: #bce7ed; font: 500 13px/1 'Microsoft YaHei', sans-serif; cursor: pointer; }
+.ms-pagination button:disabled { opacity: .4; cursor: default; }
+#modal-root .ms-dialog .ms-tip { margin-top: 12px; padding: 0; font-size: 12px; line-height: 1.5; color: #abc0cd; }
+.ms-empty-text { position: absolute; top: 42%; left: 8%; right: 8%; margin: 0; color: #d3e3eb; font: 500 6.5cqw/1.8 'Microsoft YaHei', sans-serif; }
+@media (max-width: 600px) and (orientation: portrait) {
+  #modal-root .ms-dialog .ms-body { inset: calc(var(--home-rail-height) + 16px) 10px 12px; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; }
+  .ms-tabs { padding-top: 24px; gap: 16px; }
+  .ms-tab { height: 58px; border-radius: 10px; padding: 0 4px; font-size: 16px; letter-spacing: 0; }
+  .ms-workspace { width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; padding: 12px 6px 8px; scrollbar-width: thin; }
+  #modal-root .ms-dialog .ms-cards { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  #modal-root .ms-dialog .ms-card { aspect-ratio: auto; height: clamp(160px, 21svh, 180px); }
+  #modal-root .ms-dialog .ms-title { font-size: clamp(16px, 8cqw, 20px); }
+  #modal-root .ms-dialog .ms-goal { top: 32%; gap: 6px; font-size: clamp(14px, 7cqw, 18px); }
+  #modal-root .ms-dialog .ms-goal strong { font-size: clamp(26px, 14cqw, 36px); }
+  .ms-progress-label { top: 56%; font-size: 11.5px; }
+  #modal-root .ms-dialog .ms-progress { top: 66%; }
+  #modal-root .ms-dialog .ms-reward { bottom: 17%; font-size: clamp(14px, 7cqw, 16px); }
+  #modal-root .ms-dialog .ms-reward b { font-size: clamp(18px, 9cqw, 22px); }
+  .ms-action { bottom: 4%; height: 16px; }
+  .ms-state, .ms-claimed { font-size: 11.5px; }
+  #modal-root .ms-dialog .ms-btn.btn-cylinder { --cylinder-height: 25px; font-size: 11px; }
+  .ms-pagination { margin-top: 18px; gap: 10px; font-size: 12px; }
+  .ms-pagination button { padding: 7px; font-size: 12px; }
+  #modal-root .ms-dialog .ms-tip { font-size: 11px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  #modal-root .ms-dialog .ms-body { top: calc(var(--home-rail-height) + 22px); }
+  .ms-tabs { padding-top: 16px; gap: 12px; }
+  .ms-tab { height: 42px; font-size: 18px; }
+  .ms-workspace { width: min(68cqw, calc((100svh - var(--home-rail-height) - 112px) * 792 / 370 + 4cqw)); }
+  .ms-progress-label, .ms-state, .ms-claimed { font-size: 10px; }
+  #modal-root .ms-dialog .ms-reward { font-size: max(10px, 7.5cqw); }
+  .ms-pagination { margin-top: 12px; }
+  #modal-root .ms-dialog .ms-tip { margin-top: 6px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) { .ms-tab { transition: none; } }

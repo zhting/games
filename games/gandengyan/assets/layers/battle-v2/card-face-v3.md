@@ -1,0 +1,11 @@
+# 牌底 v3
+
+通过内置 image_gen 按用户提供的牌面设计图重新生成空白牌底。
+
+新牌底：card-face-v3.png（916 × 1406，透明 PNG）。生成原图：sources/card-face-v3.png。仅裁去透明外边距（x=54,y=52,w=916,h=1406），保留 alpha。旧 card-face.png 保留。
+
+应用于手牌和出牌区所有正面卡牌；牌点、花色、JOKER 字样和王冠仍由 UI 独立渲染。
+
+## 最终提示词
+
+Use case: precise-object-edit. Asset type: one blank transparent playing-card FACE sprite for the browser game, derived from attached reference. The reference image is the exact target shape/style, NOT a loose inspiration. Extract and reconstruct ONLY THE FRONT PLAYING CARD BACKGROUND from the reference: remove the red JOKER letters and red crown completely, remove the partially visible neighboring card at left, remove the starry scene, leaving one clean empty card on fully transparent alpha. Match the reference's actual card silhouette and simple 2D painted gradients closely. Main white face has BOTH TOP CORNERS diagonally cut, a SHORT centered STEEL BLUE recessed horizontal strip at the very top with sloping ends (about half card width), NOT a glowing cyan outline. At about 57 percent of card height the outer shoulders step inward symmetrically, making the lower card body NARROWER: white upper body full width; lower rectangular body inset on BOTH SIDES, with thick dark STEEL BLUE vertical side rails behind it. Bottom two corners clipped symmetrically. Main face smooth white at top, very light bluish lavender at middle, muted periwinkle blue at bottom. Thick blue-gray backing/side armor begins around mid-height and wraps the lower half behind the face like the screenshot, flat front view, simple restrained shading. Preserve precise flat angular outline, NOT an ordinary rectangular rounded playing card, NOT thin fancy metallic bevels, NOT a card with just one cut corner. No bright cyan, no perimeter neon glow, no diagonal perspective. Render at portrait 1024x1536, with the one card centered and occupying about 85% canvas width and 93% canvas height; tight clear transparent margin. Absolutely NO red marks, NO crown, NO letters, NO numbers, NO suits, NO other cards or background. This is a reusable EMPTY game card face whose live typography will be placed separately. Real transparent alpha outside the card, no painted gray/black/checkerboard background.

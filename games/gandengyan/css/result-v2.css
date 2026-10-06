@@ -1,0 +1,110 @@
+/* 结算：四角装甲 + 双翼徽章，所有数字和文字由真实结算数据渲染。 */
+#modal-root .modal-mask:has(.result-dialog) {
+  background: rgba(0, 5, 9, .58) !important;
+  padding: 10px !important;
+}
+#modal-root .sci-frame.result-dialog {
+  width: min(760px, 94vw, calc(90svh * 700 / 552)) !important;
+  height: auto !important;
+  aspect-ratio: 700 / 552;
+  max-width: none;
+  max-height: none;
+  container-type: inline-size;
+  isolation: isolate;
+  text-align: center;
+}
+#modal-root .result-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 10.8% 3.6% 2.8%;
+  z-index: -1;
+  background: rgba(38, 43, 46, .72);
+}
+#modal-root .result-dialog > .sd-deco { display: none !important; }
+#modal-root .result-dialog .sci-dialog {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0;
+  max-height: none;
+  padding: 0 !important;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+#modal-root .result-dialog .sd-body { position: absolute; inset: 0; }
+.rt-frame-corner {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  height: auto;
+  pointer-events: none;
+}
+.rt-frame-tl, .rt-frame-tr { top: 5%; width: 30%; }
+.rt-frame-tl { left: 0; }
+.rt-frame-tr { right: 0; }
+.rt-frame-bl, .rt-frame-br { bottom: 0; width: 20%; }
+.rt-frame-bl { left: 1.5%; }
+.rt-frame-br { right: 1.5%; }
+#modal-root .result-dialog .rt-banner {
+  top: 0;
+  width: 34.3%;
+  height: auto;
+  aspect-ratio: 545 / 324;
+  display: block;
+  clip-path: none;
+  background: none;
+  box-shadow: none;
+  letter-spacing: 0;
+  text-indent: 0;
+  pointer-events: none;
+}
+.result-dialog .rt-banner img { display: block; width: 100%; height: 100%; object-fit: fill; }
+.result-dialog .rt-banner strong {
+  position: absolute;
+  top: 29%; left: 35%; width: 30%; height: 38%;
+  display: grid;
+  place-items: center;
+  font: 900 6.8cqw/1 "Microsoft YaHei", "PingFang SC", sans-serif;
+  text-shadow: 0 2px #353c42, 0 3px 4px #070b0e;
+}
+.result-dialog .rt-win strong { color: #ffe000; }
+.result-dialog .rt-lose strong { color: #d6dadd; }
+.result-dialog .rt-stats {
+  position: absolute;
+  top: 30%; left: 10%; right: 10%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+}
+.result-dialog .rt-stat { min-width: 0; }
+.result-dialog .rt-stat-line { display: flex; height: 10.5cqw; align-items: center; justify-content: center; gap: .5cqw; }
+.result-dialog .rt-ico { display: block; flex-shrink: 0; width: 8cqw; height: 9cqw; object-fit: contain; }
+.result-dialog .ico-remain { width: 6cqw; }
+.result-dialog .ico-bomb { width: 4.8cqw; }
+.result-dialog .ico-hbomb { width: 4.7cqw; }
+.result-dialog .ico-rocket { width: 8.2cqw; }
+.result-dialog .rt-v { display: flex; align-items: baseline; gap: .5cqw; line-height: 1; }
+.result-dialog .rt-v small { color: #f3f5f7; font: 500 3.8cqw/1 Arial, sans-serif; }
+.result-dialog .rt-v b { color: #2debe3; font: 500 5.8cqw/1 Consolas, monospace; }
+.result-dialog .rt-label { margin-top: .6cqw; color: #fff; font-size: 3.5cqw; font-weight: 700; line-height: 1.25; letter-spacing: 0; text-shadow: 0 2px 2px #11181f; white-space: nowrap; }
+.result-dialog .rt-total-label { position: absolute; top: 57.3%; left: 0; right: 0; color: #19e4e8; font-size: 3.6cqw; font-weight: 700; line-height: 1.2; letter-spacing: .2cqw; }
+.result-dialog .rt-total { position: absolute; top: 63.5%; left: 5%; right: 5%; display: flex; align-items: baseline; justify-content: center; gap: 1.2cqw; }
+.result-dialog .rt-total b { color: #ffe200; font: 400 12.6cqw/1 Arial, sans-serif; text-shadow: none; }
+.result-dialog .rt-total i { margin: 0; color: #fff; font-size: 3.6cqw; font-weight: 700; line-height: 1; text-shadow: 0 2px 2px #10161b; }
+#modal-root .result-dialog .sd-btns { position: absolute; top: 84.2%; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 11.6%; margin: 0; }
+#modal-root .result-dialog .sd-btns button.btn-cylinder {
+  --cylinder-height: 5.45cqw;
+  width: 18.3%;
+  min-width: 0; min-height: 0;
+  padding: 0;
+  font-size: 2.6cqw;
+}
+.result-dialog .rt-next { position: absolute; top: 93%; left: 20%; right: 20%; margin: 0; color: #b0bcc5; font-size: 1.8cqw; line-height: 1.2; }
+@media (max-width: 520px) and (orientation: portrait) {
+  #modal-root .result-dialog .sd-btns button.btn-cylinder::after { content: ''; position: absolute; inset: -8px -3px; }
+}

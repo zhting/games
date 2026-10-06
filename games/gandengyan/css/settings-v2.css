@@ -1,0 +1,182 @@
+/* 设置窗口：半透明底板、四角装甲与可实时调节的金属圆柱滑条。 */
+#modal-root .modal-mask:has(.settings-dialog) {
+  background: rgba(0, 5, 9, .58) !important;
+  padding: 10px !important;
+}
+#modal-root .sci-frame.settings-dialog {
+  width: min(740px, 94vw, calc(88svh * 700 / 350)) !important;
+  height: auto !important;
+  aspect-ratio: 700 / 350;
+  max-width: none;
+  max-height: none;
+  container-type: inline-size;
+  isolation: isolate;
+}
+#modal-root .settings-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 10% 3.5% 5%;
+  z-index: -1;
+  background: rgba(38, 43, 46, .74);
+}
+#modal-root .settings-dialog > .sd-deco { display: none !important; }
+#modal-root .settings-dialog .sci-dialog {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0;
+  max-height: none;
+  padding: 0 !important;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+#modal-root .settings-dialog .sd-body { position: absolute; inset: 0; }
+.settings-armor { position: absolute; inset: 0; pointer-events: none; }
+.settings-corner { position: absolute; z-index: 3; height: auto; }
+.settings-corner-tl, .settings-corner-tr { top: 2%; width: 30%; }
+.settings-corner-tl { left: 0; }
+.settings-corner-tr { right: 0; }
+.settings-corner-bl, .settings-corner-br { bottom: 0; width: 20%; }
+.settings-corner-bl { left: 1.5%; }
+.settings-corner-br { right: 1.5%; }
+#modal-root .settings-dialog > .sd-title {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 42%;
+  height: 22%;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: url('/games/gandengyan/assets/layers/settings-v2/title.png') center / 100% 100% no-repeat;
+  clip-path: none;
+  box-shadow: none;
+  text-indent: 0;
+  letter-spacing: .3cqw;
+  font-size: 4cqw;
+  font-weight: 500;
+  line-height: 1;
+  color: #f7f9fa;
+  text-shadow: 0 2px 2px #080c10;
+}
+#modal-root .settings-dialog .sd-title span { padding-top: .6cqw; }
+#modal-root .settings-dialog .settings-body {
+  position: absolute;
+  top: 31%;
+  left: 12%;
+  right: 11%;
+  display: grid;
+  gap: 3.6cqw;
+}
+#modal-root .settings-dialog .set-row {
+  display: grid;
+  grid-template-columns: 8cqw 1fr;
+  align-items: center;
+  gap: 2cqw;
+  padding: 0;
+}
+#modal-root .settings-dialog .set-row label {
+  color: #f4f5f6;
+  font-size: 3.2cqw;
+  font-weight: 600;
+  letter-spacing: .15cqw;
+  text-align: left;
+  text-shadow: 0 1px 2px #161b20;
+}
+.settings-dialog .set-slider { position: relative; height: 6cqw; --grip-width: 3.2cqw; }
+.settings-dialog .set-slider-track {
+  position: absolute;
+  left: calc(var(--grip-width) / 2);
+  right: calc(var(--grip-width) / 2);
+  top: 50%;
+  height: 3.2cqw;
+  transform: translateY(-50%);
+  border: 1px solid #666a70;
+  background: linear-gradient(90deg, #383c41, #303339);
+  box-shadow: 0 2px 5px #070b10, inset 0 1px 2px rgba(0, 0, 0, .35);
+}
+.settings-dialog .set-slider-fill {
+  display: block;
+  height: 100%;
+  width: var(--volume);
+  background: linear-gradient(180deg, #4c637d 0%, #b1c4dc 14%, #f3f7fa 29%, #a9bdd4 48%, #506680 75%, #293649 93%, #18212b 100%);
+  box-shadow: 0 1px 2px #0b1017;
+}
+#modal-root .settings-dialog .set-row input[type='range'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  cursor: pointer;
+  outline: none;
+}
+.settings-dialog input[type='range']::-webkit-slider-runnable-track { height: 6cqw; background: transparent; }
+#modal-root .settings-dialog input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--grip-width);
+  height: 6cqw;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(90deg, #6687a4, #bbcddd 16%, #526b85 24%, #e4eef6 47%, #98afc7 73%, #314355 86%, #668199);
+  clip-path: polygon(0 0, 100% 0, 100% 15%, 86% 15%, 86% 85%, 100% 85%, 100% 100%, 0 100%, 0 85%, 14% 85%, 14% 15%, 0 15%);
+  box-shadow: none;
+  cursor: grab;
+}
+.settings-dialog input[type='range']::-moz-range-track { height: 6cqw; background: transparent; }
+#modal-root .settings-dialog input[type='range']::-moz-range-thumb {
+  width: var(--grip-width);
+  height: 6cqw;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(90deg, #6687a4, #bbcddd 16%, #526b85 24%, #e4eef6 47%, #98afc7 73%, #314355 86%, #668199);
+  clip-path: polygon(0 0, 100% 0, 100% 15%, 86% 15%, 86% 85%, 100% 85%, 100% 100%, 0 100%, 0 85%, 14% 85%, 14% 15%, 0 15%);
+  cursor: grab;
+}
+.settings-dialog .set-slider:focus-within .set-slider-track { outline: 1px solid #67e2e9; outline-offset: 3px; }
+#modal-root .settings-dialog .sd-btns {
+  position: absolute;
+  top: 78%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+#modal-root .settings-dialog button.btn-cylinder {
+  --cylinder-height: 5cqw;
+  width: 18%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0 2cqw;
+  font-size: 2.7cqw;
+}
+@media (max-width: 520px) {
+  #modal-root .sci-frame.settings-dialog { aspect-ratio: 700 / 470; }
+  #modal-root .settings-dialog > .sd-title { width: 48%; height: 18%; font-size: 20px; }
+  #modal-root .settings-dialog .settings-body { top: 29%; left: 13%; right: 13%; gap: 12px; }
+  #modal-root .settings-dialog .set-row { grid-template-columns: 40px 1fr; gap: 8px; }
+  #modal-root .settings-dialog .set-row label { font-size: 16px; letter-spacing: 0; }
+  .settings-dialog .set-slider { height: 44px; --grip-width: 18px; }
+  .settings-dialog .set-slider-track { height: 16px; }
+  .settings-dialog input[type='range']::-webkit-slider-runnable-track { height: 44px; }
+  #modal-root .settings-dialog input[type='range']::-webkit-slider-thumb { height: 32px; margin-top: 6px; }
+  .settings-dialog input[type='range']::-moz-range-track { height: 44px; }
+  #modal-root .settings-dialog input[type='range']::-moz-range-thumb { height: 32px; }
+  #modal-root .settings-dialog button.btn-cylinder { --cylinder-height: 34px; width: 112px; font-size: 16px; }
+}

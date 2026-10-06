@@ -69,6 +69,18 @@
     {
       "source": "/真果冻",
       "destination": "/games/jelly-block/index.html"
+    },
+    {
+      "source": "/games/gandengyan",
+      "destination": "/games/gandengyan/index.html"
+    },
+    {
+      "source": "/gandengyan",
+      "destination": "/games/gandengyan/index.html"
+    },
+    {
+      "source": "/干瞪眼",
+      "destination": "/games/gandengyan/index.html"
     }
   ],
   "headers": [

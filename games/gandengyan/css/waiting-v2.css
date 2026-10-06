@@ -1,0 +1,122 @@
+/* 联机等候：1280 × 800 舞台，各装饰图保持原比例。 */
+#scr-waiting .waiting-stage {
+  --wu: min(.078125vw, .125svh);
+  position: absolute; left: 50%; top: 50%;
+  width: calc(1280 * var(--wu)); height: calc(800 * var(--wu));
+  transform: translate(-50%, -50%);
+}
+#scr-waiting .topbar {
+  position: absolute; left: 0; top: 0; width: 100%;
+  aspect-ratio: 1736 / 190; height: auto; padding: 0; gap: 0; background: transparent;
+}
+#scr-waiting .topbar-art { inset: 0; width: 100%; height: 100%; object-fit: contain; transform: none; }
+#scr-waiting .topbar > .tb-item, #scr-waiting .topbar > .tb-clock {
+  position: absolute; top: 38%; transform: translate(-50%, -50%);
+  margin: 0; padding: 0; background: transparent; font-size: calc(23 * var(--wu)); letter-spacing: 0;
+}
+#scr-waiting .tb-exit { left: 10.8%; }
+#scr-waiting .tb-back { display: none; }
+#scr-waiting .tb-clock { left: 91.2%; right: auto; }
+#scr-waiting .topbar > .tb-title {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  margin: 0; padding: 0; border: 0; background: transparent;
+  color: white; line-height: 1.1;
+  font-size: calc(34 * var(--wu)); font-family: inherit; font-weight: 800;
+  letter-spacing: .2em; text-indent: .2em; cursor: pointer;
+}
+#scr-waiting .wait-count {
+  position: absolute; top: calc(140 * var(--wu)); left: 50%; transform: translateX(-50%);
+  width: calc(250 * var(--wu)); aspect-ratio: 1097 / 769; height: auto;
+  margin: 0; padding: 0; min-width: 0; background: none; border: 0; border-radius: 0; outline: none; box-shadow: none;
+}
+#scr-waiting .wait-count > img { display: block; width: 100%; height: 100%; }
+#scr-waiting .wait-count > span {
+  position: absolute; top: 3%; left: 18%; right: 18%; height: 19%;
+  display: grid; place-items: center; margin: 0;
+  font-size: calc(20 * var(--wu)); font-weight: 700; letter-spacing: .06em; color: #88d5e1;
+}
+#scr-waiting .wait-time-value {
+  position: absolute; inset: 37% 10% 17%; display: flex; justify-content: center;
+  align-items: baseline; gap: calc(5 * var(--wu));
+}
+#scr-waiting .wait-count b { color: #78b9d6; font: 400 calc(64 * var(--wu))/1 Consolas, monospace; text-shadow: 0 2px 2px #17252d; }
+#scr-waiting .wait-count i { margin: 0; color: #eee; font: normal 700 calc(19 * var(--wu))/1 sans-serif; }
+#scr-waiting .wait-seats { position: absolute; inset: 0; width: 100%; max-width: none; margin: 0; padding: 0; display: block; pointer-events: none; }
+#scr-waiting .wseat {
+  position: absolute; width: calc(180 * var(--wu)); height: auto; aspect-ratio: 931 / 1010;
+  display: block; min-width: 0; padding: 0; margin: 0; background: transparent;
+  border-radius: 0; transform: translateX(-50%); opacity: 1;
+}
+#scr-waiting .ws-slot-0 { left: 50%; top: calc(575 * var(--wu)); }
+#scr-waiting .ws-slot-1 { left: 25%; top: calc(340 * var(--wu)); }
+#scr-waiting .ws-slot-2 { left: 25%; top: calc(110 * var(--wu)); }
+#scr-waiting .ws-slot-3 { left: 75%; top: calc(110 * var(--wu)); }
+#scr-waiting .ws-slot-4 { left: 75%; top: calc(340 * var(--wu)); }
+#scr-waiting .ws-podium-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
+#scr-waiting .ws-avatar { position: absolute; left: 20%; top: 1%; width: 60%; height: 48%; display: grid; place-items: center; }
+#scr-waiting .ws-avatar .avatar { width: 100%; height: 100%; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+#scr-waiting .ws-name {
+  position: absolute; left: 8%; top: 68%; width: 84%; height: 13%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; max-width: none; border: 0; clip-path: none; background: transparent;
+  color: #263b4a; font-size: calc(16 * var(--wu)); font-weight: 600; letter-spacing: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px #c4d4de;
+}
+#scr-waiting .ws-energy {
+  position: absolute; top: 85.5%; left: 20%; width: 60%; height: 8%;
+  display: flex; align-items: center; justify-content: center;
+  color: #eef9ff; font: 700 calc(15 * var(--wu))/1 Consolas, monospace;
+}
+#scr-waiting .empty .ws-podium-art { opacity: .48; }
+#scr-waiting .ws-plus {
+  display: grid; place-items: center; width: 65%; height: 65%; margin: 0; padding: 0;
+  border: 1px dashed #80b3c9; border-radius: 50%; background: rgba(12,31,49,.6);
+  color: #bce8ee; font-size: calc(43 * var(--wu)); line-height: 1;
+}
+#scr-waiting .empty .ws-name { color: #b8d1db; text-shadow: 0 1px #172f41; }
+#scr-waiting .btn-change-table {
+  position: absolute; z-index: 10; left: 50%; top: calc(320 * var(--wu)); transform: translateX(-50%);
+  width: calc(165 * var(--wu)); height: auto; aspect-ratio: 1; margin: 0; padding: 0;
+  border: 0; border-radius: 0; outline: none; background: url('/games/gandengyan/assets/layers/waiting-v2/change.png') center / contain no-repeat;
+  box-shadow: none; color: white; font: 800 calc(36 * var(--wu))/1 'Microsoft YaHei', sans-serif;
+  letter-spacing: .12em; text-indent: .12em; text-shadow: 0 2px 3px #000; cursor: pointer;
+  transition: filter .15s, transform .15s;
+}
+#scr-waiting .btn-change-table:hover { filter: brightness(1.12); }
+#scr-waiting .btn-change-table:active { transform: translateX(-50%) scale(.96); }
+#scr-waiting .btn-change-table:disabled { filter: brightness(.7); cursor: wait; }
+#scr-waiting .btn-change-table:focus-visible { outline: 2px solid #6decff; outline-offset: 4px; }
+#scr-waiting .btn-change-table span { animation: none; }
+#scr-waiting .waiting-stage button.btn-start-now {
+  --cylinder-height: calc(36 * var(--wu));
+  position: absolute; z-index: 10; left: 50%; top: calc(495 * var(--wu));
+  transform: translateX(-50%); width: calc(170 * var(--wu)); min-width: 0;
+  margin: 0; padding: 0; font-size: calc(18 * var(--wu));
+}
+#scr-waiting .waiting-stage button.btn-start-now:active:not(:disabled) { transform: translate(-50%, 1px); }
+#scr-waiting .wait-status { position: absolute; top: calc(538 * var(--wu)); left: 35%; right: 35%; font-size: calc(14 * var(--wu)); color: #b9e5ed; line-height: 1.3; text-align: center; }
+#scr-waiting .wait-status small { display: block; font-size: calc(12 * var(--wu)); color: #8ab3c2; }
+@media (max-width: 600px) and (orientation: portrait) {
+  #scr-waiting .waiting-stage { width: 100%; height: 100%; }
+  #scr-waiting .topbar > .tb-item, #scr-waiting .topbar > .tb-clock { font-size: 12px; }
+  #scr-waiting .topbar > .tb-title { font-size: 19px; }
+  #scr-waiting .wait-count { top: 8%; width: 52vw; }
+  #scr-waiting .wait-count > span { font-size: 13px; }
+  #scr-waiting .wait-count b { font-size: 43px; }
+  #scr-waiting .wait-count i { font-size: 15px; }
+  #scr-waiting .wseat { width: min(29vw,128px); }
+  #scr-waiting .ws-slot-0 { top: auto; bottom: 4.5%; }
+  #scr-waiting .ws-slot-1 { left: 22%; top: 54%; }
+  #scr-waiting .ws-slot-2 { left: 22%; top: 25.5%; }
+  #scr-waiting .ws-slot-3 { left: 78%; top: 25.5%; }
+  #scr-waiting .ws-slot-4 { left: 78%; top: 54%; }
+  #scr-waiting .ws-name, #scr-waiting .ws-energy { font-size: 11px; }
+  #scr-waiting .ws-plus { font-size: 27px; }
+  #scr-waiting .btn-change-table { top: 42.5%; width: 32vw; font-size: 28px; }
+  #scr-waiting .waiting-stage button.btn-start-now { --cylinder-height: 38px; top: 70%; width: 150px; font-size: 17px; }
+  #scr-waiting .wait-status { top: 76.5%; left: 25%; right: 25%; font-size: 12px; }
+  #scr-waiting .wait-status small { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #scr-waiting .btn-change-table { transition-duration: .01ms; }
+}

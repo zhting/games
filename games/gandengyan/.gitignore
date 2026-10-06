@@ -1,0 +1,15 @@
+# 运行时生成的数据与依赖
+node_modules/
+data/
+artifacts/
+
+# 日志与系统文件
+*.log
+.DS_Store
+Thumbs.db
+
+# 原仓库素材与导入前副本留在本地；合集使用根目录的静态资源。
+/public/
+/设计稿/
+/art-extract-battle.cjs
+/scripts/create-space-bgm.cjs

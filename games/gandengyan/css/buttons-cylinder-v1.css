@@ -1,0 +1,56 @@
+/* 统一金属圆柱体按钮，端盖与中央弧面分别缩放。 */
+:is(#modal-root, #scr-waiting) button.btn-cylinder {
+  --cylinder-height: 36px;
+  --cylinder-cap: calc(var(--cylinder-height) * .43);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 118px;
+  height: var(--cylinder-height);
+  padding: 0 20px;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: none;
+  box-shadow: none;
+  clip-path: none;
+  color: #26364d;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  text-indent: 0;
+  text-shadow: 0 1px rgba(245,250,255,.75);
+  cursor: pointer;
+  transition: filter .12s ease, transform .1s ease;
+}
+:is(#modal-root, #scr-waiting) button.btn-cylinder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 0 solid transparent;
+  border-image: url('/games/gandengyan/assets/layers/buttons-cylinder-v1/cylinder.png') 0 80 fill / 0 var(--cylinder-cap) / 0 stretch;
+  filter: drop-shadow(0 2px 2px rgba(0,8,18,.48));
+  pointer-events: none;
+}
+:is(#modal-root, #scr-waiting) button.btn-cylinder:hover:not(:disabled) { filter: brightness(1.08); }
+:is(#modal-root, #scr-waiting) button.btn-cylinder:active:not(:disabled) { transform: translateY(1px); filter: brightness(.92); }
+:is(#modal-root, #scr-waiting) button.btn-cylinder:disabled { filter: grayscale(.45) brightness(.78); cursor: wait; }
+:is(#modal-root, #scr-waiting) button.btn-cylinder:focus-visible { outline: 2px solid #8ceaff; outline-offset: 3px; }
+#modal-root .pf-actions button.btn-cylinder {
+  --cylinder-height: 3.2cqw;
+  width: 13.5%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0 .7cqw;
+  font-size: 1.48cqw;
+  font-weight: 500;
+}
+#modal-root .pf-actions button.btn-cylinder:disabled { font-size: 1.38cqw; }
+@media (prefers-reduced-motion: reduce) {
+  :is(#modal-root, #scr-waiting) button.btn-cylinder { transition: none; }
+}

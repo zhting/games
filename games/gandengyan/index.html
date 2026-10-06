@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b1020">
+<title>干瞪眼 · 星际版</title>
+<link rel="icon" href="/games/gandengyan/logo.png">
+<link rel="apple-touch-icon" href="/games/gandengyan/logo.png">
+<link rel="manifest" href="/games/gandengyan/manifest.webmanifest">
+<link rel="stylesheet" href="/games/gandengyan/css/style.css">
+<link rel="stylesheet" href="/games/gandengyan/css/battle-v2.css">
+<link rel="stylesheet" href="/games/gandengyan/css/result-v2.css">
+<link rel="stylesheet" href="/games/gandengyan/css/waiting-v2.css">
+<link rel="stylesheet" href="/games/gandengyan/css/buttons-cylinder-v1.css">
+<link rel="stylesheet" href="/games/gandengyan/css/settings-v2.css">
+<link rel="stylesheet" href="/games/gandengyan/css/leaderboard-v2.css">
+<link rel="stylesheet" href="/games/gandengyan/css/missions-v2.css">
+<link rel="stylesheet" href="/games/gandengyan/css/topbar-icons-v2.css">
+<link rel="stylesheet" href="/games/gandengyan/css/menu-icons-v2.css">
+<link rel="stylesheet" href="/games/gandengyan/css/exit-dialog-v2.css">
+</head>
+<body>
+<a class="collection-link" href="/" aria-label="返回小游戏合集">↖ 游戏合集</a>
+<canvas id="bg-canvas"></canvas>
+<div id="nebula"></div>
+<div id="space-scene" aria-hidden="true"></div>
+
+<!-- ==================== 启动封面 ==================== -->
+<section class="screen" id="scr-splash">
+  <div class="splash-inner">
+    <img class="splash-logo" src="/games/gandengyan/assets/layers/splash-logo.png" alt="堂堂游戏">
+  </div>
+</section>
+
+<!-- ==================== 登录页 ==================== -->
+<section class="screen" id="scr-login">
+  <img class="login-frame-art" src="/games/gandengyan/assets/layers/login-cockpit.png" alt="" aria-hidden="true">
+  <img class="login-brand-art" src="/games/gandengyan/assets/layers/login-brand-plaque.png" alt="堂堂游戏">
+  <img class="login-wing-art" src="/games/gandengyan/assets/layers/login-wing-emblem.png" alt="星际版">
+  <div class="login-title-stage">
+    <img class="login-title-art" src="/games/gandengyan/assets/layers/login-title-art.png" alt="干瞪眼">
+    <span class="login-beam-band" aria-hidden="true"></span>
+    <span class="login-beam-halo" aria-hidden="true"></span>
+    <span class="login-beam-flash" aria-hidden="true"></span>
+  </div>
+  <div class="login-input-frame" id="login-input-frame" aria-hidden="true" inert></div>
+  <div class="login-play-stage" id="login-play-stage">
+    <img class="login-platform-art" src="/games/gandengyan/assets/layers/login-platform-v2.png" alt="">
+    <img class="login-energy-orb-art" src="/games/gandengyan/assets/layers/login-energy-orb-v2.png" alt="">
+    <div class="login-play-control" id="login-play-control">
+      <img class="login-play-auth-art" src="/games/gandengyan/assets/layers/login-play-auth.png" alt="" aria-hidden="true">
+      <button class="btn-play" id="btn-play" type="button" aria-label="Play，打开登录" aria-expanded="false"><span class="btn-play-label" aria-hidden="true">Play</span></button>
+    </div>
+  </div>
+  <div class="login-form" id="login-form" role="group" aria-label="登录信息" aria-hidden="true" inert>
+    <div class="login-auth-fields">
+      <div class="sci-input"><label for="in-user">用户名</label><input id="in-user" type="text" maxlength="12" placeholder="留空则游客进入" autocomplete="off"></div>
+      <div class="sci-input"><label for="in-pass">密码</label><input id="in-pass" type="password" maxlength="20" placeholder="选填"></div>
+    </div>
+    <div class="login-tip">新用户名将自动注册 · 留空则以游客身份进入</div>
+    <button class="login-back" id="btn-login-back" type="button" aria-label="返回封面">返回</button>
+  </div>
+</section>
+
+<!-- ==================== 加载条 ==================== -->
+<section class="screen" id="scr-loading">
+  <div class="loading-art" aria-hidden="true">
+    <img class="loading-bg-art" src="/games/gandengyan/assets/loading-nebula-v3.png" alt="" draggable="false">
+    <img class="loading-panel-art" src="/games/gandengyan/assets/loading-panel-v3.png" alt="" draggable="false">
+  </div>
+  <div class="loading-badge">
+    <div class="loading-arrows loading-arrows-left" aria-hidden="true">
+      <span class="loading-chevron"></span>
+      <span class="loading-chevron"></span>
+      <span class="loading-chevron"></span>
+    </div>
+    <div class="loading-core"><b>加载中</b><div class="load-bar"><i></i></div></div>
+    <div class="loading-arrows loading-arrows-right" aria-hidden="true">
+      <span class="loading-chevron"></span>
+      <span class="loading-chevron"></span>
+      <span class="loading-chevron"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 首页 ==================== -->
+<section class="screen" id="scr-home">
+  <nav class="home-menu-drawer" id="home-menu-drawer" aria-label="更多菜单" aria-hidden="true" inert>
+    <div class="home-menu-group home-menu-group--left">
+      <button type="button" class="home-menu-item" data-home-menu="auto"><img class="home-menu-icon" src="/games/gandengyan/assets/layers/menu-icons-v2/auto.png" alt="" aria-hidden="true" draggable="false"><span>托管</span></button>
+      <button type="button" class="home-menu-item" data-home-menu="counter"><img class="home-menu-icon" src="/games/gandengyan/assets/layers/menu-icons-v2/counter.png" alt="" aria-hidden="true" draggable="false"><span>记牌器</span></button>
+    </div>
+    <div class="home-menu-group home-menu-group--right">
+      <button type="button" class="home-menu-item" data-home-menu="settings"><img class="home-menu-icon" src="/games/gandengyan/assets/layers/menu-icons-v2/settings.png" alt="" aria-hidden="true" draggable="false"><span>设置</span></button>
+      <button type="button" class="home-menu-item" data-home-menu="feedback"><img class="home-menu-icon" src="/games/gandengyan/assets/layers/menu-icons-v2/feedback.png" alt="" aria-hidden="true" draggable="false"><span>反馈意见</span></button>
+      <button type="button" class="home-menu-item" data-home-menu="switch"><img class="home-menu-icon" src="/games/gandengyan/assets/layers/menu-icons-v2/switch.png" alt="" aria-hidden="true" draggable="false"><span>切换账号</span></button>
+    </div>
+  </nav>
+  <header class="topbar">
+    <img class="topbar-art" src="/games/gandengyan/assets/layers/battle-v2/hud-rail-wide.svg" alt="" aria-hidden="true">
+    <button class="tb-item tb-exit" data-act="exit"><i class="tb-back"></i>退出</button>
+    <button class="tb-item" data-act="tutorial"><img class="tb-icon" src="/games/gandengyan/assets/layers/hud-icons-v2/tutorial.png" alt="" aria-hidden="true" draggable="false">新手指导</button>
+    <button type="button" class="tb-title" data-act="menu" aria-expanded="false" aria-controls="home-menu-drawer" aria-label="菜单，展开更多菜单项">菜单</button>
+    <button class="tb-item" data-act="help"><img class="tb-icon" src="/games/gandengyan/assets/layers/hud-icons-v2/help.png" alt="" aria-hidden="true" draggable="false">帮助</button>
+    <div class="tb-clock" id="home-clock">12:30</div>
+  </header>
+  <div class="home-modes">
+    <div class="mode-card" data-mode="practice">
+      <i class="mc-gem g1"></i>
+      <div class="mc-name cyan">练习场</div>
+      <div class="mc-fee">免费</div>
+    </div>
+    <div class="mode-card" data-mode="arena">
+      <i class="mc-gem g2"></i>
+      <div class="mc-name gold">竞技场</div>
+      <div class="mc-fee">每场5能量</div>
+    </div>
+    <div class="mode-card" data-mode="master">
+      <i class="mc-gem g3"></i>
+      <div class="mc-name magenta">大师场</div>
+      <div class="mc-fee">每场20能量</div>
+    </div>
+  </div>
+  <div class="home-user" id="home-user">
+    <button class="hu-badge" type="button" aria-label="查看个人信息">
+      <img class="hu-pedestal-art" src="/games/gandengyan/assets/layers/home-user-pedestal-v2.png" alt="" aria-hidden="true">
+      <span class="hu-avatar"></span>
+      <span class="hu-name">用户</span>
+      <span class="hu-energy" aria-label="能量"><b>0</b></span>
+    </button>
+    <button class="hu-profile" type="button" aria-label="个人中心">
+      <img src="/games/gandengyan/assets/layers/home-profile-gear-v2.png" alt="" aria-hidden="true">
+      <span aria-hidden="true">个人<br>中心</span>
+    </button>
+  </div>
+  <div class="home-quick">
+    <button class="hq-btn" type="button" data-act="missions"><i aria-hidden="true"><img src="/games/gandengyan/assets/layers/home-missions-emblem-v2.png" alt=""></i><span>接任务</span></button>
+    <button class="hq-btn" type="button" data-act="leaderboard"><i aria-hidden="true"><img src="/games/gandengyan/assets/layers/home-leaderboard-emblem-v2.png" alt=""></i><span>英雄榜</span></button>
+  </div>
+</section>
+
+<!-- ==================== 等待连接 ==================== -->
+<section class="screen" id="scr-waiting">
+  <div class="waiting-stage">
+  <header class="topbar">
+    <img class="topbar-art" src="/games/gandengyan/assets/layers/battle-v2/hud-rail-wide.svg" alt="" aria-hidden="true">
+    <button class="tb-item tb-exit" data-act="leave-room"><i class="tb-back"></i>退出</button>
+    <button type="button" class="tb-title" data-act="waiting-menu" aria-label="等待房间菜单">菜单</button>
+    <div class="tb-clock" id="wait-clock">12:30</div>
+  </header>
+  <div class="wait-count" id="wait-count"><img src="/games/gandengyan/assets/layers/waiting-v2/counter.png" alt="" aria-hidden="true"><span>等待时间</span><div class="wait-time-value"><b>30</b><i>秒</i></div></div>
+  <div class="wait-seats" id="wait-seats" aria-label="联机房间的五个座位"></div>
+  <button class="btn-change-table" id="btn-change-table"><span>换桌</span></button>
+  <button type="button" class="btn-cylinder btn-start-now" id="btn-start-now" title="用电脑补齐空座位并立即开局">直接开始</button>
+  <div class="wait-status"><div id="wait-status" role="status">等待玩家联机 · 1/5</div><small id="wait-room-label"></small></div>
+  </div>
+</section>
+
+<!-- ==================== 对战 ==================== -->
+<section class="screen" id="scr-battle">
+  <header class="topbar battle-bar">
+    <img class="topbar-art" src="/games/gandengyan/assets/layers/battle-v2/hud-rail-wide.svg" alt="" aria-hidden="true">
+    <button class="tb-item tb-exit" data-act="leave-battle"><i class="tb-back"></i>退出</button>
+    <div class="bb-info">剩余牌：<b id="bb-deck">24</b></div>
+    <button class="tb-item battle-menu" data-act="menu">菜单</button>
+    <div class="bb-info">赔率：<b id="bb-mult">10</b></div>
+    <div class="tb-clock" id="battle-clock">12:30</div>
+  </header>
+
+  <div class="battle-main">
+    <div class="opponents" id="opponents"></div>
+    <div class="table-center" id="table-center">
+      <div class="pile-area" id="pile-area"></div>
+      <div class="bomb-fx" id="bomb-fx"></div>
+    </div>
+  </div>
+
+  <div class="counter-panel" id="counter-panel"></div>
+
+  <div class="action-bar" id="action-bar">
+    <button class="act-btn act-pass" id="btn-pass">不出</button>
+    <div class="turn-timer" id="turn-timer">
+      <b id="tt-num">30</b>
+    </div>
+    <button class="act-btn act-hint" id="btn-hint">提示</button>
+    <button class="act-btn act-clear" id="btn-clear">重选</button>
+    <button class="act-btn act-play" id="btn-play-cards">出牌</button>
+  </div>
+
+  <div class="hand-area" id="hand-area"></div>
+  <div class="battle-self-profile" id="battle-self-profile"></div>
+  <div class="self-dealer" id="self-dealer" aria-label="庄家">庄</div>
+  <div class="deal-tip" id="deal-tip"></div>
+</section>
+
+<!-- 弹窗容器 -->
+<div id="modal-root"></div>
+<div id="toast-wrap"></div>
+
+<script src="/backend-config.js"></script>
+<script src="/games/gandengyan/js/socket.io.min.js"></script>
+<script src="/games/gandengyan/js/game-shared.js"></script>
+<script src="/games/gandengyan/js/sound.js"></script>
+<script src="/games/gandengyan/js/ui.js"></script>
+<script src="/games/gandengyan/js/main.js"></script>
+</body>
+</html>

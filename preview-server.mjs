@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const rootDir = path.dirname(__filename);
@@ -39,10 +39,16 @@ const mimeTypes = {
   '.txt': 'text/plain; charset=utf-8'
 };
 
+let gamesBackend;
 const server = createServer((req, res) => {
   try {
     let reqUrl = new URL(req.url, 'http://localhost');
     let pathname = decodeURIComponent(reqUrl.pathname);
+    if (pathname === '/healthz' && gamesBackend) {
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify(gamesBackend.health()));
+      return;
+    }
 
     // 0. 特殊容错：如果客户端无斜杠访问导致请求 /games/css/* 或 /games/js/* 或 /games/*.webmanifest
     if (pathname.startsWith('/games/css/') || pathname.startsWith('/games/js/') || pathname.startsWith('/games/favicon.svg') || pathname.startsWith('/games/manifest.webmanifest')) {
@@ -126,39 +132,13 @@ const server = createServer((req, res) => {
   }
 });
 
-// 挂载萌兵军棋 WebSocket 服务（若具备环境）
+// 预览与云端共用同一套后台挂载逻辑。
 try {
-  const wsPath = path.join(rootDir, 'games/junqi/node_modules/ws/wrapper.mjs');
-  if (existsSync(wsPath)) {
-    const { WebSocketServer } = await import(pathToFileURL(wsPath).href);
-    const { Store } = await import(pathToFileURL(path.join(rootDir, 'games/junqi/server/store.js')).href);
-    const { Lobby } = await import(pathToFileURL(path.join(rootDir, 'games/junqi/server/lobby.js')).href);
-    const store = new Store({ file: path.join(rootDir, 'games/junqi/data/players.json') });
-    const lobby = new Lobby({ store });
-    const wss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 });
-
-    server.on('upgrade', (req, socket, head) => {
-      socket.on('error', () => {});
-      const pathname = new URL(req.url, 'http://localhost').pathname;
-      if (pathname !== '/ws') { socket.destroy(); return; }
-      wss.handleUpgrade(req, socket, head, (ws) => {
-        const conn = {
-          id: Math.random().toString(36).slice(2, 10),
-          ip: req.socket.remoteAddress || '127.0.0.1',
-          alive: true,
-          send(obj) { if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj)); },
-          close(code, reason) { try { ws.close(code, reason); } catch { ws.terminate(); } }
-        };
-        ws.conn = conn;
-        lobby.connect(conn);
-        ws.on('message', (data, isBinary) => { if (!isBinary) lobby.message(conn, data.toString()); });
-        ws.on('pong', () => { conn.alive = true; });
-      });
-    });
-    console.log(`[WS] 萌兵军棋 WebSocket 服务已挂载于 /ws (支持实时对弈与人机练习)`);
-  }
+  const { attachGames } = await import('./backend/runtime.mjs');
+  gamesBackend = await attachGames(server);
+  console.log('[后台] 军棋与干瞪眼已统一挂载');
 } catch (e) {
-  console.log(`[WS] 军棋 WebSocket 挂载提示:`, e.message);
+  console.log('[后台] 未启用联机服务，请在根目录运行 npm install：', e.message);
 }
 
 const defaultPort = 3000;

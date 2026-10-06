@@ -1,0 +1,19 @@
+/* Rendered silver menu icons sized to fit the expanding drawer. */
+#scr-home .home-menu-item { gap: 5px; }
+#scr-home .home-menu-icon {
+  --menu-icon-size: min(clamp(40px, 4.5vw, 60px), calc(var(--home-menu-drop-height) - 62px));
+  display: block;
+  flex: 0 0 auto;
+  width: var(--menu-icon-size);
+  height: var(--menu-icon-size);
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .24));
+}
+@media (max-width: 760px) {
+  #scr-home .home-menu-icon {
+    width: clamp(30px, 4.8vw, 38px);
+    height: clamp(30px, 4.8vw, 38px);
+  }
+}

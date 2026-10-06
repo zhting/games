@@ -75,7 +75,13 @@ const S = {
   tipAt: 0,
   tipIdx: 0
 };
-const net = new Net((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
+const backendConfig = window.GAMES_BACKEND;
+const backend = new URL(backendConfig?.url || location.origin);
+backend.protocol = backend.protocol === 'https:' ? 'wss:' : 'ws:';
+backend.pathname = backendConfig?.junqiPath || '/ws';
+backend.search = '';
+backend.hash = '';
+const net = new Net(backend.href);
 const serverNow = () => net.serverNow();
 
 // ================= 提示、对话框、底部抽屉 =================

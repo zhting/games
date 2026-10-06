@@ -1,0 +1,82 @@
+/* 退出游戏、退出对局与切换账号确认共用星空底板、金属装甲和圆柱体按钮。 */
+#modal-root .modal-mask:has(.exit-dialog) {
+  background: linear-gradient(rgba(0, 5, 9, .58), rgba(0, 5, 9, .58)), url('/games/gandengyan/assets/battle-bg.png') center / cover no-repeat !important;
+  padding: 12px !important;
+}
+#modal-root .sci-frame.exit-dialog {
+  width: min(560px, 92vw, calc(86svh * 426 / 208)) !important;
+  height: auto !important;
+  aspect-ratio: 426 / 208;
+  max-width: none;
+  max-height: none;
+  container-type: inline-size;
+  isolation: isolate;
+}
+#modal-root .exit-dialog::before {
+  content: '';
+  position: absolute;
+  inset: 15.4% 3.3% 6.7% 5.6%;
+  z-index: -1;
+  border-radius: 4cqw;
+  background: rgba(38, 43, 46, .76);
+}
+#modal-root .exit-dialog > .sd-deco { display: none !important; }
+#modal-root .exit-dialog .sci-dialog {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0;
+  max-height: none;
+  padding: 0 !important;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none !important;
+  box-shadow: none !important;
+  transform: none;
+}
+.exit-armor { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.exit-corner { position: absolute; display: block; height: auto; }
+.exit-corner-tl { top: 0; left: 0; width: 46%; }
+.exit-corner-br { bottom: 0; right: 0; width: 30.5%; }
+#modal-root .exit-dialog .sd-body { position: absolute; inset: 0; }
+#modal-root .exit-dialog .confirm-text {
+  position: absolute;
+  top: 40%;
+  left: 9%;
+  right: 9%;
+  padding: 0;
+  margin: 0;
+  color: #f7f8fa;
+  font-size: 6.4cqw;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, .4);
+}
+#modal-root .exit-dialog .sd-btns {
+  position: absolute;
+  top: 69.5%;
+  left: 14%;
+  right: 14%;
+  z-index: 4;
+  margin: 0;
+  gap: 5.5cqw;
+}
+#modal-root .exit-dialog .sd-btns button.btn-cylinder {
+  --cylinder-height: 8.4cqw;
+  flex: 0 0 28cqw;
+  width: 28cqw;
+  min-width: 0;
+  padding: 0;
+  font-size: 3.8cqw;
+  font-weight: 600;
+}
+#modal-root .leave-dialog .confirm-text { top: 34%; }
+#modal-root .leave-dialog .exit-note {
+  position: absolute; top: 54%; left: 9%; right: 9%;
+  margin: 0; padding: 0;
+  color: #c8dbe5; font-size: 3.4cqw; line-height: 1.3;
+  text-align: center; text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}

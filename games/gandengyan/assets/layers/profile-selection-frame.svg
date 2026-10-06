@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="84" height="108" viewBox="0 0 84 108">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f4fcff"/><stop offset=".27" stop-color="#c4d5df"/><stop offset=".48" stop-color="#ffffff"/><stop offset=".66" stop-color="#88a0b2"/><stop offset="1" stop-color="#d7e4ec"/>
+    </linearGradient>
+    <linearGradient id="socket" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#273947" stop-opacity=".7"/><stop offset=".5" stop-color="#061425" stop-opacity=".55"/><stop offset="1" stop-color="#304b5c" stop-opacity=".7"/></linearGradient>
+  </defs>
+  <path d="M13 3H71L83 16V41L75 49V61L83 69V92L71 105H13L1 92V69L9 61V49L1 41V16Z M17 13H67L73 21V87L65 96H19L11 87V21Z" fill-rule="evenodd" fill="url(#metal)" stroke="#172734" stroke-width="2"/>
+  <path d="M17 13H67L73 21V87L65 96H19L11 87V21Z" fill="url(#socket)" stroke="#172532" stroke-width="3"/>
+  <path d="M31 0H53L58 6L51 10H33L26 6ZM29 98H55L59 103L52 108H32L25 103Z" fill="#415564" stroke="#0c1927" stroke-width="2"/>
+  <path d="M4 20V38M80 20V38M4 72V88M80 72V88" stroke="#fbffff" stroke-width="2" opacity=".9"/>
+  <path d="M17 11L22 15L17 21L12 16ZM67 11L72 16L67 21L62 15ZM17 88L22 94L17 98L12 93ZM67 88L72 93L67 98L62 94Z" fill="#ffab27" stroke="#3c453f" stroke-width="1.2"/>
+  <path d="M25 14H59M25 95H59" stroke="#8fb2c4" stroke-width="1" opacity=".6"/>
+</svg>

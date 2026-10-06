@@ -122,16 +122,16 @@ function serveStatic(req, res, lobby) {
  * 创建服务器（测试里也用它）。
  * @returns {{ server: http.Server, lobby: Lobby, store: Store, listen: (port?:number, host?:string)=>Promise<number>, close: ()=>Promise<void> }}
  */
-export function createServer({ dataFile = null, timing, now, bot, log = console } = {}) {
+export function createServer({ dataFile = null, timing, now, bot, log = console, httpServer = null, wsPaths = ['/ws'] } = {}) {
   const store = new Store({ file: dataFile, now, log });
   const lobby = new Lobby({ store, timing, now, bot, log });
-  const server = http.createServer((req, res) => serveStatic(req, res, lobby));
+  const server = httpServer || http.createServer((req, res) => serveStatic(req, res, lobby));
   const wss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 });
 
   const perIp = new Map();
   server.on('upgrade', (req, socket, head) => {
     socket.on('error', () => {});
-    if (pathnameOf(req) !== '/ws') { socket.destroy(); return; }
+    if (!wsPaths.includes(pathnameOf(req))) { if (!httpServer) socket.destroy(); return; }
     // 连接数超限直接在握手阶段拒绝，不进入 WebSocket 层
     const ip = clientIp(req);
     if ((perIp.get(ip) || 0) >= MAX_CONN_PER_IP) {
