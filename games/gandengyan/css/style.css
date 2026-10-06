@@ -2335,6 +2335,13 @@ body {
   caret-color: #60eaff;
 }
 #scr-login .sci-input input::placeholder { color: #9db3cb; opacity: .9; }
+/* 自动填充的浅色底仅在文字区域绘制，让装饰牌框保持可见。 */
+#scr-login .sci-input input:is(:autofill, :-webkit-autofill) {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: #f0f8ff;
+  caret-color: #60eaff;
+}
 #scr-login .login-tip {
   position: absolute;
   left: 28%;
