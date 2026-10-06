@@ -163,6 +163,10 @@ export class Game {
     for (const s of entry.slDead || []) this.revealFlag(s);
     if (entry.kind === 'attack') this.emit('event', { type: 'combat', entry });
     if (entry.res === 'flag') { this.finish(seat, 'flag'); return OK; }
+    if (entry.ak === 'jq' && (entry.res === 'lose' || entry.res === 'both')) {
+      this.finish(other(seat), 'flag');
+      return OK;
+    }
     if (this.noCapture >= this.T.noCaptureLimit) { this.finish(null, 'nocapture'); return OK; }
     this.passTurn();
     return OK;
@@ -365,7 +369,7 @@ export class Game {
       duration: Math.max(0, this.endedAt - (this.startedAt || this.createdAt)),
       kills: this.kills[seat],
       lost: this.lost[seat].length,
-      flagBy: byFlag ? this.lastAttack.ak : null
+      flagBy: byFlag ? (this.lastAttack.seat === seat ? this.lastAttack.ak : this.lastAttack.dk) : null
     };
   }
 }

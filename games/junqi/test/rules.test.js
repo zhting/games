@@ -36,11 +36,16 @@ test('flipId 旋转 180° 且是自身的逆运算', () => {
   for (const id of R.IDS) assert.equal(R.flipId(R.flipId(id)), id);
 });
 
-test('大本营的子不能动；地雷、军旗不能动', () => {
-  const occ = occOf({ m62: [0, 'sl'], m51: [0, 'dl'], m61: [0, 'jq'] });
+test('地雷和大本营的普通棋子不能动，军旗可以离开大本营', () => {
+  const occ = occOf({ m62: [0, 'sl'], m51: [0, 'dl'] });
   assert.deepEqual(R.legal(occ, 'm62').moves, []);
   assert.deepEqual(R.legal(occ, 'm51').moves, []);
-  assert.deepEqual(R.legal(occ, 'm61').moves, []);
+  for (const side of ['m', 'o']) for (const c of [2, 4]) {
+    const from = side + '6' + c;
+    const flag = R.legal(occOf({ [from]: [0, 'jq'] }), from);
+    assert.ok(flag.moves.includes(side + '5' + c), from + '军旗可以向前移动');
+    assert.equal(flag.moves.length, 3);
+  }
 });
 
 test('前线只有 1、3、5 路能通过，2、4 路是山界', () => {
@@ -50,7 +55,7 @@ test('前线只有 1、3、5 路能通过，2、4 路是山界', () => {
   assert.ok(R.legal(occ, 'm13').moves.includes('o13'));
 });
 
-test('普通棋子在铁路上只能直行，工兵可以转弯', () => {
+test('所有棋子在铁路上每步只能直行，包括工兵和军旗', () => {
   const occ = occOf({ m51: [0, 'lz'] });
   const lz = R.legal(occ, 'm51');
   assert.ok(lz.moves.includes('m55'), '沿第 5 排直行到底');
@@ -58,10 +63,15 @@ test('普通棋子在铁路上只能直行，工兵可以转弯', () => {
   assert.ok(!lz.moves.includes('m15'), '不能在铁路上拐弯');
   const occ2 = occOf({ m51: [0, 'gb'] });
   const gb = R.legal(occ2, 'm51');
-  assert.ok(gb.moves.includes('m15'), '工兵拐弯');
-  assert.ok(gb.moves.includes('o55'));
-  assert.deepEqual(gb.paths.m15[0], 'm51');
-  assert.equal(gb.paths.m15.at(-1), 'm15');
+  assert.ok(!gb.moves.includes('m15'), '工兵不能同一步拐弯');
+  assert.ok(!gb.moves.includes('o55'));
+  assert.ok(gb.moves.includes('m11'), '可以先停在转角');
+  const afterStop = R.legal(occOf({ m11: [0, 'gb'] }), 'm11');
+  assert.ok(afterStop.moves.includes('m15'), '下一回合可以从转角横向直行');
+  assert.deepEqual(afterStop.paths.m15, ['m11', 'm12', 'm13', 'm14', 'm15']);
+  const flag = R.legal(occOf({ m51: [0, 'jq'] }), 'm51');
+  assert.ok(flag.moves.includes('o51'));
+  assert.ok(!flag.moves.includes('m15'));
 });
 
 test('铁路被挡住就停下；行营里的子不能被攻击', () => {
@@ -86,16 +96,35 @@ test('碰子判定', () => {
   assert.equal(R.fight('tz', 'tz'), 'both');
   assert.equal(R.fight('zd', 'sl'), 'both');
   assert.equal(R.fight('gb', 'zd'), 'both');
-  assert.equal(R.fight('sl', 'dl'), 'lose');
+  assert.equal(R.fight('sl', 'dl'), 'both');
   assert.equal(R.fight('gb', 'dl'), 'win');
   assert.equal(R.fight('zd', 'dl'), 'both');
   assert.equal(R.fight('gb', 'jq'), 'flag');
 });
 
-test('无子可走的判定', () => {
-  const occ = occOf({ m61: [0, 'dl'], m62: [0, 'jq'], o11: [1, 'pz'] });
+test('无子可走的判定会考虑军旗的活动空间', () => {
+  const occ = occOf({ m61: [0, 'dl'], m62: [0, 'jq'], m63: [0, 'dl'], m52: [0, 'dl'], o11: [1, 'pz'] });
   assert.equal(R.hasAnyMove(occ, 0), false);
   assert.equal(R.hasAnyMove(occ, 1), true);
+  delete occ.m52;
+  assert.equal(R.hasAnyMove(occ, 0), true, '只有军旗可移动时也不算困毙');
+});
+
+test('中央公路与行营斜线的每段连线都可双向移动', () => {
+  for (const side of ['m', 'o']) {
+    for (const [a, b] of [['13', '23'], ['23', '33'], ['33', '43'], ['43', '53'], ['23', '22'], ['23', '24'], ['33', '22'], ['33', '24'], ['33', '42'], ['33', '44'], ['43', '42'], ['43', '44']]) {
+      for (const [from, to] of [[side + a, side + b], [side + b, side + a]]) {
+        const lg = R.legal(occOf({ [from]: [0, 'pz'] }), from);
+        assert.ok(lg.moves.includes(to), from + ' → ' + to);
+        assert.deepEqual(lg.paths[to], [from, to]);
+      }
+    }
+  }
+});
+
+test('任何兵种踩雷只爆炸一次，工兵排雷后仍然存活', () => {
+  for (const k of R.RANKS.filter(k => k !== 'dl' && k !== 'gb')) assert.equal(R.fight(k, 'dl'), 'both', k);
+  assert.equal(R.fight('gb', 'dl'), 'win');
 });
 
 test('军功与军衔', () => {

@@ -63,7 +63,7 @@ for (const line of LINES) line.forEach((id, i) => {
   if (i < line.length - 1) a.push(line[i + 1]);
 });
 
-export const canMoveKind = (k) => k !== 'dl' && k !== 'jq';
+export const canMoveKind = (k) => k !== 'dl';
 
 /**
  * 计算一枚棋子的合法走法。
@@ -74,7 +74,7 @@ export const canMoveKind = (k) => k !== 'dl' && k !== 'jq';
 export function legal(occ, from) {
   const p = occ[from];
   const res = { moves: [], attacks: [], paths: {} };
-  if (!p || !canMoveKind(p.k) || typeOf(from) === 'hq') return res;
+  if (!p || !canMoveKind(p.k) || (typeOf(from) === 'hq' && p.k !== 'jq')) return res;
   const mv = new Set(), at = new Set(), paths = {};
   const look = (to, path) => {
     const q = occ[to];
@@ -84,31 +84,15 @@ export function legal(occ, from) {
   };
   for (const n of ROAD[from]) look(n, [from, n]);
   if (isRail(from)) {
-    if (p.k === 'gb') {
-      // 工兵：铁路上可任意转弯，广度优先搜索
-      const prev = new Map([[from, null]]);
-      const queue = [from];
-      while (queue.length) {
-        const cur = queue.shift();
-        for (const n of RAIL[cur] || []) {
-          if (prev.has(n)) continue;
-          prev.set(n, cur);
-          const chain = [];
-          for (let x = n; x; x = prev.get(x)) chain.unshift(x);
-          if (look(n, chain)) queue.push(n);
-        }
-      }
-    } else {
-      // 其他棋子：铁路上只能直行
-      for (const line of LINES) {
-        const i = line.indexOf(from);
-        if (i < 0) continue;
-        for (const d of [-1, 1]) {
-          const chain = [from];
-          for (let j = i + d; j >= 0 && j < line.length; j += d) {
-            chain.push(line[j]);
-            if (!look(line[j], chain.slice())) break;
-          }
+    // 包括工兵和军旗，每步只沿一条直线铁路；停在转角后下回合才能转弯。
+    for (const line of LINES) {
+      const i = line.indexOf(from);
+      if (i < 0) continue;
+      for (const d of [-1, 1]) {
+        const chain = [from];
+        for (let j = i + d; j >= 0 && j < line.length; j += d) {
+          chain.push(line[j]);
+          if (!look(line[j], chain.slice())) break;
         }
       }
     }
@@ -132,7 +116,7 @@ export function hasAnyMove(occ, side) {
 export function fight(ak, dk) {
   if (dk === 'jq') return 'flag';
   if (ak === 'zd' || dk === 'zd') return 'both';
-  if (dk === 'dl') return ak === 'gb' ? 'win' : 'lose';
+  if (dk === 'dl') return ak === 'gb' ? 'win' : 'both';
   return POW[ak] > POW[dk] ? 'win' : POW[ak] < POW[dk] ? 'lose' : 'both';
 }
 

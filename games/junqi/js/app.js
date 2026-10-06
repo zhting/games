@@ -152,11 +152,11 @@ function rulesDialog() {
     title: '玩法规则', tone: 'blue',
     body: '<ul class="rule-list">' +
       '<li><span class="pcmini" data-piece="sl" data-scale=".7"></span><span><b>大吃小</b>：司令 &gt; 军长 &gt; 师长 &gt; 旅长 &gt; 团长 &gt; 营长 &gt; 连长 &gt; 排长 &gt; 工兵，同级相碰同归于尽。</span></li>' +
-      '<li><span class="pcmini" data-piece="gb" data-scale=".7"></span><span><b>工兵</b>在铁路上可以任意转弯，也是唯一能排除地雷的棋子。</span></li>' +
+      '<li><span class="pcmini" data-piece="gb" data-scale=".7"></span><span><b>工兵</b>可以排除地雷并保留工兵；铁路移动同样只能直行，转弯需先停在转角，下一回合再走。</span></li>' +
       '<li><span class="pcmini" data-piece="zd" data-scale=".7"></span><span><b>炸弹</b>与任何棋子相碰，双方一同阵亡；不能放在第一排。</span></li>' +
-      '<li><span class="pcmini" data-piece="dl" data-scale=".7"></span><span><b>地雷</b>不能移动，只能放在最后两排；除工兵外，碰到它的棋子阵亡。</span></li>' +
-      '<li><span class="pcmini" data-piece="jq" data-scale=".7"></span><span><b>军旗</b>放在大本营，被夺即判负；司令阵亡后，军旗位置会被亮出。</span></li>' +
-      '</ul><p style="margin:14px 0 0">铁路上直行不限格数，公路每次走一格；<b>行营</b>里的棋子不会被攻击，进入<b>大本营</b>的棋子不能再移动。暗棋模式下，系统裁判只公布碰子的胜负，不公布对方棋子的身份。</p>' +
+      '<li><span class="pcmini" data-piece="dl" data-scale=".7"></span><span><b>地雷</b>不能移动，只能放在最后两排；遇到工兵时被排除，遇到其他棋子时爆炸一次，双方同归于尽。</span></li>' +
+      '<li><span class="pcmini" data-piece="jq" data-scale=".7"></span><span><b>军旗</b>布阵时放在大本营，开战后可以移动；被夺或主动碰子阵亡即判负，司令阵亡后仍会亮旗。</span></li>' +
+      '</ul><p style="margin:14px 0 0">沿棋盘连线行走，中央公路和行营斜线均可通过；公路每次走一格，铁路每步直行不限格数，但转弯须先停在转角，下一回合再转。<b>行营</b>里的棋子不会被攻击；除军旗外，进入<b>大本营</b>的棋子不能再移动。暗棋模式下，系统裁判只公布碰子的胜负，不公布对方棋子的身份。</p>' +
       `<p style="margin:10px 0 0">每步限时 ${Math.round(S.timing.turnMs / 1000)} 秒，超时 ${S.timing.maxTimeouts} 次判负；无子可走判负；连续 60 步无吃子判和。排位赛胜 +${R.WIN_PTS} 军功（3 连胜起每局再 +${R.STREAK_BONUS}），负 −${R.LOSS_PTS}。</p>`,
     actions: [{ label: '知道了', cls: 'btn-primary' }]
   });
@@ -530,7 +530,7 @@ function renderNet() {
 // ================= 大厅 =================
 const TIPS = [
   '司令阵亡后，他那一方的军旗位置会被亮出',
-  '工兵在铁路上可以任意转弯，也是唯一能排除地雷的棋子',
+  '工兵可以排除地雷；铁路转弯也要先停在转角，下一回合再走',
   '行营里的棋子不会被攻击，是躲避炸弹的好地方',
   '炸弹碰到任何棋子都同归于尽，最适合对付对方的大子',
   '进入大本营的棋子就不能再移动了',
@@ -953,7 +953,7 @@ async function submitDeploy() {
 const BT = { mid: null, sel: null, pop: null, marks: {}, duelT: 0, pending: false, review: false, anim: null, lastTick: -1 };
 const CH = { win: ['胜', 'c-jade'], lose: ['阵亡', 'c-red'], repel: ['击退', 'c-jade'], both: ['同归', 'c-violet'], flag: ['夺旗', 'c-yellow'], warn: ['注意', 'c-yellow'] };
 const CH_SYS = { win: ['胜利', 'c-jade'], lose: ['失败', 'c-red'], both: ['和棋', 'c-violet'], warn: ['注意', 'c-yellow'] };
-const PIECE_TIPS = { gb: '铁路上可任意转弯，还能排除地雷', zd: '与任何棋子相碰都会同归于尽', sl: '全场最大；阵亡后我方军旗会被亮出', dl: '地雷不能移动', jq: '军旗不能移动，被夺即判负', any: '铁路上只能直行，公路每次走一格' };
+const PIECE_TIPS = { gb: '可排除地雷；铁路转弯须停在转角，下一回合再走', zd: '与任何棋子相碰都会同归于尽', sl: '全场最大；阵亡后我方军旗会被亮出', dl: '不能移动；工兵可排雷，其他棋子触雷时双方消失', jq: '可离开大本营并移动；被夺或主动碰子阵亡即判负', any: '沿棋盘连线移动；公路一格，铁路转弯须分两回合' };
 
 function resetBattle(mid) {
   BT.mid = mid;

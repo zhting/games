@@ -7,9 +7,9 @@ export const BOT_NAMES = ['人机 · 小参谋', '人机 · 老班长', '人机 
 
 // 子力价值（司令阵亡会亮旗，所以额外加一点）
 const VAL = { sl: 12, jz: 8, shz: 6, lvz: 4.6, tz: 3.6, yz: 2.9, lz: 2.3, pz: 1.8, gb: 2.8, zd: 6.5, dl: 2.2, jq: 200 };
-const MOVABLE = ['sl', 'jz', 'shz', 'lvz', 'tz', 'yz', 'lz', 'pz', 'gb', 'zd'];
+const MOVABLE = ['sl', 'jz', 'shz', 'lvz', 'tz', 'yz', 'lz', 'pz', 'gb', 'zd', 'jq'];
 // 各兵种向前推进的积极程度
-const PUSH = { sl: 0.14, jz: 0.18, shz: 0.22, lvz: 0.25, tz: 0.27, yz: 0.3, lz: 0.3, pz: 0.3, gb: 0.06, zd: 0.12 };
+const PUSH = { sl: 0.14, jz: 0.18, shz: 0.22, lvz: 0.25, tz: 0.27, yz: 0.3, lz: 0.3, pz: 0.3, gb: 0.06, zd: 0.12, jq: 0 };
 const LOSS_AVERSION = 1.4;
 const INFO_GAIN = 0.4;
 
@@ -61,7 +61,7 @@ export class Bot {
     this.drawAt = 0;
     this.offered = -1;
     this.offeredAt = 0;
-    // 对方棋子的推断：pid → { gt: 已知战力下限, gtOrMine: 要么是地雷要么比它大, notMine, isGb }
+    // 对方棋子的推断：pid → { gt: 已知战力下限, notMine, isGb }
     this.info = new Map();
     game.on('event', (ev) => this.onEvent(ev));
   }
@@ -77,8 +77,9 @@ export class Bot {
     const pid = c.role === 'attacker' ? ev.entry.dpid : ev.entry.apid;
     const inf = this.info.get(pid) || {};
     if (c.role === 'attacker' && c.res === 'lose') {
-      if (c.my === 'gb') { inf.gt = Math.max(inf.gt || 0, R.POW.gb); inf.notMine = true; }
-      else inf.gtOrMine = Math.max(inf.gtOrMine || 0, R.POW[c.my]);
+      // 普通棋子踩雷会同归于尽，因此存活的防守方一定不是地雷。
+      inf.gt = Math.max(inf.gt || 0, R.POW[c.my]);
+      inf.notMine = true;
     } else if (c.role === 'defender' && c.res === 'lose') {
       if (c.my === 'dl') inf.isGb = true;
       else if (R.POW[c.my]) inf.gt = Math.max(inf.gt || 0, R.POW[c.my]);
@@ -146,19 +147,20 @@ export class Bot {
     const home = R.flipId(p.at); // 这枚子在对方自己坐标里的位置
     const fixed = !p.moved;
     let pFlag = 0, pMine = 0;
-    if (fixed && R.typeOf(home) === 'hq' && !inf.gt && !inf.gtOrMine && !inf.isGb) pFlag = ctx.flagP;
+    if (fixed && R.typeOf(home) === 'hq' && !inf.gt && !inf.isGb) pFlag = ctx.flagP;
     if (fixed && row(home) >= 5 && !inf.notMine && !inf.gt && !inf.isGb) {
-      pMine = ctx.mineP * (inf.gtOrMine ? 1.8 : 1);
+      pMine = ctx.mineP;
       pMine = Math.min(0.85, pMine, 1 - pFlag);
     }
     const w = {};
     let tot = 0;
     for (const k of MOVABLE) {
+      // 未移动的军旗由大本营概率单独估计；移动过的暗子仍可能是军旗。
+      if (k === 'jq' && fixed) continue;
       let c = R.COUNTS[k];
       if (fixed && !R.validAt(k, home)) c = 0;
       if (inf.isGb && k !== 'gb') c = 0;
       if (inf.gt && !(R.POW[k] > inf.gt)) c = 0;
-      if (inf.gtOrMine && !(R.POW[k] > inf.gtOrMine)) c = 0;
       if (c) { w[k] = c; tot += c; }
     }
     const rest = Math.max(0, 1 - pFlag - pMine);
@@ -166,7 +168,7 @@ export class Bot {
     if (pFlag) out.push(['jq', pFlag]);
     if (pMine) out.push(['dl', pMine]);
     if (tot) for (const k of Object.keys(w)) out.push([k, (rest * w[k]) / tot]);
-    else if (rest) out.push([inf.gtOrMine && !inf.notMine && fixed ? 'dl' : 'sl', rest]);
+    else if (rest) out.push(['sl', rest]);
     return out;
   }
 
@@ -234,7 +236,7 @@ export class Bot {
     const k = p.k;
     const v = VAL[k] || 1;
     const y0 = R.world(p.at).Y, y1 = R.world(to).Y;
-    let s = Math.max(-1.5, Math.min(3, y0 - y1)) * (PUSH[k] || 0.2);
+    let s = Math.max(-1.5, Math.min(3, y0 - y1)) * (PUSH[k] ?? 0.2);
     const here = this.threats(p.at, k, ctx);
     const there = this.threats(to, k, ctx, p.at);
     const safe = R.typeOf(to) === 'camp';

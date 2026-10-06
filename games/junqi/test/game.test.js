@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as R from '../shared/rules.js';
 import { Game } from '../server/game.js';
+import { Bot } from '../server/bot.js';
 
 function clock(t = 1_000_000) {
   const c = () => c.t;
@@ -87,7 +88,7 @@ test('走子：轮次、归属、合法性校验', () => {
   }
   assert.ok(mv);
   assert.equal(g.move(o, mv.from, mv.to).ok, false, '不是你的回合');
-  assert.equal(g.move(t, 'm62', 'm52').ok, false, '大本营的子不能动');
+  assert.equal(g.move(t, 'm62', 'm52').ok, false, '军旗前方有己方棋子，不能直接移动');
   assert.equal(g.move(t, 'o11', 'o21').ok, false, '不能动对方的子');
   assert.equal(g.move(t, 'x', 'y').ok, false);
   assert.equal(g.move(t, mv.from, mv.to).ok, true);
@@ -123,7 +124,7 @@ test('碰子：大吃小、同归于尽、地雷、炸弹', () => {
   g.turn = 0;
   assert.equal(g.move(0, 'm15', 'o15').ok, true, '军长踩雷');
   assert.equal(g.occ.m15, undefined);
-  assert.equal(g.occ.o15.k, 'dl');
+  assert.equal(g.occ.o15, undefined, '爆炸后的地雷消失');
   assert.equal(g.kills[1], 2);
 });
 
@@ -144,9 +145,106 @@ test('夺旗获胜', () => {
   assert.ok(g.viewFor(1).pieces.every((p) => p.k));
 });
 
+test('工兵排雷保留工兵，其他棋子踩雷后落点腾空且可以再次经过', () => {
+  for (const k of ['gb', 'sl', 'pz', 'zd']) {
+    const { g } = battle();
+    setBoard(g, { m51: [0, k], m45: [0, 'pz'], m55: [1, 'dl'], m62: [0, 'jq'], o62: [1, 'jq'], o13: [1, 'lz'] });
+    assert.equal(g.move(0, 'm51', 'm55').ok, true, k);
+    assert.ok(g.lost[1].includes('dl'));
+    if (k === 'gb') {
+      assert.equal(g.occ.m55.k, 'gb');
+      assert.deepEqual(g.lost[0], []);
+    } else {
+      assert.equal(g.occ.m55, undefined);
+      assert.ok(g.lost[0].includes(k));
+      assert.equal(g.move(1, R.flipId('o13'), R.flipId('o23')).ok, true);
+      assert.equal(g.move(0, 'm45', 'm55').ok, true, '另一枚棋子再次经过爆炸地点时不会受伤');
+      assert.equal(g.occ.m55.k, 'pz');
+    }
+  }
+});
+
+test('军旗离开大本营后仍保持暗棋，并能在新位置被夺', () => {
+  const { g } = battle();
+  setBoard(g, { m62: [0, 'jq'], o62: [1, 'jq'], m42: [1, 'pz'] });
+  assert.equal(g.move(0, 'm62', 'm52').ok, true);
+  assert.equal(g.occ.m52.k, 'jq');
+  assert.equal(g.viewFor(1).pieces.find(p => p.at === R.flipId('m52')).k, null);
+  assert.equal(g.move(1, R.flipId('m42'), R.flipId('m52')).ok, true);
+  assert.deepEqual(g.result, { winner: 1, reason: 'flag' });
+  assert.equal(g.summaryFor(1).flagBy, 'pz');
+});
+
+test('双方视角的军旗都可离开大本营并在下一回合继续移动', () => {
+  const { g } = battle();
+  setBoard(g, { m62: [0, 'jq'], o62: [1, 'jq'] });
+  assert.equal(g.move(0, 'm62', 'm52').ok, true);
+  assert.equal(g.move(1, R.flipId('o62'), R.flipId('o52')).ok, true);
+  assert.equal(g.move(0, 'm52', 'm53').ok, true);
+  assert.equal(g.occ.m53.k, 'jq');
+  assert.equal(g.occ.o52.k, 'jq');
+});
+
+test('军旗主动碰到敌子而阵亡时判负，战绩归属于防守方', () => {
+  for (const k of ['pz', 'dl', 'zd']) {
+    const { g } = battle();
+    setBoard(g, { m62: [0, 'jq'], m52: [1, k], o62: [1, 'jq'] });
+    assert.equal(g.move(0, 'm62', 'm52').ok, true);
+    assert.deepEqual(g.result, { winner: 1, reason: 'flag' });
+    assert.equal(g.summaryFor(1).flagBy, k);
+    assert.ok(g.lost[0].includes('jq'));
+  }
+});
+
+test('军旗被亮出后仍可移动，对方看到的新位置保持亮旗', () => {
+  const { g } = battle();
+  setBoard(g, { m62: [0, 'jq'], o62: [1, 'jq'] });
+  g.revealFlag(0);
+  assert.equal(g.move(0, 'm62', 'm52').ok, true);
+  assert.equal(g.viewFor(1).pieces.find(p => p.at === R.flipId('m52')).k, 'jq');
+});
+
+test('工兵在铁路转角必须等待下一次自己的回合，后台拒绝一次转弯', () => {
+  const { g } = battle();
+  setBoard(g, { m51: [0, 'gb'], m62: [0, 'jq'], o62: [1, 'jq'], o63: [1, 'pz'] });
+  assert.equal(g.move(0, 'm51', 'm15').ok, false);
+  assert.equal(g.moveNo, 0);
+  assert.equal(g.occ.m51.k, 'gb');
+  assert.equal(g.move(0, 'm51', 'm11').ok, true);
+  assert.equal(g.move(0, 'm11', 'm15').ok, false, '不能在同一回合继续转弯');
+  assert.equal(g.move(1, R.flipId('o63'), R.flipId('o53')).ok, true);
+  assert.equal(g.move(0, 'm11', 'm15').ok, true);
+  assert.deepEqual(g.last.path, ['m11', 'm12', 'm13', 'm14', 'm15']);
+});
+
+test('人机会考虑移动过的暗子可能是军旗，但不会把它当成地雷', () => {
+  const { g } = battle();
+  setBoard(g, { m62: [0, 'jq'], o23: [1, 'jq'], m13: [0, 'pz'] });
+  g.occ.o23.moved = true;
+  const bot = new Bot(g, 0);
+  const view = g.viewFor(0);
+  const target = view.pieces.find(p => p.at === 'o23');
+  assert.equal(target.k, null, '人机只能看到暗子');
+  const distribution = bot.dist(target, bot.context(view));
+  assert.ok(distribution.some(([k, probability]) => k === 'jq' && probability > 0));
+  assert.ok(!distribution.some(([k]) => k === 'dl'));
+});
+
+test('人机知道打赢普通棋子后仍存活的敌子不可能是一次性地雷', () => {
+  const { g } = battle();
+  setBoard(g, { o51: [0, 'pz'], o55: [1, 'lz'], m62: [0, 'jq'], o62: [1, 'jq'] });
+  const pid = g.occ.o55.pid;
+  const bot = new Bot(g, 0);
+  assert.equal(g.move(0, 'o51', 'o55').ok, true);
+  assert.equal(bot.info.get(pid).notMine, true);
+  const view = g.viewFor(0);
+  const distribution = bot.dist(view.pieces.find(p => p.at === 'o55'), bot.context(view));
+  assert.ok(!distribution.some(([k]) => k === 'dl'));
+});
+
 test('无子可走判负', () => {
   const { g } = battle();
-  setBoard(g, { m13: [0, 'pz'], o23: [1, 'lz'], o62: [1, 'jq'], m62: [0, 'jq'], o61: [1, 'dl'] });
+  setBoard(g, { m13: [0, 'pz'], o23: [1, 'lz'], o62: [1, 'jq'], m62: [0, 'jq'], m61: [0, 'dl'], m63: [0, 'dl'], m52: [0, 'dl'], o61: [1, 'dl'] });
   // 我方唯一的活子越过前线，被对方吃掉（座位 1 用自己的视角坐标走子）
   assert.equal(g.move(0, 'm13', 'o13').ok, true);
   assert.equal(g.turn, 1);
