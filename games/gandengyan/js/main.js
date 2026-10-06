@@ -71,7 +71,7 @@
       var piece = pieces[i];
       var shard = document.createElement('img');
       shard.className = 'login-orbit-shard';
-      shard.src = '/games/gandengyan/assets/layers/login-play-pieces-v2/fragment-' + ('0' + (i + 1)).slice(-2) + '.png';
+      shard.src = '/games/gandengyan/assets/layers/login-play-pieces-v2/fragment-' + ('0' + (i + 1)).slice(-2) + '.webp';
       shard.alt = '';
       shard.draggable = false;
       shard.setAttribute('aria-hidden', 'true');
@@ -329,7 +329,7 @@
   function openExitConfirm(action, onOk, extraClass) {
     var dialog = UI.confirmBox('确定' + action + '吗？', onOk, {
       cls: 'exit-dialog' + (extraClass ? ' ' + extraClass : ''),
-      banner: '<div class="exit-armor" aria-hidden="true"><img class="exit-corner exit-corner-tl" src="/games/gandengyan/assets/layers/result-v2/tl.png" alt=""><img class="exit-corner exit-corner-br" src="/games/gandengyan/assets/layers/result-v2/br.png" alt=""></div>',
+      banner: '<div class="exit-armor" aria-hidden="true"><img class="exit-corner exit-corner-tl" src="/games/gandengyan/assets/layers/result-v2/tl.webp" alt=""><img class="exit-corner exit-corner-br" src="/games/gandengyan/assets/layers/result-v2/br.webp" alt=""></div>',
       cancelClass: 'btn-cylinder',
       okFirst: true
     });
@@ -418,7 +418,7 @@
         var seatIndex = (localSeat + i) % PLAYER_LIMIT, s = seats[seatIndex];
         var node = UI.el('div', 'wseat ws-slot-' + i + (s ? '' : ' empty'));
         node.dataset.seat = seatIndex;
-        node.innerHTML = '<img class="ws-podium-art" src="/games/gandengyan/assets/layers/waiting-v2/podium.png" alt="" aria-hidden="true">' +
+        node.innerHTML = '<img class="ws-podium-art" src="/games/gandengyan/assets/layers/waiting-v2/podium.webp" alt="" aria-hidden="true">' +
           '<div class="ws-avatar">' + (s ? UI.avatarHTML(profileAvatarId(s.avatar)) : '<span class="ws-plus" aria-hidden="true">+</span>') + '</div>' +
           '<div class="ws-name"></div><div class="ws-energy"></div>';
         node.querySelector('.ws-name').textContent = s ? s.name : '等待玩家';
@@ -754,10 +754,10 @@
 
     var body =
       '<div class="rt-stats">' +
-        '<div class="rt-stat"><div class="rt-stat-line"><img class="rt-ico ico-remain" src="/games/gandengyan/assets/layers/battle-v2/count-badge.png" alt=""><div class="rt-v"><small>+</small><b>' + remainStat + '</b></div></div><div class="rt-label">剩余牌数</div></div>' +
-        '<div class="rt-stat"><div class="rt-stat-line"><img class="rt-ico ico-bomb" src="/games/gandengyan/assets/layers/result-v2/bomb.png" alt=""><div class="rt-v"><small>×</small><b>' + r.bombs.bomb + '</b></div></div><div class="rt-label">炸弹</div></div>' +
-        '<div class="rt-stat"><div class="rt-stat-line"><img class="rt-ico ico-hbomb" src="/games/gandengyan/assets/layers/result-v2/hbomb.png" alt=""><div class="rt-v"><small>×</small><b>' + r.bombs.hbomb + '</b></div></div><div class="rt-label">氢弹</div></div>' +
-        '<div class="rt-stat"><div class="rt-stat-line"><img class="rt-ico ico-rocket" src="/games/gandengyan/assets/layers/result-v2/rocket.png" alt=""><div class="rt-v"><small>×</small><b>' + r.bombs.rocket + '</b></div></div><div class="rt-label">火箭</div></div>' +
+        '<div class="rt-stat"><div class="rt-stat-line"><img class="rt-ico ico-remain" src="/games/gandengyan/assets/layers/battle-v2/count-badge.webp" alt=""><div class="rt-v"><small>+</small><b>' + remainStat + '</b></div></div><div class="rt-label">剩余牌数</div></div>' +
+        '<div class="rt-stat"><div class="rt-stat-line"><img class="rt-ico ico-bomb" src="/games/gandengyan/assets/layers/result-v2/bomb.webp" alt=""><div class="rt-v"><small>×</small><b>' + r.bombs.bomb + '</b></div></div><div class="rt-label">炸弹</div></div>' +
+        '<div class="rt-stat"><div class="rt-stat-line"><img class="rt-ico ico-hbomb" src="/games/gandengyan/assets/layers/result-v2/hbomb.webp" alt=""><div class="rt-v"><small>×</small><b>' + r.bombs.hbomb + '</b></div></div><div class="rt-label">氢弹</div></div>' +
+        '<div class="rt-stat"><div class="rt-stat-line"><img class="rt-ico ico-rocket" src="/games/gandengyan/assets/layers/result-v2/rocket.webp" alt=""><div class="rt-v"><small>×</small><b>' + r.bombs.rocket + '</b></div></div><div class="rt-label">火箭</div></div>' +
       '</div>' +
       '<div class="rt-total-label">您总共' + (win ? '赢得' : '输了') + '</div>' +
       '<div class="rt-total"><b>' + Math.abs(myR.delta) + '</b><i>瓦能量</i></div>' +
@@ -765,11 +765,11 @@
 
     var dlg = UI.modal({
       cls: 'result-dialog',
-      banner: '<img class="rt-frame-corner rt-frame-tl" src="/games/gandengyan/assets/layers/result-v2/tl.png" alt="" aria-hidden="true">' +
-        '<img class="rt-frame-corner rt-frame-tr" src="/games/gandengyan/assets/layers/result-v2/tr.png" alt="" aria-hidden="true">' +
-        '<img class="rt-frame-corner rt-frame-bl" src="/games/gandengyan/assets/layers/result-v2/bl.png" alt="" aria-hidden="true">' +
-        '<img class="rt-frame-corner rt-frame-br" src="/games/gandengyan/assets/layers/result-v2/br.png" alt="" aria-hidden="true">' +
-        '<div class="rt-banner ' + (win ? 'rt-win' : 'rt-lose') + '"><img src="/games/gandengyan/assets/layers/result-v2/crest-' + (win ? 'win' : 'lose') + '.png" alt="" aria-hidden="true"><strong>' + (win ? '赢' : '输') + '</strong></div>',
+      banner: '<img class="rt-frame-corner rt-frame-tl" src="/games/gandengyan/assets/layers/result-v2/tl.webp" alt="" aria-hidden="true">' +
+        '<img class="rt-frame-corner rt-frame-tr" src="/games/gandengyan/assets/layers/result-v2/tr.webp" alt="" aria-hidden="true">' +
+        '<img class="rt-frame-corner rt-frame-bl" src="/games/gandengyan/assets/layers/result-v2/bl.webp" alt="" aria-hidden="true">' +
+        '<img class="rt-frame-corner rt-frame-br" src="/games/gandengyan/assets/layers/result-v2/br.webp" alt="" aria-hidden="true">' +
+        '<div class="rt-banner ' + (win ? 'rt-win' : 'rt-lose') + '"><img src="/games/gandengyan/assets/layers/result-v2/crest-' + (win ? 'win' : 'lose') + '.webp" alt="" aria-hidden="true"><strong>' + (win ? '赢' : '输') + '</strong></div>',
       body: body,
       okText: '继续玩',
       cancelText: '退出',
@@ -906,7 +906,7 @@
     var corners = UI.el('div', 'settings-armor');
     corners.setAttribute('aria-hidden', 'true');
     corners.innerHTML = ['tl', 'tr', 'bl', 'br'].map(function (corner) {
-      return '<img class="settings-corner settings-corner-' + corner + '" src="/games/gandengyan/assets/layers/result-v2/' + corner + '.png" alt="">';
+      return '<img class="settings-corner settings-corner-' + corner + '" src="/games/gandengyan/assets/layers/result-v2/' + corner + '.webp" alt="">';
     }).join('');
     var dialog = UI.modal({ title: '设 置', banner: corners.outerHTML, body: body, okText: '确定', cancelText: null, cls: 'settings-dialog' });
     dialog.frame.setAttribute('role', 'dialog');
@@ -1058,10 +1058,10 @@
         var parts = UI.avatarParts(d.myAvatar);
         var avatarId = 'p' + parts.head + '-' + parts.eyes + '-' + parts.mouth;
         body.querySelector('.lb-me').innerHTML =
-          '<div class="lb-portrait"><img class="lb-pedestal" src="/games/gandengyan/assets/layers/home-user-pedestal-v2.png" alt="" aria-hidden="true">' +
+          '<div class="lb-portrait"><img class="lb-pedestal" src="/games/gandengyan/assets/layers/home-user-pedestal-v2.webp" alt="" aria-hidden="true">' +
           '<div class="lb-avatar">' + UI.avatarHTML(avatarId) + '</div><div class="lb-me-name">' + escapeText(d.myName || '游客') + '</div></div>' +
-          '<div class="lb-me-panel"><img class="lb-panel-tl" src="/games/gandengyan/assets/layers/result-v2/tl.png" alt="" aria-hidden="true">' +
-          '<img class="lb-panel-br" src="/games/gandengyan/assets/layers/result-v2/br.png" alt="" aria-hidden="true">' +
+          '<div class="lb-me-panel"><img class="lb-panel-tl" src="/games/gandengyan/assets/layers/result-v2/tl.webp" alt="" aria-hidden="true">' +
+          '<img class="lb-panel-br" src="/games/gandengyan/assets/layers/result-v2/br.webp" alt="" aria-hidden="true">' +
           '<div class="lb-me-stat"><span>' + tab.u + '</span><b>' + d.myVal + '<small>' + tab.unit + '</small></b></div>' +
           '<div class="lb-me-stat"><span>排名</span><b>' + (d.myRank || '—') + '</b></div></div>';
       });
@@ -1093,8 +1093,8 @@
     cleanupHeader = bindSectionHeader(dlg);
     var workspace = body.querySelector('.ms-workspace');
     function frameArt() {
-      return '<img class="ms-corner-tl" src="/games/gandengyan/assets/layers/result-v2/tl.png" alt="" aria-hidden="true">' +
-        '<img class="ms-corner-br" src="/games/gandengyan/assets/layers/result-v2/br.png" alt="" aria-hidden="true">';
+      return '<img class="ms-corner-tl" src="/games/gandengyan/assets/layers/result-v2/tl.webp" alt="" aria-hidden="true">' +
+        '<img class="ms-corner-br" src="/games/gandengyan/assets/layers/result-v2/br.webp" alt="" aria-hidden="true">';
     }
     function render() {
       if (closed) return;

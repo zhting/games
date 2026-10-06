@@ -41,7 +41,7 @@
   };
   var avatarMaskSerial = 0;
   function avatarPartSource(type, value) {
-    return '/games/gandengyan/assets/layers/avatar-v3/' + type + '-' + value + '.png';
+    return '/games/gandengyan/assets/layers/avatar-v3/' + type + '-' + value + '.webp';
   }
   function avatarPartGeometry(type, value) {
     var index = Math.max(0, Math.min(4, (Number(value) || 1) - 1));
@@ -81,7 +81,7 @@
     var m = /^a([1-9]|1[0-2])$/.exec(avatarId || '');
     if (m) idx = parseInt(m[1], 10) - 1;
     var a = AVATARS[idx] || AVATARS[0];
-    return '<span class="avatar avatar-a' + (idx + 1) + ' ' + (extraCls || '') + '" style="--avatar-bg:' + a.bg + ';--avatar-hue:' + a.hue + '"><img src="/games/gandengyan/assets/robot-avatar.png" alt=""></span>';
+    return '<span class="avatar avatar-a' + (idx + 1) + ' ' + (extraCls || '') + '" style="--avatar-bg:' + a.bg + ';--avatar-hue:' + a.hue + '"><img src="/games/gandengyan/assets/robot-avatar.webp" alt=""></span>';
   }
 
   /* ---------- 倒计时：金属外框 → 凹槽 → 立体进度条 → 上层银色圆盘 ---------- */
@@ -97,7 +97,7 @@
       '<linearGradient id="' + key + '-rim" x2="0" y2="1"><stop stop-color="#f0f4f6"/><stop offset=".55" stop-color="#c7d0d6"/><stop offset="1" stop-color="#9daab4"/></linearGradient>' +
       '<linearGradient id="' + key + '-disc" x2="0" y2="1"><stop stop-color="#fcfdfd"/><stop offset=".45" stop-color="#e0e4e6"/><stop offset="1" stop-color="#bec7cd"/></linearGradient>' +
       '</defs>' +
-      '<image class="timer-housing" href="/games/gandengyan/assets/layers/battle-v2/timer-housing-v2.png" x="-110.17" y="-3.01" width="621.15" height="414.10"/>' +
+      '<image class="timer-housing" href="/games/gandengyan/assets/layers/battle-v2/timer-housing-v2.webp" x="-110.17" y="-3.01" width="621.15" height="414.10"/>' +
       '<path class="' + prefix + '-bg" d="' + TIMER_RING_PATH + '"/>' +
       '<path class="timer-track-bevel" d="' + TIMER_RING_PATH + '" stroke="url(#' + key + '-track)" stroke-width="32"/>' +
       '<path class="' + prefix + '-fg" data-timer-progress d="' + TIMER_RING_PATH + '" stroke="url(#' + key + '-side)" pathLength="100"/>' +
@@ -124,7 +124,7 @@
     var legacy = /^a([1-9]|1[0-2])$/.exec(avatarId || '');
     var variant = legacy ? AVATARS[+legacy[1] - 1] : AVATARS[0];
     return '<span class="battle-portrait" role="img" aria-label="机甲头像" style="--battle-avatar-hue:' + variant.hue + '">' +
-      '<img class="battle-portrait-art" src="/games/gandengyan/assets/layers/battle-v2/player-module.png" alt="" aria-hidden="true">' +
+      '<img class="battle-portrait-art" src="/games/gandengyan/assets/layers/battle-v2/player-module.webp" alt="" aria-hidden="true">' +
       (parts ? '<span class="battle-custom-head">' + avatarHTML(avatarId) + '</span>' : '') + '</span>';
   }
 
@@ -137,7 +137,7 @@
       cls += ' joker' + (big ? ' joker-big' : ' joker-small');
       return '<div class="' + cls + '" data-id="' + id + '">' +
         '<span class="jk-label">' + (big ? 'JOKER' : 'joker') + '</span>' +
-        '<span class="jk-crown"><img src="/games/gandengyan/assets/layers/battle-v2/joker-crown.png" alt="王冠"></span>' +
+        '<span class="jk-crown"><img src="/games/gandengyan/assets/layers/battle-v2/joker-crown.webp" alt="王冠"></span>' +
         '<span class="jk-corner">' + (big ? '王' : '王') + '</span></div>';
     }
     var name = GDY.rankName(id), sc = GDY.suitChar(id);

@@ -956,7 +956,7 @@ body {
   pointer-events: none;
   background-image:
     linear-gradient(180deg, rgba(3, 8, 20, .14), rgba(4, 12, 28, .1) 52%, rgba(2, 6, 16, .42)),
-    url('/games/gandengyan/assets/battle-bg.png');
+    url('/games/gandengyan/assets/battle-bg.webp');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -1227,7 +1227,7 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: url('/games/gandengyan/assets/layers/mode-frame.png') center / 100% 100% no-repeat;
+  background: url('/games/gandengyan/assets/layers/mode-frame.webp') center / 100% 100% no-repeat;
   transition: filter .2s ease;
 }
 #scr-home .mode-card:hover { transform: translateY(-7px); filter: drop-shadow(0 20px 24px rgba(23, 200, 255, .35)); }
@@ -1578,7 +1578,7 @@ body {
 /* 个人中心：参考图的独立页签、透明窗口和中央装配列。 */
 #modal-root .modal-mask:has(.pf-dialog) {
   padding: 0 !important;
-  background: linear-gradient(180deg, rgba(4, 8, 20, .34), rgba(3, 8, 19, .5)), url('/games/gandengyan/assets/battle-bg.png') center / cover no-repeat !important;
+  background: linear-gradient(180deg, rgba(4, 8, 20, .34), rgba(3, 8, 19, .5)), url('/games/gandengyan/assets/battle-bg.webp') center / cover no-repeat !important;
 }
 #modal-root .pf-dialog {
   display: block !important;
@@ -1661,7 +1661,7 @@ body {
   position: absolute;
   z-index: 3;
   pointer-events: none;
-  background: url('/games/gandengyan/assets/layers/profile-corner-v2.png') center / 100% 100% no-repeat;
+  background: url('/games/gandengyan/assets/layers/profile-corner-v2.webp') center / 100% 100% no-repeat;
 }
 .pf-workspace::before { left: -1.05cqw; top: -1.65cqw; width: 9.3cqw; height: 6.7cqw; }
 .pf-workspace::after { right: -.8cqw; bottom: -.7cqw; width: 6cqw; height: 4cqw; transform: rotate(180deg); }
@@ -1702,7 +1702,7 @@ body {
   left: 50%; top: 50%;
   width: 66%; height: 94%;
   transform: translate(-50%, -50%);
-  background: url('/games/gandengyan/assets/layers/profile-selection-frame-v2.png') center / 100% 100% no-repeat;
+  background: url('/games/gandengyan/assets/layers/profile-selection-frame-v2.webp') center / 100% 100% no-repeat;
   opacity: 0;
   pointer-events: none;
 }
@@ -1721,7 +1721,7 @@ body {
   border: 0;
   border-radius: 0;
   color: #293348;
-  background: url('/games/gandengyan/assets/layers/profile-action-v2.png') center 46% / 100% 160% no-repeat;
+  background: url('/games/gandengyan/assets/layers/profile-action-v2.webp') center 46% / 100% 160% no-repeat;
   outline: none;
   outline-offset: 0;
   box-shadow: none;
@@ -2572,7 +2572,7 @@ body {
   left: 0;
   width: 100%;
   height: 50%;
-  background-image: url("/games/gandengyan/assets/layers/login-input-frames.png");
+  background-image: url("/games/gandengyan/assets/layers/login-input-frames.webp");
   background-repeat: no-repeat;
   background-size: 100% 200%;
   pointer-events: none;

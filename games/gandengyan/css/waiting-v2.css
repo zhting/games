@@ -77,7 +77,7 @@
 #scr-waiting .btn-change-table {
   position: absolute; z-index: 10; left: 50%; top: calc(320 * var(--wu)); transform: translateX(-50%);
   width: calc(165 * var(--wu)); height: auto; aspect-ratio: 1; margin: 0; padding: 0;
-  border: 0; border-radius: 0; outline: none; background: url('/games/gandengyan/assets/layers/waiting-v2/change.png') center / contain no-repeat;
+  border: 0; border-radius: 0; outline: none; background: url('/games/gandengyan/assets/layers/waiting-v2/change.webp') center / contain no-repeat;
   box-shadow: none; color: white; font: 800 calc(36 * var(--wu))/1 'Microsoft YaHei', sans-serif;
   letter-spacing: .12em; text-indent: .12em; text-shadow: 0 2px 3px #000; cursor: pointer;
   transition: filter .15s, transform .15s;

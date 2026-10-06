@@ -1,6 +1,6 @@
 /* 退出游戏、退出对局与切换账号确认共用星空底板、金属装甲和圆柱体按钮。 */
 #modal-root .modal-mask:has(.exit-dialog) {
-  background: linear-gradient(rgba(0, 5, 9, .58), rgba(0, 5, 9, .58)), url('/games/gandengyan/assets/battle-bg.png') center / cover no-repeat !important;
+  background: linear-gradient(rgba(0, 5, 9, .58), rgba(0, 5, 9, .58)), url('/games/gandengyan/assets/battle-bg.webp') center / cover no-repeat !important;
   padding: 12px !important;
 }
 #modal-root .sci-frame.exit-dialog {

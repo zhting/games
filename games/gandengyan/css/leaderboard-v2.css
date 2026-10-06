@@ -1,7 +1,7 @@
 /* 英雄榜：左侧五榜、中间前十、右侧自己的头像与真实成绩。 */
 #modal-root .modal-mask:has(.lb-dialog) {
   padding: 0 !important;
-  background: linear-gradient(180deg, rgba(2, 7, 14, .12), rgba(2, 7, 14, .22)), url('/games/gandengyan/assets/battle-bg.png') center / cover no-repeat !important;
+  background: linear-gradient(180deg, rgba(2, 7, 14, .12), rgba(2, 7, 14, .22)), url('/games/gandengyan/assets/battle-bg.webp') center / cover no-repeat !important;
 }
 #modal-root .sci-frame.lb-dialog {
   --home-rail-height: calc(100vw * 190 / 1736);

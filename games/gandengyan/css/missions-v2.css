@@ -1,7 +1,7 @@
 /* 接任务：共用完整顶部栏，左侧分类与每页三张透明装甲任务牌。 */
 #modal-root .modal-mask:has(.ms-dialog) {
   padding: 0 !important;
-  background: linear-gradient(180deg, rgba(2, 7, 14, .12), rgba(2, 7, 14, .2)), url('/games/gandengyan/assets/battle-bg.png') center / cover no-repeat !important;
+  background: linear-gradient(180deg, rgba(2, 7, 14, .12), rgba(2, 7, 14, .2)), url('/games/gandengyan/assets/battle-bg.webp') center / cover no-repeat !important;
 }
 #modal-root .sci-frame.ms-dialog {
   --home-rail-height: calc(100vw * 190 / 1736);

@@ -59,7 +59,7 @@
 #scr-battle .opp-right .op-bubble { left: auto; right: calc(104 * var(--bu)); background-image: none; }
 #scr-battle .opp-right .op-bubble::after {
   content: ''; position: absolute; inset: 0; z-index: -1;
-  background: url('/games/gandengyan/assets/layers/battle-v2/pass-bubble.png') center / 100% 100% no-repeat; transform: scaleX(-1);
+  background: url('/games/gandengyan/assets/layers/battle-v2/pass-bubble.webp') center / 100% 100% no-repeat; transform: scaleX(-1);
 }
 #scr-battle .opp.active .op-count { filter: drop-shadow(0 0 6px #22e7f9); }
 #scr-battle .op-ava { width: calc(99 * var(--bu)); height: calc(100 * var(--bu)); }
@@ -84,7 +84,7 @@
   position: absolute; top: calc(25 * var(--bu)); left: calc(129 * var(--bu));
   width: calc(53 * var(--bu)); height: calc(80 * var(--bu)); min-width: 0;
   display: grid; place-items: center; padding: 0; border: 0; outline: 0; clip-path: none;
-  background: url('/games/gandengyan/assets/layers/battle-v2/count-badge.png') center / 100% 100% no-repeat;
+  background: url('/games/gandengyan/assets/layers/battle-v2/count-badge.webp') center / 100% 100% no-repeat;
   font: 700 calc(29 * var(--bu))/1 Consolas, monospace; color: #fff; text-shadow: 0 2px 2px #000;
 }
 #scr-battle .op-timer {
@@ -113,7 +113,7 @@
   top: calc(6 * var(--bu)); left: calc(104 * var(--bu));
   width: calc(170 * var(--bu)); height: calc(55 * var(--bu));
   display: grid; place-items: center; padding: 0 12%; border-radius: 0;
-  background: url('/games/gandengyan/assets/layers/battle-v2/pass-bubble.png') center / 100% 100% no-repeat;
+  background: url('/games/gandengyan/assets/layers/battle-v2/pass-bubble.webp') center / 100% 100% no-repeat;
   font-size: calc(18 * var(--bu)); color: #1f2b36; box-shadow: none; white-space: nowrap;
 }
 #scr-battle .op-bubble::before { display: none; }
@@ -139,10 +139,10 @@
   letter-spacing: calc(2 * var(--bu)); text-indent: calc(2 * var(--bu)); color: #55f9ff;
   text-shadow: 0 2px 1px #254269, 0 0 8px #20d7f5; filter: none;
 }
-#scr-battle .act-pass { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-pass.png'); color: #fff; text-shadow: 0 2px 2px #3e4551; }
-#scr-battle .act-hint { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-hint.png'); color: #faff31; text-shadow: 0 2px 2px #763486; }
-#scr-battle .act-clear { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-clear.png'); }
-#scr-battle .act-play { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-play.png'); }
+#scr-battle .act-pass { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-pass.webp'); color: #fff; text-shadow: 0 2px 2px #3e4551; }
+#scr-battle .act-hint { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-hint.webp'); color: #faff31; text-shadow: 0 2px 2px #763486; }
+#scr-battle .act-clear { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-clear.webp'); }
+#scr-battle .act-play { background-image: url('/games/gandengyan/assets/layers/battle-v2/button-play.webp'); }
 #scr-battle .act-btn:disabled { filter: saturate(.65) brightness(.65); cursor: default; }
 #scr-battle .action-bar:not(.my-turn) .act-btn { filter: saturate(.7) brightness(.72); }
 #scr-battle .act-btn:hover:not(:disabled) { filter: brightness(1.18); }
@@ -178,7 +178,7 @@
 }
 #scr-battle .hand-area .card { margin: 0 calc(-25 * var(--bu)); }
 #scr-battle .card:not(.back) {
-  border: 0; border-radius: 0; background: url('/games/gandengyan/assets/layers/battle-v2/card-face-v4.png') center / 100% 100% no-repeat;
+  border: 0; border-radius: 0; background: url('/games/gandengyan/assets/layers/battle-v2/card-face-v4.webp') center / 100% 100% no-repeat;
   box-shadow: none; filter: drop-shadow(0 3px 4px #06101e);
 }
 #scr-battle .card .corner { top: 7%; left: 11%; font-size: calc(23 * var(--bu)); }
