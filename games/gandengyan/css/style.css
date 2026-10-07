@@ -1,21 +1,6 @@
 /* =====================================================================
    干瞪眼 · 星际版 — 全站样式（桌面 + 移动端）
    ===================================================================== */
-.collection-link {
-  position: fixed;
-  z-index: 100;
-  bottom: max(12px, env(safe-area-inset-bottom));
-  left: max(12px, env(safe-area-inset-left));
-  padding: 8px 12px;
-  border: 1px solid rgba(62, 230, 255, .4);
-  border-radius: 18px;
-  color: #bcefff;
-  background: rgba(11, 16, 32, .8);
-  text-decoration: none;
-  font-size: 12px;
-}
-.collection-link:hover, .collection-link:focus-visible { color: #fff; border-color: #3ee6ff; }
-body:has(#scr-battle.active) .collection-link { display: none; }
 :root {
   --bg: #0b1020;
   --panel: rgba(16, 26, 48, .82);
