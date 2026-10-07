@@ -91,13 +91,14 @@
     var key = 'timer-ring-' + (++timerRingSerial);
     return '<svg viewBox="0 0 400 400" aria-hidden="true">' +
       '<defs>' +
+      (prefix === 'ot' ? '<clipPath id="' + key + '-round"><circle cx="200" cy="200" r="184"/></clipPath>' : '') +
       '<linearGradient id="' + key + '-track" x2="0" y2="1"><stop stop-color="#344a57"/><stop offset=".6" stop-color="#516975"/><stop offset="1" stop-color="#627985"/></linearGradient>' +
       '<linearGradient id="' + key + '-side" x2="0" y2="1"><stop stop-color="#163b4e"/><stop offset=".55" stop-color="#103343"/><stop offset="1" stop-color="#0a2637"/></linearGradient>' +
       '<linearGradient id="' + key + '-face" x2="0" y2="1"><stop stop-color="#43c6ed"/><stop offset=".45" stop-color="#28addb"/><stop offset="1" stop-color="#178bb9"/></linearGradient>' +
       '<linearGradient id="' + key + '-rim" x2="0" y2="1"><stop stop-color="#f0f4f6"/><stop offset=".55" stop-color="#c7d0d6"/><stop offset="1" stop-color="#9daab4"/></linearGradient>' +
       '<linearGradient id="' + key + '-disc" x2="0" y2="1"><stop stop-color="#fcfdfd"/><stop offset=".45" stop-color="#e0e4e6"/><stop offset="1" stop-color="#bec7cd"/></linearGradient>' +
       '</defs>' +
-      '<image class="timer-housing" href="/games/gandengyan/assets/layers/battle-v2/timer-housing-v2.webp" x="-110.17" y="-3.01" width="621.15" height="414.10"/>' +
+      '<image class="timer-housing" href="/games/gandengyan/assets/layers/battle-v2/timer-housing-v2.webp" x="-110.17" y="-3.01" width="621.15" height="414.10"' + (prefix === 'ot' ? ' clip-path="url(#' + key + '-round)"' : '') + '/>' +
       '<path class="' + prefix + '-bg" d="' + TIMER_RING_PATH + '"/>' +
       '<path class="timer-track-bevel" d="' + TIMER_RING_PATH + '" stroke="url(#' + key + '-track)" stroke-width="32"/>' +
       '<path class="' + prefix + '-fg" data-timer-progress d="' + TIMER_RING_PATH + '" stroke="url(#' + key + '-side)" pathLength="100"/>' +
