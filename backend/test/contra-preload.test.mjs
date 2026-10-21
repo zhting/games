@@ -1,11 +1,43 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ResourcePreloader, gameResourceJobs } from '../../games/contra2026/js/resource-preloader.mjs';
+import { ResourcePreloader, gameResourceJobs, musicResourceJobs } from '../../games/contra2026/js/resource-preloader.mjs';
 import { StageOneArt } from '../../games/contra2026/js/stage-one-art.mjs';
 import { StageTwoArt } from '../../games/contra2026/js/stage-two-art.mjs';
 import { ReferenceMusic } from '../../games/contra2026/js/reference-music.mjs';
 
 const deferred = () => { let resolve, reject; const promise = new Promise((yes,no) => {resolve=yes;reject=no;}); return {promise,resolve,reject}; };
+
+test('切换关卡复用已完成画面，只等待新关默认音乐，旧音轨不计入新进度',async()=>{
+  const calls=[];
+  const job=id=>({id,load:async()=>calls.push(id)});
+  const first=new ResourcePreloader([job('image'),job('music:opening')]);await first.load();
+  const second=new ResourcePreloader([job('image'),job('music:stage2')],{completed:[...first.done,'unrelated']});
+  assert.equal(second.inspect().loaded,1);assert.equal(second.ready,false);assert.equal(second.inspect().total,2);
+  await second.load();assert.equal(second.ready,true);
+  assert.deepEqual(calls,['image','music:opening','music:stage2']);
+  const warm=new ResourcePreloader(second.jobs,{completed:second.done});
+  await warm.load();assert.equal(warm.inspect().status,'ready');assert.equal(warm.inspect().loaded,2);
+  assert.deepEqual(calls,['image','music:opening','music:stage2']);
+});
+
+test('先下载一首默认音乐即可就绪，其他音乐进入后串行缓存，失败不影响前台资源',async()=>{
+  const requests=[],slow=deferred();
+  const music=new ReferenceMusic({getContext:()=>null,getOutput:()=>null,fetchAudio:async url=>{
+    requests.push(url);
+    if(url.endsWith('stage1-rock.ogg'))await slow.promise;
+    return{ok:!url.endsWith('stage1-epic.ogg'),status:503,arrayBuffer:async()=>new ArrayBuffer(4)};
+  }});
+  const foreground=new ResourcePreloader(musicResourceJobs(music,['opening','opening']));
+  await foreground.load();assert.equal(foreground.ready,true);assert.equal(foreground.inspect().total,1);assert.equal(requests.length,1);
+  const background=new ResourcePreloader(musicResourceJobs(music,['stage1rock','opening','stage1epic','stage2']),{concurrency:1});
+  assert.equal(requests.length,1);
+  const downloading=background.load();await new Promise(setImmediate);
+  assert.equal(requests.length,2);assert.equal(background.ready,false);assert.equal(foreground.ready,true);
+  assert.ok(requests[1].endsWith('stage1-rock.ogg'));assert.equal(music.buffers.size,0);
+  slow.resolve();await assert.rejects(downloading,/部分资源/);
+  assert.equal(requests.length,4);assert.equal(foreground.ready,true);assert.deepEqual(foreground.inspect().failed,[]);
+  assert.deepEqual(background.inspect().failed,['music:stage1epic']);assert.equal(music.buffers.size,0);
+});
 
 test('标题阶段不请求关卡资源，启动加载后才下载两关画面、唱片和音乐，并等解码完成',async()=>{
   const requested=[],songs=[],decoded=deferred();

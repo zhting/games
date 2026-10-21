@@ -459,7 +459,7 @@ import { addImpact } from '/games/contra2026/js/impact-effects.mjs?v=hit-feedbac
 import { beginDeath, advanceDeath } from '/games/contra2026/js/player-death.mjs?v=death-fall-1';
 import { REFERENCE_TRACKS, ReferenceMusic, StageMusicSession, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '/games/contra2026/js/reference-music.mjs?v=preload-2';
 import { musicRecord } from '/games/contra2026/js/music-records.mjs?v=record-deck-1';
-import { ResourcePreloader, gameResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=preload-2';
+import { ResourcePreloader, gameResourceJobs, musicResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=background-music-1';
 (() => {
 'use strict';
 // ================= constants =================
@@ -697,12 +697,21 @@ function saveSettings() { try { localStorage.setItem(WUKONG ? 'wukong-settings' 
 // ================= audio =================
 let AC = null, master, sfxGain, musGain, synthGain, noiseBuf, muted = false;
 const referenceMusic = new ReferenceMusic({ getContext: () => AC, getOutput: () => musGain });
-const gameResources = new ResourcePreloader(gameResourceJobs({
+const gameVisualResources = gameResourceJobs({
   arts: [stageOneArt, stageTwoArt], imageFactory: () => new Image(),
   cover: '/games/contra2026/assets/cover-zh.webp',
   records: OPEN_STAGES.flatMap(stage => stageMusicOptions(stage).map(({value}) => musicRecord(stage,value).art)),
-  tracks: REFERENCE_TRACKS, music: referenceMusic, fonts: document.fonts?.ready
-}));
+  tracks: {}, music: referenceMusic, fonts: document.fonts?.ready
+});
+let gameResources = new ResourcePreloader(gameVisualResources), backgroundMusic = null;
+const startupMusicTrack = stage => stage === 1 ? 'opening' : 'stage2';
+function startBackgroundMusic() {
+  if (backgroundMusic || !gameResources.ready) return;
+  const preferred = musicForScene({mode:'play',stage:G.stage,boss:{},base:{def:{}}},SET.stageMusic);
+  const keys = [preferred,...Object.keys(REFERENCE_TRACKS)].filter(key => REFERENCE_TRACKS[key]);
+  backgroundMusic = new ResourcePreloader(musicResourceJobs(referenceMusic,keys),{concurrency:1});
+  void backgroundMusic.load(() => Music.sync()).catch(() => {});
+}
 let loadingSerial = 0, pendingStart = null;
 try { muted = localStorage.getItem('chiyan-muted') === '1'; } catch (e) {}
 function initAudio() {
@@ -782,8 +791,10 @@ const Music = {
   sync() {
     if (G.mode === 'loading') { this.pause(); return; }
     if (document.hidden || G.mode === 'pause' || (G.mode === 'settings' && G.settingsFrom === 'pause')) { this.pause(); return; }
-    const track = stageMusicSession.forScene(G, SET.stageMusic);
-    if (!gameResources.ready) { this.pause(); return; }
+    const selected = stageMusicSession.forScene(G, SET.stageMusic);
+    if (!gameResources.ready || (!backgroundMusic && !['cine','intro','play'].includes(G.mode))) { this.pause(); return; }
+    const cached = gameResources.done.has('music:'+selected) || backgroundMusic?.done.has('music:'+selected);
+    const track = REFERENCE_TRACKS[selected] && !cached ? (gameResources.done.has('music:opening') ? 'opening' : 'stage2') : selected;
     this.on = false;
     if (synthGain) synthGain.gain.value = 0;
     if (track && track !== 'synth' && (this.active || G.mode !== 'play')) { if (AC) referenceMusic.play(track); return; }
@@ -7896,6 +7907,7 @@ function setMode(m) {
   showScreen({ title: 'scrTitle', lobby: 'scrCoop', select: 'scrSelect', pause: 'scrPause', over: 'scrOver', clear: 'scrClear', settings: 'scrSettings', loading: 'scrLoading' }[m] || null);
   if (m === 'play' || m === 'intro' || m === 'cine') { const b = document.activeElement; if (b && b.blur) b.blur(); }
   Music.sync();
+  if (['cine','intro','play'].includes(m)) startBackgroundMusic();
 }
 function startGame() {
   return startAfterLoading(startOpening, 1);
@@ -7909,6 +7921,8 @@ function updateLoadingUI(state) {
 async function startAfterLoading(action, stage=1, retry=false) {
   if (pendingStart && !retry) return false;
   const serial = ++loadingSerial, previousMode = pendingStart?.previousMode || G.mode;
+  const defaultTrack = startupMusicTrack(stage);
+  if (!retry) gameResources = new ResourcePreloader([...gameVisualResources,...musicResourceJobs(referenceMusic,[defaultTrack])],{completed:gameResources.done});
   pendingStart = {action,stage,previousMode}; initAudio(); goFull(); setMode('loading');
   $('scrLoading').setAttribute('aria-busy','true'); $('loadingRetry').hidden = true;
   $('loadingStatus').textContent = '正在准备画面与音乐'; $('loadingStatus').focus({preventScroll:true});
@@ -7916,12 +7930,7 @@ async function startAfterLoading(action, stage=1, retry=false) {
     await gameResources.load(state => { if (serial === loadingSerial) updateLoadingUI(state); });
     if (serial !== loadingSerial) return false;
     $('loadingStatus').textContent = '正在准备声音';
-    if (AC) {
-      const keys = new Set(stage === 1 ? ['opening'] : []);
-      const selected = musicForScene({mode:'play',stage,boss:{},base:{def:{}}},SET.stageMusic);
-      if (REFERENCE_TRACKS[selected]) keys.add(selected);
-      await Promise.all([...keys].map(key => referenceMusic.load(key,AC)));
-    }
+    if (AC) await referenceMusic.load(defaultTrack,AC);
     if (serial !== loadingSerial) return false;
     pendingStart = null; $('scrLoading').setAttribute('aria-busy','false');
     setMode(previousMode); await action(); return true;
@@ -8243,6 +8252,7 @@ const invitedRoom = new URLSearchParams(location.search).get('room');
 if (invitedRoom && /^[A-Z2-9]{6}$/i.test(invitedRoom)) { $('coopCode').value = invitedRoom.toUpperCase(); showCoop(); coopMessage('点击加入房间，以 玩家二 身份与朋友一起闯关。'); }
 window.Contra2026 = Object.freeze({ inspect: () => ({
   resources: gameResources.inspect(),
+  musicDownloads: backgroundMusic?.inspect() || null,
   mode: G.mode, stage: G.stage, role: coop.role, room: coop.room, connected: coop.connected,
   theme: wukong ? 'wukong-skin' : null,
   combat: WUKONG && G.stage === 1 ? 'staff' : 'shooting',
