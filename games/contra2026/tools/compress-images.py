@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[3]
 GAME = ROOT / "games/contra2026"
 
 
-def encode(source, destination, *, max_size=None):
+def encode(source, destination, *, max_size=None, quality=90, min_psnr=None):
     with Image.open(source) as original:
         image = original.copy()
         profile = original.info.get("icc_profile")
@@ -23,7 +23,7 @@ def encode(source, destination, *, max_size=None):
     if transparent:
         options.update(lossless=True, exact=True)
     else:
-        options.update(quality=90)
+        options.update(quality=quality)
     buffer = io.BytesIO()
     image.save(buffer, format="WEBP", **options)
     encoded = buffer.getvalue()
@@ -36,7 +36,8 @@ def encode(source, destination, *, max_size=None):
             error = ImageStat.Stat(ImageChops.difference(image.convert("RGB"), decoded.convert("RGB"))).rms
             mse = sum(value * value for value in error) / 3
             psnr = round(10 * math.log10(255 * 255 / mse), 2) if mse else None
-            assert psnr is None or psnr >= (28 if max_size else 32), (destination, psnr)
+            threshold = min_psnr if min_psnr is not None else (28 if max_size else 32)
+            assert psnr is None or psnr >= threshold, (destination, psnr)
     assert len(encoded) < source.stat().st_size, destination
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(encoded)
@@ -52,6 +53,14 @@ def encode(source, destination, *, max_size=None):
     }
 
 
+def cover_records():
+    source = ROOT / "assets/covers/contra2026-zh.png"
+    return [
+        encode(source, source.with_name("contra2026-zh-512.webp"), max_size=512, quality=80, min_psnr=26),
+        encode(source, source.with_suffix(".webp"), max_size=800, quality=76),
+    ]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path)
@@ -60,8 +69,8 @@ def main():
     urls = sorted(set(re.findall(r"/games/contra2026/assets/[A-Za-z0-9_./-]+\.(?:png|webp)", code)))
     sources = sorted({(ROOT / url.lstrip("/")).with_suffix(".png") for url in urls})
     records = [encode(source, source.with_suffix(".webp")) for source in sources]
-    records.append(encode(ROOT / "assets/covers/contra2026-zh.png", ROOT / "assets/covers/contra2026-zh.webp", max_size=800))
-    original = sum(record["originalBytes"] for record in records)
+    records.extend(cover_records())
+    original = sum({record["source"]: record["originalBytes"] for record in records}.values())
     compressed = sum(record["webpBytes"] for record in records)
     report = {"originalBytes": original, "webpBytes": compressed, "savedPercent": round((1 - compressed / original) * 100, 1), "images": records}
     if args.report:
