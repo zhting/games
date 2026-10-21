@@ -28,3 +28,5 @@
 运行 `node --test backend/test/contra*.test.mjs`；完整仓库检查为 `npm test`。
 
 运行素材位于 `assets/`，渲染、音乐和联机模块位于 `js/`。唱片矢量原稿可使用 `node games/contra2026/tools/draw-music-records.mjs` 重新绘制。
+
+浏览器使用 WebP 图片：角色、植被、机关及其他透明素材采用逐像素无损压缩，保持原尺寸和图集坐标；封面、岩石与走廊背景使用质量 90 的 WebP，合集封面生成 800×800 版本。PNG 原图保留供编辑和图集测量。安装 Pillow 后运行 `python games/contra2026/tools/compress-images.py` 可重新生成，脚本会校验透明素材的完整 RGBA 像素及全部图片尺寸。

@@ -53,7 +53,9 @@ test('第二关敌兵与主角同一基础身高，前中后景保持连续合�
 
 test('第二关高清机关与三张正背视角色图集存在，透明源图裁切不越界',()=>{
   for(const [key,url]of Object.entries(STAGE_TWO_ASSETS)){
-    const png=fs.readFileSync(new URL('../..'+url,import.meta.url));
+    const file=new URL('../..'+url,import.meta.url),webp=fs.readFileSync(file);
+    assert.equal(webp.toString('ascii',0,4),'RIFF');assert.equal(webp.toString('ascii',8,12),'WEBP');
+    const png=fs.readFileSync(new URL(file.href.replace(/\.webp$/,'.png')));
     assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a');
     const width=png.readUInt32BE(16),height=png.readUInt32BE(20);
     assert.ok(width>=1000,'source has native fine detail');

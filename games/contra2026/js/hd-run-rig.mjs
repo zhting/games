@@ -1,7 +1,7 @@
 // Neutral pieces register at the anatomical joint, independently of the crop.
 // Width is calibrated once; animation only rotates around hip/knee/ankle.
 import { RUN_BONES } from './stage-one-motion.mjs?v=leg-alignment-2';
-const key='runLimbs',url='/games/contra2026/assets/stage1/runner-limbs-v2.png';
+const key='runLimbs',url='/games/contra2026/assets/stage1/runner-limbs-v2.webp';
 function role(near,far){
   const frames={};
   for(const [name,parts] of [['Near',near],['Far',far]]){

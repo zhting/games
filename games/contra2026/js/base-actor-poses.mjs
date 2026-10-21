@@ -1,4 +1,4 @@
-import { BASE_ACTORS } from './stage-two-atlas.mjs?v=base-hd-2';
+import { BASE_ACTORS } from './stage-two-atlas.mjs?v=webp-1';
 
 // New rear-view upward poses retain a 38-unit head-to-sole height.
 const scale=38/730;

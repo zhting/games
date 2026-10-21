@@ -97,7 +97,10 @@ test('跑兵攻击时停步朝目标持枪，枪口火光使用实际弹丸起�
 test('第一关正式位图资源存在，角色及要塞高清透明，裁切均在图像边界内', () => {
   for (const [name, url] of Object.entries(STAGE_ONE_ASSETS)) {
     const file = new URL('../..' + url, import.meta.url);
-    const png = fs.readFileSync(file);
+    const webp = fs.readFileSync(file);
+    assert.equal(webp.toString('ascii', 0, 4), 'RIFF');
+    assert.equal(webp.toString('ascii', 8, 12), 'WEBP');
+    const png = fs.readFileSync(new URL(file.href.replace(/\.webp$/, '.png')));
     assert.equal(png.toString('hex', 0, 8), '89504e470d0a1a0a');
     const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
     if (name === 'jungle' || name === 'rock') { assert.ok(width>=1000&&height>=1000); continue; }
