@@ -1,12 +1,15 @@
 # 游戏统一后台
 
-萌兵军棋和干瞪眼运行在同一个 Node.js 进程、同一个端口，统一部署到腾讯云。其他游戏是静态页面，无需后台。
+萌兵军棋、干瞪眼和魂斗罗2026 联机服务运行在同一个 Node.js 进程、同一个端口，统一部署到腾讯云。其他游戏是静态页面，无需后台。
 
 | 路径 | 服务 |
 | --- | --- |
 | `/healthz` | 统一健康检查与各游戏状态 |
 | `/games/junqi/ws` | 军棋 WebSocket；兼容原 `/ws` |
 | `/games/gandengyan/socket.io` | 干瞪眼 Socket.IO，支持 WebSocket 与轮询 |
+| `/games/contra2026/ws` | 魂斗罗2026 双人房间、按键与画面快照同步 |
+
+魂斗罗2026 的房间保存在内存中，不使用账号或持久化存档。更新后台后，Nginx 还需应用 `backend/deploy/nginx-locations.conf` 中的 `/games/contra2026/ws` 配置。前端调用 `backend-config.js` 中的 `contraPath`，本地预览使用当前服务地址。运行方法和联机范围见 [魂斗罗说明](../games/contra2026/README.md)。
 
 两款游戏保留原来的账号、对局和计分逻辑，各自存档。此次统一的是运行与部署服务；账号体系尚未合并。
 

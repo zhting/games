@@ -3,6 +3,14 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/contra2026",
+      "destination": "/games/contra2026/index.html"
+    },
+    {
+      "source": "/games/contra2026",
+      "destination": "/games/contra2026/index.html"
+    },
+    {
       "source": "/game",
       "destination": "/games/game/index.html"
     },
