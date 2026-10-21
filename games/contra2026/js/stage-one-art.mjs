@@ -61,13 +61,36 @@ export class StageOneArt {
     this.g = this.surface.getContext('2d'); this.scale = 1;
     this.images = {}; this.loaded = new Set(); this.failed = []; this.cache = new Map(); this.terrainCache = new Map();
     this.hdActors = new HDActorArt(createCanvas,this.images);
-    for (const [key, path] of Object.entries(this.assets)) {
-      const image = imageFactory(); this.images[key] = image;
-      image.decoding = 'async'; image.fetchPriority = priority;
-      image.onload = () => { this.loaded.add(key); this.cache.clear(); this.terrainCache.clear(); this.hdActors.clear(); };
-      image.onerror = () => { this.failed.push(key); };
-      image.src = path;
+    this.imageFactory = imageFactory; this.priority = priority; this.imageLoads = new Map();
+    for (const key of Object.keys(this.assets)) this.loadImage(key);
+  }
+  loadImage(key, { retry = false } = {}) {
+    if (this.loaded.has(key)) return Promise.resolve(this.images[key]);
+    const previous = this.imageLoads.get(key);
+    if (previous && !retry) return previous.promise;
+    if (previous) {
+      previous.image.onload = previous.image.onerror = null; previous.image.src = '';
+      previous.reject(Error('重新加载图片')); this.imageLoads.delete(key);
     }
+    const image = this.imageFactory(); this.images[key] = image;
+    image.decoding = 'async'; image.fetchPriority = this.priority;
+    let resolve, reject;
+    const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
+    promise.catch(() => {});
+    this.imageLoads.set(key, { image, promise, reject });
+    const failed = () => {
+      if (this.images[key] !== image) return;
+      if (!this.failed.includes(key)) this.failed.push(key);
+      this.imageLoads.delete(key); reject(Error('图片加载失败：' + key));
+    };
+    const ready = () => {
+      if (this.images[key] !== image) return;
+      this.loaded.add(key); this.failed = this.failed.filter(name => name !== key); this.imageLoads.delete(key);
+      this.cache.clear(); this.terrainCache.clear(); this.hdActors.clear(); resolve(image);
+    };
+    image.onload = () => { if (image.decode) image.decode().then(ready, failed); else ready(); };
+    image.onerror = failed; image.src = this.assets[key];
+    return promise;
   }
   get ready() { return Object.keys(this.assets).every(key => this.loaded.has(key)); }
   inspect() { return { ready: this.ready, loaded: [...this.loaded], failed: [...this.failed], frameCount: this.cache.size, resolution: [this.surface.width, this.surface.height] }; }

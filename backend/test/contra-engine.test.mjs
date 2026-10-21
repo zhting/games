@@ -15,6 +15,8 @@ import { BASE_BOSS_DEVICES, BASE_BOSS_MOVER, bossDevicesRemaining, movingBossX, 
 import { canEnterExit, beginExitEntry, advanceExitEntry, teamInsideExit } from '../../games/contra2026/js/stage-one-exit.mjs';
 import { ReferenceMusic, StageMusicSession, referenceTrackForScene, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '../../games/contra2026/js/reference-music.mjs';
 import { musicRecord } from '../../games/contra2026/js/music-records.mjs';
+import { REFERENCE_TRACKS } from '../../games/contra2026/js/reference-music.mjs';
+import { ResourcePreloader, gameResourceJobs } from '../../games/contra2026/js/resource-preloader.mjs';
 import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '../../games/contra2026/js/release-stages.mjs';
 import { beginDeath, advanceDeath, deathVisual } from '../../games/contra2026/js/player-death.mjs';
 import { addImpact } from '../../games/contra2026/js/impact-effects.mjs';
@@ -59,6 +61,7 @@ function engine() {
     Image: class { complete = false; naturalWidth = 0; },
     URL, URLSearchParams, Math, Date, Set, Map, console, setTimeout, clearTimeout, setInterval, clearInterval,
     CoopClient: Network, packWorld, unpackWorld, StageOneArt, StageTwoArt, baseUpMuzzle, FORTRESS_ART, FORTRESS_TARGETS,
+    REFERENCE_TRACKS, ResourcePreloader, gameResourceJobs,
     ReferenceMusic, StageMusicSession, referenceTrackForScene, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic, musicRecord, OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage, OPENING_DURATION, OPENING_PAGES, drawSupplySaucer, BASE_SOLDIER, baseSoldierScale,
     beginDeath, advanceDeath,
     addImpact,

@@ -102,15 +102,27 @@ export function musicForScene(state,choices){
 export class ReferenceMusic {
   constructor({getContext,getOutput,fetchAudio=(...args)=>globalThis.fetch(...args)}){
     this.getContext=getContext;this.getOutput=getOutput;this.fetchAudio=fetchAudio;
-    this.buffers=new Map();this.track=null;this.source=null;this.offset=0;this.startedAt=0;
+    this.buffers=new Map();this.encoded=new Map();this.track=null;this.source=null;this.offset=0;this.startedAt=0;
     this.paused=false;this.ended=false;this.version=0;this.error=null;
+  }
+  prefetch(key,{retry=false}={}){
+    if(retry)this.encoded.delete(key);
+    if(!this.encoded.has(key)){
+      const pending=(async()=>{
+        const response=await this.fetchAudio(REFERENCE_TRACKS[key].url,{signal:AbortSignal.timeout(85000)});
+        if(!response.ok)throw Error('音频加载失败：'+response.status);
+        return response.arrayBuffer();
+      })();
+      this.encoded.set(key,pending);
+      pending.catch(()=>{if(this.encoded.get(key)===pending)this.encoded.delete(key);});
+    }
+    return this.encoded.get(key);
   }
   async load(key,context){
     if(!this.buffers.has(key)){
       const pending=(async()=>{
-        const response=await this.fetchAudio(REFERENCE_TRACKS[key].url);
-        if(!response.ok)throw Error('音频加载失败：'+response.status);
-        return context.decodeAudioData(await response.arrayBuffer());
+        const encoded=await this.prefetch(key);
+        return context.decodeAudioData(encoded.slice(0));
       })();
       this.buffers.set(key,pending);
       pending.catch(()=>{if(this.buffers.get(key)===pending)this.buffers.delete(key);});

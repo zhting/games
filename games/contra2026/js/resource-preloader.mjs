@@ -1,0 +1,74 @@
+/** Successful resources stay warm; retries only repeat failed work. */
+export class ResourcePreloader {
+  constructor(jobs, { concurrency = 4, timeout = 90000 } = {}) {
+    this.jobs = [...new Map(jobs.map(job => [job.id, job])).values()];
+    this.concurrency = concurrency; this.timeout = timeout;
+    this.done = new Set(); this.failed = new Set(); this.status = 'idle';
+    this.listeners = new Set(); this.pending = null;
+  }
+  get ready() { return this.done.size === this.jobs.length; }
+  inspect() { return { status: this.status, ready: this.ready, loaded: this.done.size, total: this.jobs.length, failed: [...this.failed] }; }
+  notify() { const state = this.inspect(); for (const listener of this.listeners) listener(state); }
+  async load(listener = () => {}) {
+    this.listeners.add(listener); listener(this.inspect());
+    try {
+      if (this.ready) return this.inspect();
+      if (!this.pending) {
+        this.status = 'loading'; this.notify();
+        this.pending = this.run().finally(() => { this.pending = null; });
+      }
+      return await this.pending;
+    } finally { this.listeners.delete(listener); }
+  }
+  async run() {
+    const remaining = this.jobs.filter(job => !this.done.has(job.id));
+    let cursor = 0;
+    await Promise.all(Array.from({ length: Math.min(this.concurrency, remaining.length) }, async () => {
+      while (cursor < remaining.length) {
+        const job = remaining[cursor++]; let timer;
+        try {
+          await Promise.race([
+            Promise.resolve().then(() => job.load({ retry: this.failed.has(job.id) })),
+            new Promise((_, reject) => { timer = setTimeout(() => reject(Error('资源加载超时')), this.timeout); })
+          ]);
+          this.done.add(job.id); this.failed.delete(job.id);
+        } catch { this.failed.add(job.id); }
+        finally { clearTimeout(timer); this.notify(); }
+      }
+    }));
+    this.status = this.ready ? 'ready' : 'error'; this.notify();
+    if (!this.ready) throw Error('部分资源加载失败，请重试');
+    return this.inspect();
+  }
+}
+
+export function imageResource(url, imageFactory) {
+  let image, pending;
+  return { id: 'image:' + url, load({ retry = false } = {}) {
+    if (pending && !retry) return pending;
+    if (image) { image.onload = image.onerror = null; image.src = ''; }
+    image = imageFactory(); image.decoding = 'async';
+    pending = new Promise((resolve, reject) => {
+      image.onload = () => {
+        if (image.decode) image.decode().then(resolve, reject); else resolve();
+      };
+      image.onerror = () => reject(Error('图片加载失败'));
+      image.src = url;
+    });
+    return pending;
+  } };
+}
+
+export function gameResourceJobs({ arts, imageFactory, cover, records, tracks, music, fonts }) {
+  const images = new Map();
+  for (const art of arts) for (const [key, url] of Object.entries(art.assets)) {
+    if (!images.has(url)) images.set(url, []);
+    images.get(url).push({ art, key });
+  }
+  return [
+    ...[...images].map(([url, sources]) => ({ id: 'image:' + url, load: options => Promise.all(sources.map(({ art, key }) => art.loadImage(key, options))) })),
+    ...[...new Set([cover, ...records])].map(url => imageResource(url, imageFactory)),
+    ...Object.keys(tracks).map(key => ({ id: 'music:' + key, load: options => music.prefetch(key, options) })),
+    { id: 'fonts', load: () => fonts || Promise.resolve() }
+  ];
+}
