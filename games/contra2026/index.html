@@ -433,9 +433,9 @@ body:not(.touchmode) .touch-only{display:none!important}
 import { packWorld, unpackWorld } from '/games/contra2026/js/coop-core.mjs';
 import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '/games/contra2026/js/release-stages.mjs?v=two-stage-release-1';
 import { CoopClient } from '/games/contra2026/js/coop-net.mjs';
-import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=permanent-monsoon-1';
-import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=permanent-monsoon-1';
-import { baseUpMuzzle } from '/games/contra2026/js/base-actor-poses.mjs?v=base-up-lift-1';
+import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=webp-1';
+import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=webp-1';
+import { baseUpMuzzle } from '/games/contra2026/js/base-actor-poses.mjs?v=webp-1';
 import { GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox, giantPowerLabel, drawGiantStomp } from '/games/contra2026/js/giant-power.mjs?v=giant-smash-1';
 import { BASE_SOLDIER, baseSoldierScale } from '/games/contra2026/js/base-soldier.mjs?v=base-soldier-size-1';
 import { BASE_HIGH_SWITCH, baseShotHeight, baseTargetAtHeight, baseCoreShielded, baseHomingTarget } from '/games/contra2026/js/base-shooting.mjs?v=base-up-lift-1';
@@ -463,11 +463,11 @@ let remoteInput = {}, remoteWaiting = false;
 let snapshotClock = 0, pingClock = 0;
 const cooperative = () => !!coop?.playing;
 const players = () => cooperative() && G.p2 ? primaryContext ? [primaryContext, G.p] : [G.p, G.p2] : [G.p];
-const coverArt = new Image(); if (!WUKONG) coverArt.src = '/games/contra2026/assets/cover-zh.png';
+const coverArt = new Image(); coverArt.fetchPriority = 'high'; coverArt.decoding = 'async'; if (!WUKONG) coverArt.src = '/games/contra2026/assets/cover-zh.webp';
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv = $('game'), ctx = cv.getContext('2d');
 const stageOneArt = WUKONG ? new WukongSkin({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image() }) : new StageOneArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image() });
-const stageTwoArt = new StageTwoArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), baseArt:stageOneArt });
+const stageTwoArt = new StageTwoArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), baseArt:stageOneArt, priority:'low' });
 const wukong = WUKONG ? stageOneArt : null;
 ctx.imageSmoothingEnabled = false;
 

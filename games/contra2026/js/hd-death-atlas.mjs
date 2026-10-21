@@ -1,6 +1,6 @@
 // Measured RGBA components of the dedicated incapacitated poses; no weapon or aiming pose.
 const make=boxes=>({
-  key:'actorDeath',url:'/games/contra2026/assets/stage1/commando-death-hd.png',size:[1536,1024],scale:40/494,
+  key:'actorDeath',url:'/games/contra2026/assets/stage1/commando-death-hd.webp',size:[1536,1024],scale:40/494,
   frames:Object.fromEntries(['deathAir','deathImpact','deathRest'].map((pose,i)=>{
     const [x,y,w,h]=boxes[i];return[pose,{bounds:boxes[i],anchor:[x+w/2,y+h],waist:y+h*.6}];
   }))

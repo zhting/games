@@ -2,7 +2,7 @@
 export const HD_ACTORS = {
   "red": {
     "key": "actorRed",
-    "url": "/games/contra2026/assets/stage1/commando-red-hd.png",
+    "url": "/games/contra2026/assets/stage1/commando-red-hd.webp",
     "size": [
       1086,
       1448
@@ -169,7 +169,7 @@ export const HD_ACTORS = {
   },
   "blue": {
     "key": "actorBlue",
-    "url": "/games/contra2026/assets/stage1/commando-blue-hd.png",
+    "url": "/games/contra2026/assets/stage1/commando-blue-hd.webp",
     "size": [
       1086,
       1448
@@ -336,7 +336,7 @@ export const HD_ACTORS = {
   },
   "enemy": {
     "key": "actorEnemy",
-    "url": "/games/contra2026/assets/stage1/soldier-hd.png",
+    "url": "/games/contra2026/assets/stage1/soldier-hd.webp",
     "size": [
       1086,
       1448

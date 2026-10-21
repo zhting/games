@@ -2,7 +2,7 @@ import { ATLASES } from './stage-one-atlas.mjs?v=wreck-1';
 import { drawSupplySaucer } from './supply-saucer.mjs?v=pointed-drop-1';
 import { itemLabel, WEAPON_LABELS } from './zh-cn.mjs';
 import { rockCells, rotorAngle, meteorPosition, openingDrop, coastHeight } from './stage-one-scenery.mjs?v=coast-1';
-import { HDActorArt, HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG } from './hd-actors.mjs?v=base-up-lift-1';
+import { HDActorArt, HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG } from './hd-actors.mjs?v=webp-1';
 import { giantPowerLabel, drawGiantStomp } from './giant-power.mjs?v=giant-smash-1';
 import { WADE_STRIDE } from './stage-one-motion.mjs?v=leg-alignment-2';
 import { drawShieldField } from './actor-status.mjs?v=energy-field-1';
@@ -18,14 +18,14 @@ export const STAGE_ONE_PALETTE = Object.freeze({
 // Distance reduces contrast and saturation; gameplay surfaces retain their warm, crisp material.
 export const JUNGLE_DEPTH=Object.freeze({far:'saturate(.54) brightness(.67) contrast(.82)',near:'saturate(.76) brightness(.78) contrast(.92)'});
 export const STAGE_ONE_ASSETS = Object.freeze({
-  snow: '/games/contra2026/assets/stage1/night-snow-mountains.png',
-  lowJungle: '/games/contra2026/assets/stage1/night-jungle-strip.png',
-  facilities: '/games/contra2026/assets/stage1/classic-facilities.png',
-  turretBase: '/games/contra2026/assets/stage1/classic-turret-base.png',
-  rock: '/games/contra2026/assets/stage1/rock-arcade.png',
-  damage: '/games/contra2026/assets/stage1/fortress-damage.png',
-  environment: '/games/contra2026/assets/stage1/environment.png',
-  fortress: '/games/contra2026/assets/stage1/fortress-hd.png',
+  snow: '/games/contra2026/assets/stage1/night-snow-mountains.webp',
+  lowJungle: '/games/contra2026/assets/stage1/night-jungle-strip.webp',
+  facilities: '/games/contra2026/assets/stage1/classic-facilities.webp',
+  turretBase: '/games/contra2026/assets/stage1/classic-turret-base.webp',
+  rock: '/games/contra2026/assets/stage1/rock-arcade.webp',
+  damage: '/games/contra2026/assets/stage1/fortress-damage.webp',
+  environment: '/games/contra2026/assets/stage1/environment.webp',
+  fortress: '/games/contra2026/assets/stage1/fortress-hd.webp',
   ...Object.fromEntries([...Object.values(HD_ACTORS),...Object.values(HD_RUNS),...Object.values(HD_DEATH),...Object.values(HD_RUN_RIG)].map(sheet=>[sheet.key,sheet.url]))
 });
 export const FORTRESS_HD_BOUNDS=Object.freeze([29,10,1201,1254]);
@@ -54,7 +54,7 @@ const score = n => String(Math.max(0, Math.floor(n || 0))).padStart(6, '0');
 /** Logical coordinates stay 384×216; artwork renders at the display's backing resolution. */
 export class StageOneArt {
   static playerRole(online=false,slot=0){return online&&slot===0?'red':'blue';}
-  constructor({ createCanvas, imageFactory, assets=STAGE_ONE_ASSETS }) {
+  constructor({ createCanvas, imageFactory, assets=STAGE_ONE_ASSETS, priority='auto' }) {
     this.assets=assets;
     this.createCanvas = createCanvas;
     this.surface = createCanvas(); this.surface.width = 384; this.surface.height = 216;
@@ -63,6 +63,7 @@ export class StageOneArt {
     this.hdActors = new HDActorArt(createCanvas,this.images);
     for (const [key, path] of Object.entries(this.assets)) {
       const image = imageFactory(); this.images[key] = image;
+      image.decoding = 'async'; image.fetchPriority = priority;
       image.onload = () => { this.loaded.add(key); this.cache.clear(); this.terrainCache.clear(); this.hdActors.clear(); };
       image.onerror = () => { this.failed.push(key); };
       image.src = path;

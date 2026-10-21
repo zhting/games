@@ -1,9 +1,9 @@
-import { HD_ACTORS } from './hd-actor-atlas.mjs?v=actors-hd-1';
+import { HD_ACTORS } from './hd-actor-atlas.mjs?v=webp-1';
 import { isRunning, isWading, runFrame, runGait, wadeGait } from './stage-one-motion.mjs?v=leg-alignment-2';
-import { HD_RUNS } from './hd-run-atlas.mjs?v=run-cycle-12b';
+import { HD_RUNS } from './hd-run-atlas.mjs?v=webp-1';
 import { deathVisual } from './player-death.mjs?v=death-fall-1';
-import { HD_DEATH } from './hd-death-atlas.mjs?v=death-pose-1';
-import { HD_RUN_RIG } from './hd-run-rig.mjs?v=leg-alignment-2';
+import { HD_DEATH } from './hd-death-atlas.mjs?v=webp-1';
+import { HD_RUN_RIG } from './hd-run-rig.mjs?v=webp-1';
 export { HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG };
 
 export function actorPose(p,enemy=false){

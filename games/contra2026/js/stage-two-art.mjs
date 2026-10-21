@@ -1,8 +1,8 @@
-import { StageOneArt } from './stage-one-art.mjs?v=permanent-monsoon-1';
-import { HDActorArt } from './hd-actors.mjs?v=base-up-lift-1';
-import { BASE_ACTORS, BASE_KIT } from './stage-two-atlas.mjs?v=base-hd-2';
-import { BASE_UPWARD, baseActorPose } from './base-actor-poses.mjs?v=base-up-lift-1';
-export { baseActorPose } from './base-actor-poses.mjs?v=base-up-lift-1';
+import { StageOneArt } from './stage-one-art.mjs?v=webp-1';
+import { HDActorArt } from './hd-actors.mjs?v=webp-1';
+import { BASE_ACTORS, BASE_KIT } from './stage-two-atlas.mjs?v=webp-1';
+import { BASE_UPWARD, baseActorPose } from './base-actor-poses.mjs?v=webp-1';
+export { baseActorPose } from './base-actor-poses.mjs?v=webp-1';
 import { drawShieldField } from './actor-status.mjs?v=energy-field-1';
 import { BASE_SOLDIER, baseSoldierScale } from './base-soldier.mjs?v=base-soldier-size-1';
 import { drawRiotShield } from './riot-shield.mjs?v=riot-shield-1';
@@ -12,17 +12,17 @@ import { redSupplyUniform } from './base-supply.mjs?v=red-supply-1';
 import { bossDevicesRemaining, drawBossBubble } from './base-boss.mjs?v=base-up-lift-1';
 
 export const STAGE_TWO_ASSETS=Object.freeze({
-  corridor:'/games/contra2026/assets/stage2/corridor-hd.png',
-  power:'/games/contra2026/assets/stage2/corridor-power.png',
-  armory:'/games/contra2026/assets/stage2/corridor-armory.png',
-  command:'/games/contra2026/assets/stage2/corridor-command.png',
-  kit:'/games/contra2026/assets/stage2/mechanisms-hd.png',
-  bossWall:'/games/contra2026/assets/stage2/control-wall-hd.png',
-  rearBlue:'/games/contra2026/assets/stage2/commando-back-blue.png',
-  rearRed:'/games/contra2026/assets/stage2/commando-back-red.png',
-  rearUp:'/games/contra2026/assets/stage2/commando-upward-v1.png',
-  frontEnemy:'/games/contra2026/assets/stage2/soldier-front.png',
-  environment:'/games/contra2026/assets/stage1/environment.png'
+  corridor:'/games/contra2026/assets/stage2/corridor-hd.webp',
+  power:'/games/contra2026/assets/stage2/corridor-power.webp',
+  armory:'/games/contra2026/assets/stage2/corridor-armory.webp',
+  command:'/games/contra2026/assets/stage2/corridor-command.webp',
+  kit:'/games/contra2026/assets/stage2/mechanisms-hd.webp',
+  bossWall:'/games/contra2026/assets/stage2/control-wall-hd.webp',
+  rearBlue:'/games/contra2026/assets/stage2/commando-back-blue.webp',
+  rearRed:'/games/contra2026/assets/stage2/commando-back-red.webp',
+  rearUp:'/games/contra2026/assets/stage2/commando-upward-v1.webp',
+  frontEnemy:'/games/contra2026/assets/stage2/soldier-front.webp',
+  environment:'/games/contra2026/assets/stage1/environment.webp'
 });
 export const BASE_VIEW=Object.freeze({floor:204,rear:{x:96,y:40,w:192,h:100},barrierZ:.3});
 export const baseScale=z=>1-.5*z;
