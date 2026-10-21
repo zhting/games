@@ -289,7 +289,7 @@ body:not(.touchmode) .touch-only{display:none!important}
             <div class="record-visual">
               <span class="record-side" aria-hidden="true">SIDE A</span>
               <button id="record-prev" class="record-arrow record-prev" type="button" aria-label="上一张唱片"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
-              <img id="record-art" class="record-art" src="/games/contra2026/assets/music-records/orchestral.svg" alt="" width="512" height="512" draggable="false">
+              <img id="record-art" class="record-art" src="/games/contra2026/assets/music-records/orchestral.svg" alt="" width="512" height="512" loading="lazy" draggable="false">
               <button id="record-next" class="record-arrow record-next" type="button" aria-label="下一张唱片"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
               <span id="record-count" class="record-count" aria-hidden="true"></span>
             </div>
@@ -444,8 +444,8 @@ body:not(.touchmode) .touch-only{display:none!important}
 import { packWorld, unpackWorld } from '/games/contra2026/js/coop-core.mjs';
 import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '/games/contra2026/js/release-stages.mjs?v=two-stage-release-1';
 import { CoopClient } from '/games/contra2026/js/coop-net.mjs';
-import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=preload-2';
-import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=preload-2';
+import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=preload-3';
+import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=preload-3';
 import { baseUpMuzzle } from '/games/contra2026/js/base-actor-poses.mjs?v=webp-1';
 import { GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox, giantPowerLabel, drawGiantStomp } from '/games/contra2026/js/giant-power.mjs?v=giant-smash-1';
 import { BASE_SOLDIER, baseSoldierScale } from '/games/contra2026/js/base-soldier.mjs?v=base-soldier-size-1';
@@ -478,8 +478,8 @@ const players = () => cooperative() && G.p2 ? primaryContext ? [primaryContext, 
 const coverArt = new Image(); coverArt.fetchPriority = 'high'; coverArt.decoding = 'async'; if (!WUKONG) coverArt.src = '/games/contra2026/assets/cover-zh.webp';
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv = $('game'), ctx = cv.getContext('2d');
-const stageOneArt = WUKONG ? new WukongSkin({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image() }) : new StageOneArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image() });
-const stageTwoArt = new StageTwoArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), baseArt:stageOneArt, priority:'low' });
+const stageOneArt = WUKONG ? new WukongSkin({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image() }) : new StageOneArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), autoLoad:false });
+const stageTwoArt = new StageTwoArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), baseArt:stageOneArt, priority:'low', autoLoad:false });
 const wukong = WUKONG ? stageOneArt : null;
 ctx.imageSmoothingEnabled = false;
 
@@ -783,6 +783,7 @@ const Music = {
     if (G.mode === 'loading') { this.pause(); return; }
     if (document.hidden || G.mode === 'pause' || (G.mode === 'settings' && G.settingsFrom === 'pause')) { this.pause(); return; }
     const track = stageMusicSession.forScene(G, SET.stageMusic);
+    if (!gameResources.ready) { this.pause(); return; }
     this.on = false;
     if (synthGain) synthGain.gain.value = 0;
     if (track && track !== 'synth' && (this.active || G.mode !== 'play')) { if (AC) referenceMusic.play(track); return; }
@@ -8051,7 +8052,7 @@ function syncStageMusicUI(animate = false) {
     ? '本次播放：' + musicRecord(musicSettingsStage, listening.choice).title + '；下次入关重新抽选。' : record.description;
   $('record-count').textContent = choice === 'random' ? 'RANDOM' : String(options.findIndex(option => option.value === choice) + 1).padStart(2, '0') + ' / ' + String(options.length).padStart(2, '0');
   const shelf = $('record-shelf'), scroll = shelf.scrollLeft;
-  shelf.innerHTML = options.map(option => `<button class="record-choice" type="button" data-music="${option.value}" aria-label="${option.label}" aria-pressed="${option.value === choice}"><img src="${musicRecord(musicSettingsStage, option.value).art}" alt="" width="40" height="40" draggable="false"><span>${recordShortNames[option.value]}</span></button>`).join('');
+  shelf.innerHTML = options.map(option => `<button class="record-choice" type="button" data-music="${option.value}" aria-label="${option.label}" aria-pressed="${option.value === choice}"><img src="${musicRecord(musicSettingsStage, option.value).art}" alt="" width="40" height="40" loading="lazy" draggable="false"><span>${recordShortNames[option.value]}</span></button>`).join('');
   shelf.scrollLeft = scroll;
   $('set-music-random').setAttribute('aria-pressed', String(choice === 'random'));
   $('shuffle-pool-note').textContent = `从本关 ${stageMusicPool(musicSettingsStage).length} 首音乐中抽选`;

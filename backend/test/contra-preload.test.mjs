@@ -2,9 +2,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ResourcePreloader, gameResourceJobs } from '../../games/contra2026/js/resource-preloader.mjs';
 import { StageOneArt } from '../../games/contra2026/js/stage-one-art.mjs';
+import { StageTwoArt } from '../../games/contra2026/js/stage-two-art.mjs';
 import { ReferenceMusic } from '../../games/contra2026/js/reference-music.mjs';
 
 const deferred = () => { let resolve, reject; const promise = new Promise((yes,no) => {resolve=yes;reject=no;}); return {promise,resolve,reject}; };
+
+test('标题阶段不请求关卡资源，启动加载后才下载两关画面、唱片和音乐，并等解码完成',async()=>{
+  const requested=[],songs=[],decoded=deferred();
+  const imageFactory=()=>({decode:()=>decoded.promise,set src(url){if(url){requested.push(url);queueMicrotask(()=>this.onload());}}});
+  const createCanvas=()=>({getContext:()=>({})});
+  const first=new StageOneArt({createCanvas,imageFactory,autoLoad:false});
+  const second=new StageTwoArt({createCanvas,imageFactory,autoLoad:false,baseArt:first});
+  const loader=new ResourcePreloader(gameResourceJobs({arts:[first,second],imageFactory,cover:'cover.webp',records:['disc.svg'],
+    tracks:{stage1:{},stage2:{}},music:{prefetch:async key=>songs.push(key)}}));
+  assert.deepEqual(requested,[]);assert.deepEqual(songs,[]);
+  assert.equal(loader.inspect().status,'idle');assert.equal(first.ready,false);assert.equal(second.ready,false);
+  const loading=loader.load();await new Promise(setImmediate);
+  assert.ok(requested.some(url=>url.includes('/stage1/')));assert.ok(requested.some(url=>url.includes('/stage2/')));
+  assert.ok(requested.includes('disc.svg'));assert.deepEqual(songs,['stage1','stage2']);assert.equal(loader.ready,false);
+  decoded.resolve();await loading;
+  assert.equal(first.ready,true);assert.equal(second.ready,true);assert.equal(loader.ready,true);
+  const count=requested.length;await loader.load();assert.equal(requested.length,count);
+});
 
 test('已经开始的图片与字体独立更新进度，不被队列中的慢资源挡住',async()=>{
   const slow=deferred(),image=deferred();
