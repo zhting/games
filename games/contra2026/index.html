@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>魂斗罗2026</title>
 <link rel="stylesheet" href="/games/contra2026/css/settings.css?v=record-deck-1">
+<link rel="stylesheet" href="/games/contra2026/css/loading.css?v=preload-1">
 </head>
 <body>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -182,6 +183,16 @@ body:not(.touchmode) .touch-only{display:none!important}
       <button id="btnPause" type="button" aria-label="暂停"><svg viewBox="0 0 8 8" fill="currentColor"><rect x="1" y="1" width="2" height="6"/><rect x="5" y="1" width="2" height="6"/></svg></button>
     </div>
 
+    <section id="scrLoading" class="screen" hidden aria-labelledby="loadingTitle" aria-busy="true">
+      <div class="loading-content">
+        <p class="loading-brand">魂斗罗2026</p>
+        <h2 id="loadingTitle">准备出击</h2>
+        <div class="loading-row"><span id="loadingStatus" role="status" tabindex="-1">正在准备画面与音乐</span><output id="loadingPercent">0%</output></div>
+        <div id="loadingProgress" class="loading-track" role="progressbar" aria-label="游戏资源加载进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="loadingFill"></span></div>
+        <p id="loadingDetail">加载完成后自动开始</p>
+        <div class="menu loading-actions"><button id="loadingRetry" class="btn" type="button" hidden>重试加载</button><button id="loadingCancel" class="btn" type="button">返回标题</button></div>
+      </div>
+    </section>
     <section id="scrTitle" class="screen">
       <h1 class="sr">魂斗罗2026 试玩版：当前开放第一关 雨林要塞、第二关 地下指挥所</h1>
       <div class="menu"><button id="btnStart" class="btn" type="button">单人闯关</button><button id="btnCoop" class="btn" type="button">双人联网同屏</button><button id="btnSelect" class="btn" type="button">选择关卡</button><button id="btnSettings2" class="btn" type="button">设置与说明</button></div>
@@ -433,8 +444,8 @@ body:not(.touchmode) .touch-only{display:none!important}
 import { packWorld, unpackWorld } from '/games/contra2026/js/coop-core.mjs';
 import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '/games/contra2026/js/release-stages.mjs?v=two-stage-release-1';
 import { CoopClient } from '/games/contra2026/js/coop-net.mjs';
-import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=webp-1';
-import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=webp-1';
+import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=preload-1';
+import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=preload-1';
 import { baseUpMuzzle } from '/games/contra2026/js/base-actor-poses.mjs?v=webp-1';
 import { GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox, giantPowerLabel, drawGiantStomp } from '/games/contra2026/js/giant-power.mjs?v=giant-smash-1';
 import { BASE_SOLDIER, baseSoldierScale } from '/games/contra2026/js/base-soldier.mjs?v=base-soldier-size-1';
@@ -446,8 +457,9 @@ import { OPENING_DURATION, OPENING_PAGES } from '/games/contra2026/js/opening-st
 import { canEnterExit, beginExitEntry, advanceExitEntry, teamInsideExit } from '/games/contra2026/js/stage-one-exit.mjs?v=exit-right-1';
 import { addImpact } from '/games/contra2026/js/impact-effects.mjs?v=hit-feedback-1';
 import { beginDeath, advanceDeath } from '/games/contra2026/js/player-death.mjs?v=death-fall-1';
-import { ReferenceMusic, StageMusicSession, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '/games/contra2026/js/reference-music.mjs?v=record-deck-1';
+import { REFERENCE_TRACKS, ReferenceMusic, StageMusicSession, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '/games/contra2026/js/reference-music.mjs?v=preload-1';
 import { musicRecord } from '/games/contra2026/js/music-records.mjs?v=record-deck-1';
+import { ResourcePreloader, gameResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=preload-1';
 (() => {
 'use strict';
 // ================= constants =================
@@ -685,6 +697,13 @@ function saveSettings() { try { localStorage.setItem(WUKONG ? 'wukong-settings' 
 // ================= audio =================
 let AC = null, master, sfxGain, musGain, synthGain, noiseBuf, muted = false;
 const referenceMusic = new ReferenceMusic({ getContext: () => AC, getOutput: () => musGain });
+const gameResources = new ResourcePreloader(gameResourceJobs({
+  arts: [stageOneArt, stageTwoArt], imageFactory: () => new Image(),
+  cover: '/games/contra2026/assets/cover-zh.webp',
+  records: OPEN_STAGES.flatMap(stage => stageMusicOptions(stage).map(({value}) => musicRecord(stage,value).art)),
+  tracks: REFERENCE_TRACKS, music: referenceMusic, fonts: document.fonts?.ready
+}));
+let loadingSerial = 0, pendingStart = null;
 try { muted = localStorage.getItem('chiyan-muted') === '1'; } catch (e) {}
 function initAudio() {
   try {
@@ -761,6 +780,7 @@ const Music = {
   stop() { this.on = false; this.active = false; if (synthGain) synthGain.gain.value = 0; referenceMusic.stop(); },
   pause() { this.on = false; if (synthGain) synthGain.gain.value = 0; referenceMusic.pause(); },
   sync() {
+    if (G.mode === 'loading') { this.pause(); return; }
     if (document.hidden || G.mode === 'pause' || (G.mode === 'settings' && G.settingsFrom === 'pause')) { this.pause(); return; }
     const track = stageMusicSession.forScene(G, SET.stageMusic);
     this.on = false;
@@ -805,6 +825,7 @@ function setMuted(m) {
 const K = {};
 const GAME_KEYS = new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyJ','KeyK','KeyL','KeyC','KeyQ','KeyX','KeyZ','Enter','KeyP','Escape']);
 addEventListener('keydown', e => {
+  if (G.mode === 'loading') { if (e.code === 'Escape') { e.preventDefault(); cancelLoading(); } return; }
   if (G.mode === 'lobby') return;
   // menus are driven by the game loop (arrows + Enter/J/K); the settings panel keeps native keyboard behaviour
   if (GAME_KEYS.has(e.code) && (G.mode !== 'settings' || e.code === 'Escape')) e.preventDefault();
@@ -6393,6 +6414,12 @@ function updateCamera() {
 }
 function step() {
   const I = readInput();
+  if (G.mode === 'loading') {
+    if (I.escEdge) return cancelLoading();
+    if (I.upEdge) focusMenu(-1); if (I.downEdge) focusMenu(1);
+    if ((I.startEdge || I.fireEdge || I.jumpEdge) && menuButtons().includes(document.activeElement)) document.activeElement.click();
+    return;
+  }
   if (G.mode === 'lobby') return;
   if (cooperative()) {
     if (coop.role === 'guest') { coop.input(I); return; }
@@ -7308,6 +7335,7 @@ function drawIntro() {
   drawText(STAGE_NAMES[G.stage], W / 2, 132, '#f8c23a', 'center', 12);
 }
 function render() {
+  if (G.mode === 'loading') return drawTitle();
   if (resolutionStage !== G.stage) { resolutionStage = G.stage; resize(); }
   C = ctx;
   $('stage').classList.toggle('stage-one', G.stage === 1 || G.stage === 2);
@@ -7845,7 +7873,7 @@ function slotHit(clientX, clientY) {
 cv.addEventListener('pointerdown', e => { if (slotHit(e.clientX, e.clientY)) e.preventDefault(); });
 document.addEventListener('pointerdown', () => { if (G.mode === 'cine' && G.cine && G.cine.t > 0.6) G.cine.skip = true; });
 // medal-cursor menus
-function menuButtons() { const scr = ['scrTitle', 'scrSelect', 'scrPause', 'scrOver', 'scrClear'].map($).find(el => !el.hidden); return scr ? [...scr.querySelectorAll('.menu .btn:not([hidden])')] : []; }
+function menuButtons() { const scr = ['scrTitle', 'scrSelect', 'scrPause', 'scrOver', 'scrClear', 'scrLoading'].map($).find(el => !el.hidden); return scr ? [...scr.querySelectorAll('.menu .btn:not([hidden])')] : []; }
 function focusMenu(d) {
   const bs = menuButtons(); if (!bs.length) return;
   let i = bs.indexOf(document.activeElement);
@@ -7853,24 +7881,61 @@ function focusMenu(d) {
   bs[i].focus({ preventScroll: true }); sfx.hit();
 }
 document.addEventListener('pointerover', e => { const b = e.target.closest && e.target.closest('.menu .btn'); if (b) b.focus({ preventScroll: true }); });
-const screens = ['scrTitle', 'scrCoop', 'scrSelect', 'scrPause', 'scrOver', 'scrClear', 'scrSettings'];
+const screens = ['scrTitle', 'scrCoop', 'scrSelect', 'scrPause', 'scrOver', 'scrClear', 'scrSettings', 'scrLoading'];
 function showScreen(id) {
   for (const s of screens) $(s).hidden = s !== id;
-  $('hud').hidden = ['title', 'lobby', 'select', 'intro', 'cine'].includes(G.mode) || (G.mode === 'settings' && G.settingsFrom === 'title');
-  const first = id && id !== 'scrSettings' && $(id).querySelector('.menu .btn:not([hidden])');
+  $('hud').hidden = ['title', 'lobby', 'select', 'intro', 'cine', 'loading'].includes(G.mode) || (G.mode === 'settings' && G.settingsFrom === 'title');
+  const first = id && !['scrSettings', 'scrLoading'].includes(id) && $(id).querySelector('.menu .btn:not([hidden])');
   if (first) first.focus({ preventScroll: true });
 }
 function setMode(m) {
   G.mode = m; prev.start = true; prev.jump = true; prev.fire = true; prev.gren = true; prev.cyc = true; prev.esc = true; prev.up = true; prev.down = true;
   tl.classList.toggle('on', m === 'play');
   if (m !== 'play') releaseTouch();
-  showScreen({ title: 'scrTitle', lobby: 'scrCoop', select: 'scrSelect', pause: 'scrPause', over: 'scrOver', clear: 'scrClear', settings: 'scrSettings' }[m] || null);
+  showScreen({ title: 'scrTitle', lobby: 'scrCoop', select: 'scrSelect', pause: 'scrPause', over: 'scrOver', clear: 'scrClear', settings: 'scrSettings', loading: 'scrLoading' }[m] || null);
   if (m === 'play' || m === 'intro' || m === 'cine') { const b = document.activeElement; if (b && b.blur) b.blur(); }
   Music.sync();
 }
 function startGame() {
-  startOpening(); // a new game opens with the story cinematic
+  return startAfterLoading(startOpening, 1);
 }
+function updateLoadingUI(state) {
+  const percent = Math.floor(state.loaded / Math.max(1,state.total) * 100);
+  $('loadingPercent').textContent = percent + '%'; $('loadingFill').style.width = percent + '%';
+  $('loadingProgress').setAttribute('aria-valuenow', String(percent));
+  $('loadingDetail').textContent = `${state.loaded} / ${state.total} 项已就绪 · 完成后自动开始`;
+}
+async function startAfterLoading(action, stage=1, retry=false) {
+  if (pendingStart && !retry) return false;
+  const serial = ++loadingSerial, previousMode = pendingStart?.previousMode || G.mode;
+  pendingStart = {action,stage,previousMode}; initAudio(); goFull(); setMode('loading');
+  $('scrLoading').setAttribute('aria-busy','true'); $('loadingRetry').hidden = true;
+  $('loadingStatus').textContent = '正在准备画面与音乐'; $('loadingStatus').focus({preventScroll:true});
+  try {
+    await gameResources.load(state => { if (serial === loadingSerial) updateLoadingUI(state); });
+    if (serial !== loadingSerial) return false;
+    $('loadingStatus').textContent = '正在准备声音';
+    if (AC) {
+      const keys = new Set(stage === 1 ? ['opening'] : []);
+      const selected = musicForScene({mode:'play',stage,boss:{},base:{def:{}}},SET.stageMusic);
+      if (REFERENCE_TRACKS[selected]) keys.add(selected);
+      await Promise.all([...keys].map(key => referenceMusic.load(key,AC)));
+    }
+    if (serial !== loadingSerial) return false;
+    pendingStart = null; $('scrLoading').setAttribute('aria-busy','false');
+    setMode(previousMode); await action(); return true;
+  } catch {
+    if (serial !== loadingSerial) return false;
+    $('scrLoading').setAttribute('aria-busy','false');
+    $('loadingStatus').textContent = '部分资源未能加载';
+    $('loadingDetail').textContent = '已保留加载成功的资源，重试即可继续';
+    $('loadingRetry').hidden = false; $('loadingRetry').focus({preventScroll:true});
+    return false;
+  }
+}
+function cancelLoading() { ++loadingSerial; pendingStart = null; coopBusy(false); toTitle(); }
+$('loadingRetry').onclick = () => pendingStart && startAfterLoading(pendingStart.action,pendingStart.stage,true);
+$('loadingCancel').onclick = cancelLoading;
 function startStage(n, carry) {
   if (!isStageOpen(n)) { G.toastText=STAGE_RELEASE_MESSAGE;G.toastUntil=performance.now()+3000;return false; }
   initAudio(); reset(n, carry); G.introT = 2.4; setMode('intro'); Music.start(false, STAGE_MUSIC_SHIFT[n]); goFull();
@@ -7925,8 +7990,8 @@ $('btnQuit').onclick = toTitle;
 $('btnAgain').onclick = () => startStage(G.stage || 1);
 $('btnNext').onclick = () => { const next=nextOpenStage(G.stage);if(next)startStage(next,true); };
 $('btnSelect').onclick = () => setMode('select');
-$('btnSel1').onclick = () => startOpening();
-$('btnSel2').onclick = () => startStage(2);
+$('btnSel1').onclick = startGame;
+$('btnSel2').onclick = () => startAfterLoading(() => startStage(2), 2);
 $('btnSel3').onclick = () => startStage(3);
 $('btnSel4').onclick = () => startStage(4);
 $('btnSel5').onclick = () => startStage(5);
@@ -8151,12 +8216,18 @@ coop = new CoopClient({
 });
 $('btnCoop').onclick = () => { initAudio(); showCoop(); coopMessage('创建房间，或输入朋友分享的房间码。'); };
 $('coopCreate').onclick = async () => {
-  initAudio(); coopBusy(true); coopMessage('连接中…');
-  try { await coop.create(Number($('coopStage').value)); } catch (e) { coopBusy(false); coopMessage(e.message); }
+  const stage=Number($('coopStage').value);
+  await startAfterLoading(async () => {
+    coopBusy(true); coopMessage('连接中…');
+    try { await coop.create(stage); } catch (e) { coopBusy(false); coopMessage(e.message); }
+  },stage);
 };
 $('coopJoinForm').onsubmit = async event => {
-  event.preventDefault(); initAudio(); coopBusy(true); coopMessage('加入中…');
-  try { await coop.join($('coopCode').value); } catch (e) { coopBusy(false); coopMessage(e.message); }
+  event.preventDefault(); const code=$('coopCode').value,stage=Number($('coopStage').value);
+  await startAfterLoading(async () => {
+    coopBusy(true); coopMessage('加入中…');
+    try { await coop.join(code); } catch (e) { coopBusy(false); coopMessage(e.message); }
+  },stage);
 };
 $('coopStart').onclick = () => coop.start(Number($('coopStage').value));
 $('coopCopy').onclick = async () => {
@@ -8170,6 +8241,7 @@ if (wukong) wukong.mount(document, SET);
 const invitedRoom = new URLSearchParams(location.search).get('room');
 if (invitedRoom && /^[A-Z2-9]{6}$/i.test(invitedRoom)) { $('coopCode').value = invitedRoom.toUpperCase(); showCoop(); coopMessage('点击加入房间，以 玩家二 身份与朋友一起闯关。'); }
 window.Contra2026 = Object.freeze({ inspect: () => ({
+  resources: gameResources.inspect(),
   mode: G.mode, stage: G.stage, role: coop.role, room: coop.room, connected: coop.connected,
   theme: wukong ? 'wukong-skin' : null,
   combat: WUKONG && G.stage === 1 ? 'staff' : 'shooting',

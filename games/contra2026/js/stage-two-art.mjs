@@ -1,4 +1,4 @@
-import { StageOneArt } from './stage-one-art.mjs?v=webp-1';
+import { StageOneArt } from './stage-one-art.mjs?v=preload-1';
 import { HDActorArt } from './hd-actors.mjs?v=webp-1';
 import { BASE_ACTORS, BASE_KIT } from './stage-two-atlas.mjs?v=webp-1';
 import { BASE_UPWARD, baseActorPose } from './base-actor-poses.mjs?v=webp-1';
