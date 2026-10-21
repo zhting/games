@@ -1,6 +1,6 @@
 /** Successful resources stay warm; retries only repeat failed work. */
 export class ResourcePreloader {
-  constructor(jobs, { concurrency = 4, timeout = 90000 } = {}) {
+  constructor(jobs, { concurrency = 4, timeout = 300000 } = {}) {
     this.jobs = [...new Map(jobs.map(job => [job.id, job])).values()];
     this.concurrency = concurrency; this.timeout = timeout;
     this.done = new Set(); this.failed = new Set(); this.status = 'idle';
@@ -22,10 +22,10 @@ export class ResourcePreloader {
   }
   async run() {
     const remaining = this.jobs.filter(job => !this.done.has(job.id));
+    const queued = remaining.filter(job => !job.eager);
     let cursor = 0;
-    await Promise.all(Array.from({ length: Math.min(this.concurrency, remaining.length) }, async () => {
-      while (cursor < remaining.length) {
-        const job = remaining[cursor++]; let timer;
+    const load = async job => {
+        let timer;
         try {
           await Promise.race([
             Promise.resolve().then(() => job.load({ retry: this.failed.has(job.id) })),
@@ -34,8 +34,13 @@ export class ResourcePreloader {
           this.done.add(job.id); this.failed.delete(job.id);
         } catch { this.failed.add(job.id); }
         finally { clearTimeout(timer); this.notify(); }
-      }
-    }));
+    };
+    await Promise.all([
+      ...remaining.filter(job => job.eager).map(load),
+      ...Array.from({ length: Math.min(this.concurrency, queued.length) }, async () => {
+        while (cursor < queued.length) await load(queued[cursor++]);
+      })
+    ]);
     this.status = this.ready ? 'ready' : 'error'; this.notify();
     if (!this.ready) throw Error('部分资源加载失败，请重试');
     return this.inspect();
@@ -66,9 +71,9 @@ export function gameResourceJobs({ arts, imageFactory, cover, records, tracks, m
     images.get(url).push({ art, key });
   }
   return [
-    ...[...images].map(([url, sources]) => ({ id: 'image:' + url, load: options => Promise.all(sources.map(({ art, key }) => art.loadImage(key, options))) })),
+    ...[...images].map(([url, sources]) => ({ id: 'image:' + url, eager: true, load: options => Promise.all(sources.map(({ art, key }) => art.loadImage(key, options))) })),
     ...[...new Set([cover, ...records])].map(url => imageResource(url, imageFactory)),
     ...Object.keys(tracks).map(key => ({ id: 'music:' + key, load: options => music.prefetch(key, options) })),
-    { id: 'fonts', load: () => fonts || Promise.resolve() }
+    { id: 'fonts', eager: true, load: () => fonts || Promise.resolve() }
   ];
 }

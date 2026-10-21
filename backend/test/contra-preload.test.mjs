@@ -6,6 +6,14 @@ import { ReferenceMusic } from '../../games/contra2026/js/reference-music.mjs';
 
 const deferred = () => { let resolve, reject; const promise = new Promise((yes,no) => {resolve=yes;reject=no;}); return {promise,resolve,reject}; };
 
+test('已经开始的图片与字体独立更新进度，不被队列中的慢资源挡住',async()=>{
+  const slow=deferred(),image=deferred();
+  const loader=new ResourcePreloader([{id:'slow',load:()=>slow.promise},{id:'image',eager:true,load:()=>image.promise},{id:'fonts',eager:true,load:async()=>{}}],{concurrency:1});
+  const loading=loader.load();image.resolve();await new Promise(setImmediate);
+  assert.equal(loader.inspect().loaded,2);assert.equal(loader.ready,false);
+  slow.resolve();await loading;assert.equal(loader.ready,true);
+});
+
 test('所有资源完成前不就绪，并发上限有效，同一资源只加载一次，后续开局复用',async()=>{
   const gates=Array.from({length:5},deferred), calls=[];
   const loader=new ResourcePreloader(gates.map((gate,id)=>({id,load:()=>{calls.push(id);return gate.promise;}})),{concurrency:2});

@@ -109,7 +109,7 @@ export class ReferenceMusic {
     if(retry)this.encoded.delete(key);
     if(!this.encoded.has(key)){
       const pending=(async()=>{
-        const response=await this.fetchAudio(REFERENCE_TRACKS[key].url,{signal:AbortSignal.timeout(85000)});
+        const response=await this.fetchAudio(REFERENCE_TRACKS[key].url,{signal:AbortSignal.timeout(285000)});
         if(!response.ok)throw Error('音频加载失败：'+response.status);
         return response.arrayBuffer();
       })();
