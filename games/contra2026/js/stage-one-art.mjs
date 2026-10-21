@@ -54,7 +54,7 @@ const score = n => String(Math.max(0, Math.floor(n || 0))).padStart(6, '0');
 /** Logical coordinates stay 384×216; artwork renders at the display's backing resolution. */
 export class StageOneArt {
   static playerRole(online=false,slot=0){return online&&slot===0?'red':'blue';}
-  constructor({ createCanvas, imageFactory, assets=STAGE_ONE_ASSETS, priority='auto' }) {
+  constructor({ createCanvas, imageFactory, assets=STAGE_ONE_ASSETS, priority='auto', autoLoad=true }) {
     this.assets=assets;
     this.createCanvas = createCanvas;
     this.surface = createCanvas(); this.surface.width = 384; this.surface.height = 216;
@@ -62,7 +62,7 @@ export class StageOneArt {
     this.images = {}; this.loaded = new Set(); this.failed = []; this.cache = new Map(); this.terrainCache = new Map();
     this.hdActors = new HDActorArt(createCanvas,this.images);
     this.imageFactory = imageFactory; this.priority = priority; this.imageLoads = new Map();
-    for (const key of Object.keys(this.assets)) this.loadImage(key);
+    if (autoLoad) for (const key of Object.keys(this.assets)) this.loadImage(key);
   }
   loadImage(key, { retry = false } = {}) {
     if (this.loaded.has(key)) return Promise.resolve(this.images[key]);
