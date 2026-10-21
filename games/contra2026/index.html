@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>魂斗罗2026</title>
 <link rel="stylesheet" href="/games/contra2026/css/settings.css?v=record-deck-1">
-<link rel="stylesheet" href="/games/contra2026/css/loading.css?v=preload-1">
+<link rel="stylesheet" href="/games/contra2026/css/loading.css?v=preload-2">
 </head>
 <body>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -444,8 +444,8 @@ body:not(.touchmode) .touch-only{display:none!important}
 import { packWorld, unpackWorld } from '/games/contra2026/js/coop-core.mjs';
 import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '/games/contra2026/js/release-stages.mjs?v=two-stage-release-1';
 import { CoopClient } from '/games/contra2026/js/coop-net.mjs';
-import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=preload-1';
-import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=preload-1';
+import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=preload-2';
+import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=preload-2';
 import { baseUpMuzzle } from '/games/contra2026/js/base-actor-poses.mjs?v=webp-1';
 import { GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox, giantPowerLabel, drawGiantStomp } from '/games/contra2026/js/giant-power.mjs?v=giant-smash-1';
 import { BASE_SOLDIER, baseSoldierScale } from '/games/contra2026/js/base-soldier.mjs?v=base-soldier-size-1';
@@ -457,9 +457,9 @@ import { OPENING_DURATION, OPENING_PAGES } from '/games/contra2026/js/opening-st
 import { canEnterExit, beginExitEntry, advanceExitEntry, teamInsideExit } from '/games/contra2026/js/stage-one-exit.mjs?v=exit-right-1';
 import { addImpact } from '/games/contra2026/js/impact-effects.mjs?v=hit-feedback-1';
 import { beginDeath, advanceDeath } from '/games/contra2026/js/player-death.mjs?v=death-fall-1';
-import { REFERENCE_TRACKS, ReferenceMusic, StageMusicSession, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '/games/contra2026/js/reference-music.mjs?v=preload-1';
+import { REFERENCE_TRACKS, ReferenceMusic, StageMusicSession, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '/games/contra2026/js/reference-music.mjs?v=preload-2';
 import { musicRecord } from '/games/contra2026/js/music-records.mjs?v=record-deck-1';
-import { ResourcePreloader, gameResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=preload-1';
+import { ResourcePreloader, gameResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=preload-2';
 (() => {
 'use strict';
 // ================= constants =================
