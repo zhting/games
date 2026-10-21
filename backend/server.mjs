@@ -19,7 +19,7 @@ export async function createBackend(options = {}) {
   }
   app.use('/assets', express.static(path.join(root, 'assets')));
   app.get(['/games/game/3d', '/games/game/3d/', '/game/3d'], (req, res) => res.sendFile(path.join(root, 'games/game/3d/index.html')));
-  for (const name of ['game', 'idiom', 'lego', 'mirror', 'jelly-block', 'junqi', 'gandengyan']) {
+  for (const name of ['game', 'idiom', 'lego', 'mirror', 'jelly-block', 'junqi', 'gandengyan', 'contra2026']) {
     const dir = path.join(root, 'games', name);
     app.get(['/'+name, '/games/'+name, '/games/'+name+'/'], (req, res) => res.sendFile(path.join(dir, 'index.html')));
     const staticFiles = express.static(dir);

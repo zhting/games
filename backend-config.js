@@ -3,5 +3,6 @@ window.GAMES_BACKEND = {
   url: (location.protocol === 'http:' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname))
     ? '' : 'https://api.tangletang.top',
   gandengyanPath: '/games/gandengyan/socket.io',
-  junqiPath: '/games/junqi/ws'
+  junqiPath: '/games/junqi/ws',
+  contraPath: '/games/contra2026/ws'
 };

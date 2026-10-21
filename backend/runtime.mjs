@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createServer as createJunqi } from '../games/junqi/server/index.js';
+import { attachContra } from './contra.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -18,12 +19,14 @@ export async function attachGames(server, { dataDir = process.env.GAMES_DATA_DIR
     wsPaths: ['/games/junqi/ws', '/ws'],
     dataFile: path.join(dataDir, 'junqi/players.json')
   });
+  const contra = attachContra(server);
 
   return {
     health() {
-      return { ok: true, games: { junqi: junqi.lobby.stats(), gandengyan: { rooms: gandengyan.rooms.rooms.size } } };
+      return { ok: true, games: { junqi: junqi.lobby.stats(), gandengyan: { rooms: gandengyan.rooms.rooms.size }, contra2026: contra.stats() } };
     },
     async close() {
+      await contra.close();
       await new Promise(resolve => gandengyan.io.close(resolve));
       gandengyan.rooms.rooms.forEach(room => gandengyan.rooms.destroyRoom(room));
       gandengyan.store.flush();
