@@ -1,9 +1,10 @@
 /** Successful resources stay warm; retries only repeat failed work. */
 export class ResourcePreloader {
-  constructor(jobs, { concurrency = 4, timeout = 300000 } = {}) {
+  constructor(jobs, { concurrency = 4, timeout = 300000, completed = [] } = {}) {
     this.jobs = [...new Map(jobs.map(job => [job.id, job])).values()];
     this.concurrency = concurrency; this.timeout = timeout;
-    this.done = new Set(); this.failed = new Set(); this.status = 'idle';
+    const ids = new Set(this.jobs.map(job => job.id));
+    this.done = new Set([...completed].filter(id => ids.has(id))); this.failed = new Set(); this.status = this.ready ? 'ready' : 'idle';
     this.listeners = new Set(); this.pending = null;
   }
   get ready() { return this.done.size === this.jobs.length; }
@@ -47,6 +48,10 @@ export class ResourcePreloader {
   }
 }
 
+export function musicResourceJobs(music, keys) {
+  return [...new Set(keys)].map(key => ({ id: 'music:' + key, load: options => music.prefetch(key, options) }));
+}
+
 export function imageResource(url, imageFactory) {
   let image, pending;
   return { id: 'image:' + url, load({ retry = false } = {}) {
@@ -73,7 +78,7 @@ export function gameResourceJobs({ arts, imageFactory, cover, records, tracks, m
   return [
     ...[...images].map(([url, sources]) => ({ id: 'image:' + url, eager: true, load: options => Promise.all(sources.map(({ art, key }) => art.loadImage(key, options))) })),
     ...[...new Set([cover, ...records])].map(url => imageResource(url, imageFactory)),
-    ...Object.keys(tracks).map(key => ({ id: 'music:' + key, load: options => music.prefetch(key, options) })),
+    ...musicResourceJobs(music, Object.keys(tracks)),
     { id: 'fonts', eager: true, load: () => fonts || Promise.resolve() }
   ];
 }
