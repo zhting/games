@@ -215,11 +215,11 @@ body:not(.touchmode) .touch-only{display:none!important}
     <section id="scrCoop" class="screen" hidden aria-labelledby="coopTitle">
       <div class="coop-panel">
         <h2 id="coopTitle">双人联网同屏</h2>
-        <p>本地试玩开放前四关 · 红蓝双人 · 共享镜头，各自操作</p>
+        <p>现已开放前五关 · 红蓝双人 · 共享镜头，各自操作</p>
         <div id="coopSetup">
           <div class="coop-row">
             <label for="coopStage">起始关卡</label>
-            <select id="coopStage" aria-label="起始关卡"><option value="1">01 雨林要塞</option><option value="2">02 地下指挥所</option><option value="3">03 峡谷瀑布</option></select>
+            <select id="coopStage" aria-label="起始关卡"><option value="1">01 雨林要塞</option><option value="2">02 地下指挥所</option><option value="3">03 峡谷瀑布</option><option value="4">04 地下基地</option><option value="5">05 极地冰原</option></select>
             <button id="coopCreate" class="btn" type="button">创建房间</button>
           </div>
           <form id="coopJoinForm" class="coop-row">
@@ -241,8 +241,8 @@ body:not(.touchmode) .touch-only{display:none!important}
     <section id="scrSelect" class="screen" hidden>
       <div class="dialog">
         <h2 class="h2 px">关卡选择</h2>
-        <p class="sub">本地试玩开放前四关，后续关卡制作中</p>
-        <div class="menu"><button id="btnSel1" class="btn" type="button">第一关 · 雨林要塞</button><button id="btnSel2" class="btn" type="button">第二关 · 地下指挥所</button><button id="btnSel3" class="btn" type="button">第三关 · 峡谷瀑布</button><button id="btnSel4" class="btn" type="button">第四关 · 地下基地 · 双生投影</button><button id="btnSel5" class="btn" type="button" hidden disabled>第五关 · 极地冰原</button><button id="btnSel6" class="btn" type="button" hidden disabled>第六关 · 高温能源厂</button><button id="btnSel7" class="btn" type="button" hidden disabled>第七关 · 机械机库</button><button id="btnSel8" class="btn" type="button" hidden disabled>第八关 · 异形巢穴</button><button id="btnSelW1" class="btn" type="button" hidden disabled>水下第一关 · 珊瑚浅海</button><button id="btnSelW2" class="btn" type="button" hidden disabled>水下第二关 · 沉船墓场</button><button id="btnSelW3" class="btn" type="button" hidden disabled>水下第三关 · 海底火山</button><button id="btnSelW4" class="btn" type="button" hidden disabled>水下第四关 · 深海洋流</button><button id="btnSelW5" class="btn" type="button" hidden disabled>水下第五关 · 黑暗深渊</button><button id="btnSelW6" class="btn" type="button" hidden disabled>水下第六关 · 海底要塞</button><button id="btnSelW7" class="btn" type="button" hidden disabled>水下第七关 · 冰封海沟</button><button id="btnSelW8" class="btn" type="button" hidden disabled>水下第八关 · 远古母体</button><button id="btnSelBack" class="btn" type="button">返回</button></div>
+        <p class="sub">现已开放前五关，后续关卡制作中</p>
+        <div class="menu"><button id="btnSel1" class="btn" type="button">第一关 · 雨林要塞</button><button id="btnSel2" class="btn" type="button">第二关 · 地下指挥所</button><button id="btnSel3" class="btn" type="button">第三关 · 峡谷瀑布</button><button id="btnSel4" class="btn" type="button">第四关 · 地下基地 · 双生投影</button><button id="btnSel5" class="btn" type="button">第五关 · 极地冰原</button><button id="btnSel6" class="btn" type="button" hidden disabled>第六关 · 高温能源厂</button><button id="btnSel7" class="btn" type="button" hidden disabled>第七关 · 机械机库</button><button id="btnSel8" class="btn" type="button" hidden disabled>第八关 · 异形巢穴</button><button id="btnSelW1" class="btn" type="button" hidden disabled>水下第一关 · 珊瑚浅海</button><button id="btnSelW2" class="btn" type="button" hidden disabled>水下第二关 · 沉船墓场</button><button id="btnSelW3" class="btn" type="button" hidden disabled>水下第三关 · 海底火山</button><button id="btnSelW4" class="btn" type="button" hidden disabled>水下第四关 · 深海洋流</button><button id="btnSelW5" class="btn" type="button" hidden disabled>水下第五关 · 黑暗深渊</button><button id="btnSelW6" class="btn" type="button" hidden disabled>水下第六关 · 海底要塞</button><button id="btnSelW7" class="btn" type="button" hidden disabled>水下第七关 · 冰封海沟</button><button id="btnSelW8" class="btn" type="button" hidden disabled>水下第八关 · 远古母体</button><button id="btnSelBack" class="btn" type="button">返回</button></div>
       </div>
     </section>
 
@@ -458,7 +458,7 @@ body:not(.touchmode) .touch-only{display:none!important}
 <script src="/backend-config.js"></script>
 <script type="module">
 import { packWorld, unpackWorld } from '/games/contra2026/js/coop-core.mjs';
-import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '/games/contra2026/js/release-stages.mjs?v=stage-four-1';
+import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '/games/contra2026/js/release-stages.mjs?v=stage-five-release-1';
 import { CoopClient } from '/games/contra2026/js/coop-net.mjs';
 import { WukongSkin } from '/games/wukong/js/wukong-game.mjs?v=dialogue-4';
 import { wukongMountText } from '/games/wukong/js/wukong-mount.mjs';
@@ -485,7 +485,6 @@ import { StageFourArt } from '/games/contra2026/js/stage-four-art.mjs?v=polish-c
 import { StageFiveArt } from '/games/contra2026/js/stage-five-art.mjs?v=combat-polish-1';
 import { drawExplosion, drawSupplyDisc, drawEquipmentTurret, drawEquipmentSupply } from '/games/contra2026/js/combat-art.mjs?v=combat-polish-1';
 import { STAGE_FIVE_ROUTE, createSnowDefenders, snowDefenderBox, advanceSnowDefender, advanceSnowOrdnance, createFlyingFortress, placeFlyingFortress, advanceFlyingFortress } from '/games/contra2026/js/stage-five-combat.mjs?v=snow-fortress-1';
-import { isLocalStageFivePreview } from '/games/contra2026/js/local-stage-preview.mjs?v=stage-five-2';
 import { STAGE_FOUR_ROOMS, STAGE_FOUR_DEVICES, makeTwinProjections, advanceTwinProjections, initStageFourDefenses, advanceStageFourShutters, stageFourFacilityClosed, advanceStageFourGallery, stageFourGalleryTargets } from '/games/contra2026/js/stage-four-layout.mjs?v=stage-four-defense-1';
 import { StageThreeArt } from '/games/contra2026/js/stage-three-art.mjs?v=multi-stage-polish-1';
 import { GamepadInput } from '/games/contra2026/js/gamepad-input.mjs?v=controller-refinements-1';
@@ -515,10 +514,9 @@ import { stageResourceJobs } from '/games/contra2026/js/stage-resources.mjs?v=co
 'use strict';
 // ================= constants =================
 const WUKONG = new URLSearchParams(location.search).get('theme') === 'wukong';
-const STAGE_FIVE_PREVIEW = !WUKONG && isLocalStageFivePreview(location);
-const canPlayStage = stage => isStageOpen(stage) || STAGE_FIVE_PREVIEW && stage===5 && !cooperative();
-const lastPlayableStage = () => STAGE_FIVE_PREVIEW && !cooperative() ? 5 : LAST_OPEN_STAGE;
-const nextPlayableStage = stage => STAGE_FIVE_PREVIEW && !cooperative() && stage===4 ? 5 : nextOpenStage(stage);
+const canPlayStage = stage => isStageOpen(stage);
+const lastPlayableStage = () => LAST_OPEN_STAGE;
+const nextPlayableStage = stage => nextOpenStage(stage);
 const W = 384, H = 216, DT = 1 / 60;
 const GRAV = 700, RUN = 90, JUMPV = 280, JUMPV2 = 250, MAXFALL = 360;
 let LEVEL_W = 3334, CAM_MAX = LEVEL_W - W; const BX = 3196;
@@ -8400,7 +8398,7 @@ function showClear() {
 }
 function syncClearUI() {
   const next=nextPlayableStage(G.stage),finished=G.stage===lastPlayableStage();
-  $('clearTitle').textContent=finished?(lastPlayableStage()===5?'前五关通关':'前四关通关'):'关卡完成';
+  $('clearTitle').textContent=finished?'前五关通关':'关卡完成';
   $('clearSub').textContent=STAGE_NUM[G.stage]+' · '+STAGE_NAMES[G.stage]+(finished?(cooperative()?' · 双人通关 · 后续关卡制作中':' · 试玩完成 · 后续关卡制作中'):'');
   $('btnNext').hidden=!next;$('btnNext').textContent=next?'进入'+STAGE_NUM[next]:'';
 }
@@ -8437,10 +8435,6 @@ function unlockUW(msg) {
   syncUnlock();if(msg){G.toastText=STAGE_RELEASE_MESSAGE;G.toastUntil=performance.now()+3000;}
 }
 syncUnlock();
-if(STAGE_FIVE_PREVIEW){
-  $('btnSel5').textContent='第五关 · 极地冰原 · 本地试玩';
-  $('scrTitle').querySelector('h1')?.setAttribute('aria-label','魂斗罗2026 · 第五关本地试玩');
-}
 function activateThirtyLives(){
   if(WUKONG||G.mode!=='title')return false;
   const changed=lifeCheat.enable();G.toastText='秘籍成功 · 30 条命已就绪';G.toastUntil=performance.now()+3500;

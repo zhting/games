@@ -39,7 +39,7 @@ import { GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox
 
 // Run the real inline game engine with a no-op drawing surface. No production
 // mutation hooks are exposed; the test hook is injected into this VM only.
-function engine({getGamepads=()=>[],coldResources=false,previewStage5=false,touch=false}={}) {
+function engine({getGamepads=()=>[],coldResources=false,previewStage5=false,touch=false,hostname='localhost'}={}) {
   let fullscreenRequests=0;
   const elements = new Map(), storage = new Map(), documentEvents=new Map();
   const gradient = { addColorStop() {} };
@@ -71,7 +71,7 @@ function engine({getGamepads=()=>[],coldResources=false,previewStage5=false,touc
   }
   const sandbox = {
     document, navigator: { maxTouchPoints: touch?5:0, getGamepads },
-    location: { href: 'http://localhost/games/contra2026/', origin: 'http://localhost', hostname:'localhost', search: previewStage5?'?preview=5':'' },
+    location: { href: 'http://localhost/games/contra2026/', origin: 'http://localhost', hostname, search: previewStage5?'?preview=5':'' },
     matchMedia: () => ({ matches: false }), addEventListener() {}, requestAnimationFrame() {},
     innerWidth: 768, innerHeight: 432, performance: { now: () => 0 },
     localStorage: { getItem: key => storage.get(key) || null, setItem: (key, value) => storage.set(key, value) },
@@ -121,7 +121,7 @@ test('触屏开始、选关、加载及跨关均不自动请求全屏',async()=>
   assert.equal(e.G.mode,'intro');assert.equal(e.fullscreenRequests(),0);
 });
 test('第五关战车是中途战斗，继续穿越雪林后击败空中堡垒才通关',async()=>{
-  const e=engine({previewStage5:true,coldResources:true});assert.equal(e.element('btnSel5').hidden,false);
+  const e=engine({hostname:'games.tangletang.top',coldResources:true});assert.equal(e.element('btnSel5').hidden,false);
   const requested=[];e.referenceMusic.prefetch=async key=>requested.push(key);
   assert.equal(await e.startStage(5),true);assert.equal(e.G.mode,'intro');assert.equal(e.inspect().resources.total,28);assert.equal(e.inspect().audio.resolved.track,'stage5');assert.deepEqual(requested,['stage5']);
   e.play(5,false);e.G.en=[];e.G.podTrig=[];e.G.p.invT=9999;
@@ -139,7 +139,7 @@ test('第五关战车是中途战斗，继续穿越雪林后击败空中堡垒�
   e.hitBossPart(e.G.fortress.parts[0],99);assert.equal(e.G.fortress.dead,false);e.render();
   e.hitBossPart(e.G.fortress.parts[2],99);for(let i=0;i<190&&e.G.mode!=='clear';i++)e.step();
   assert.equal(e.G.mode,'clear');assert.equal(e.element('clearTitle').textContent,'前五关通关');assert.equal(e.element('btnNext').hidden,true);
-  e.coop.playing=true;assert.equal(e.startStage(5),false,'local fifth-stage preview does not open multiplayer');
+  e.coop.playing=true;assert.notEqual(e.startStage(5),false,'public fifth stage also opens multiplayer');assert.equal(e.G.stage,5);assert.equal(e.G.mode,'intro');
 });
 
 test('第五关固定炮位有人操作、树后敌人投雷，离屏不攻击且冰冻停止装填',()=>{
@@ -287,7 +287,7 @@ test('第四关高位装置挡住地面弹道；真实跳跃射击启动双生�
   assert.equal(B.dead,true);assert.equal(e.G.p.dead,false);assert.equal(e.G.pb.length+e.G.eb.length+e.G.gr.length,0);
   e.K.KeyJ=e.K.KeyW=false;ticks(e,100);assert.equal(B.exitReady,true);assert.equal(e.G.mode,'play','must board a lift to finish');
   e.K.KeyA=true;for(let i=0;i<500&&e.G.mode==='play';i++)e.step();
-  assert.equal(e.G.mode,'clear');assert.equal(e.G.p.liftDone,true);assert.equal(e.element('btnNext').hidden,true);assert.equal(e.element('clearTitle').textContent,'前四关通关');
+  assert.equal(e.G.stage,5);assert.equal(e.G.mode,'intro');assert.equal(e.G.p.weapon,'homing');
 });
 
 test('第四关投影冻结时不移动、不发弹；快照保留实体状态，两人须分别完成升降梯',()=>{
@@ -299,9 +299,9 @@ test('第四关投影冻结时不移动、不发弹；快照保留实体状态�
   const copy=unpackWorld(JSON.parse(JSON.stringify(packWorld(e.G))));assert.equal(copy.base.bossPhase,'twins');assert.equal(copy.base.targets.at(-1).solid,twins.at(-1).solid);
   e.G.freezeT=0;for(const twin of twins){twin.solid=true;e.hitTarget(twin,99);}ticks(e,100);
   e.G.p.x=28;e.step();ticks(e,180);assert.equal(e.G.p.liftDone,true);assert.equal(e.G.mode,'play');
-  e.G.p2.x=356;e.step();for(let i=0;i<200&&e.G.mode==='play';i++)e.step();assert.equal(e.G.mode,'clear');
+  e.G.p2.x=356;e.step();for(let i=0;i<200&&e.G.mode==='play';i++)e.step();assert.equal(e.G.stage,5);assert.equal(e.G.mode,'intro');
   const guest=engine();guest.play(4,true);guest.coop.role='guest';guest.coop.callbacks.state(JSON.parse(JSON.stringify(packWorld([e.G,e.solids,e.BRIDGES,e.SET]))));
-  assert.equal(guest.element('clearTitle').textContent,'前四关通关');assert.equal(guest.element('btnNext').hidden,true);
+  assert.equal(guest.G.stage,5);assert.equal(guest.G.mode,'intro');
 });
 
 test('第四关手柄上方向和射击组合使用举枪姿势并发射顶部弹道',()=>{
@@ -311,19 +311,19 @@ test('第四关手柄上方向和射击组合使用举枪姿势并发射顶部�
   e.step();assert.equal(e.G.p.aimUp,true);assert.ok(e.G.pb.some(b=>b.upward&&b.ye<80));
 });
 
-test('公开入口开放前四关，旧秘籍与隐藏按钮不能启动后续关卡，唱片设置同样限前四关',()=>{
+test('公开入口开放前五关，旧秘籍与隐藏按钮不能启动后续关卡',()=>{
   const e=engine();e.play(1,false);e.G.p.weapon='laser';const player=e.G.p;
-  for(const stage of [0,5,8,9,16,17,'2',1.5]){
+  for(const stage of [0,6,8,9,16,17,'2',1.5]){
     assert.equal(e.startStage(stage),false);assert.equal(e.G.stage,1);assert.equal(e.G.mode,'play');assert.equal(e.G.p,player);
   }
   assert.equal(e.startUWOpening(false),false);e.unlockUW('old cheat');
   assert.equal(e.G.stage,1);assert.equal(e.G.p.weapon,'laser');
-  for(let stage=5;stage<=16;stage++){
+  for(let stage=6;stage<=16;stage++){
     const button=e.element(stage<=8?'btnSel'+stage:'btnSelW'+(stage-8));
     assert.equal(button.hidden,true);assert.equal(button.disabled,true);
   }
   assert.equal(e.SET.stageMusic,undefined,'old soundtrack preferences are removed');
-  assert.equal(e.element('btnSel3').hidden,false);assert.equal(e.element('btnSel3').disabled,false);
+  assert.equal(e.element('btnSel3').hidden,false);assert.equal(e.element('btnSel3').disabled,false);assert.equal(e.element('btnSel5').hidden,false);assert.equal(e.element('btnSel5').disabled,false);
 });
 
 test('真实引擎通过手柄移动、射击、跳跃、扔雷、切换道具与暂停，断线释放移动',()=>{
@@ -344,7 +344,7 @@ test('真实引擎通过手柄移动、射击、跳跃、扔雷、切换道具�
 });
 
 const enterLifeCode=e=>{for(const code of ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA'])e.dispatchDocument('keydown',{code});};
-test('PC 标题秘籍让前四关以 30 条有限生命开局，扣命与切关继承正常且不覆盖无限生命偏好',()=>{
+test('PC 标题秘籍让前五关以 30 条有限生命开局，扣命与切关继承正常且不覆盖无限生命偏好',()=>{
   const e=engine();e.SET.inf='on';enterLifeCode(e);assert.equal(e.inspect().lives.armed,true);
   assert.match(e.element('btnStart').textContent,/30 条命/);e.play(1,false);
   assert.equal(e.G.lives,30);assert.equal(e.G.thirtyLives,true);assert.equal(e.infiniteLives(),false);assert.equal(e.SET.inf,'on');
@@ -369,7 +369,7 @@ test('游玩中不能输入秘籍补命，生命用完仍会结束；回到标�
   e.toTitle();enterLifeCode(e);e.play(1,false);e.G.lives=1;e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.p.invT=0;e.killPlayer();
   assert.equal(e.G.lives,0);for(let i=0;i<180&&e.G.mode==='play';i++)e.step();assert.equal(e.G.mode,'over');
   e.toTitle();assert.equal(e.inspect().lives.armed,false);assert.equal(e.element('btnStart').textContent,'单人闯关');
-  for(let stage=5;stage<=16;stage++)assert.equal(e.startStage(stage),false);assert.equal(e.G.stage,1);
+  for(let stage=6;stage<=16;stage++)assert.equal(e.startStage(stage),false);assert.equal(e.G.stage,1);
 });
 test('双人快照传递 30 命模式，客机 HUD 使用相同有限生命规则',()=>{
   const host=engine(),guest=engine();enterLifeCode(host);host.play(2,true);guest.play(2,true);guest.coop.role='guest';

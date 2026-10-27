@@ -6,11 +6,11 @@ import { OPEN_STAGES, isStageOpen, nextOpenStage } from '../../games/contra2026/
 import { snowGroundGroups, snowParticle, snowfallProfile, polarClouds, fighterFlyby, STAGE_FIVE_ASSETS, SNOW_LEDGE, WINTER_TANK } from '../../games/contra2026/js/stage-five-art.mjs';
 import { createSnowDefenders, advanceSnowDefender, advanceSnowOrdnance, snowDefenderBox, createFlyingFortress, advanceFlyingFortress } from '../../games/contra2026/js/stage-five-combat.mjs';
 
-test('第五关仅通过显式本机试玩参数开启，线上地址及多人公开边界不受影响',()=>{
+test('第五关正式开放，旧本地预览参数不再决定公开边界',()=>{
   for(const hostname of ['localhost','127.0.0.1','[::1]','::1','LOCALHOST'])assert.equal(isLocalStageFivePreview({hostname,search:'?preview=5'}),true);
   for(const hostname of ['games.tangletang.top','localhost.example.com','192.168.1.2',''])assert.equal(isLocalStageFivePreview({hostname,search:'?preview=5'}),false);
   for(const search of ['','?preview=6','?preview=05','?stage=5'])assert.equal(isLocalStageFivePreview({hostname:'localhost',search}),false);
-  assert.deepEqual(OPEN_STAGES,[1,2,3,4]);assert.equal(isStageOpen(5),false);assert.equal(nextOpenStage(4),null);
+  assert.deepEqual(OPEN_STAGES,[1,2,3,4,5]);assert.equal(isStageOpen(5),true);assert.equal(nextOpenStage(4),5);assert.equal(nextOpenStage(5),null);assert.equal(isStageOpen(6),false);
 });
 
 test('雪地和相邻冰面共用完整岩壁，保留真正裂隙和不同高度，不改变物理平台',()=>{
