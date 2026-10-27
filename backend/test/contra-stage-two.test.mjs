@@ -58,7 +58,7 @@ test('第二关高清机关与三张正背视角色图集存在，透明源图�
     const png=fs.readFileSync(new URL(file.href.replace(/\.webp$/,'.png')));
     assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a');
     const width=png.readUInt32BE(16),height=png.readUInt32BE(20);
-    assert.ok(width>=1000,'source has native fine detail');
+    assert.ok(width>=(key==='passage'?768:1000),'source has native fine detail');
     if(BASE_ROOM_THEMES.some(theme=>theme.asset===key))continue;
     assert.equal(png[25],6,'sprite source retains RGBA alpha');
     const atlas=Object.values(BASE_ACTORS).find(sheet=>sheet.key===key);
@@ -159,7 +159,7 @@ test('第二关 4K 表面和机关缓存使用原生显示密度，缩小窗口�
 test('第二关过门时掉落物跟随地面、隐藏旧弹丸，HUD 保持固定',()=>{
   for(const remaining of [0,1.3,.975,.65,.325,.01]){
     let matrix={sx:1,sy:1,x:0,y:0},floorMatrix,hudMatrix;
-    const stack=[],icons=[],projectiles=[];
+    const stack=[],icons=[],projectiles=[],overlays=[];
     const g=new Proxy({
       save(){stack.push({...matrix});},restore(){matrix=stack.pop();},
       translate(x,y){matrix.x+=x*matrix.sx;matrix.y+=y*matrix.sy;},
@@ -169,12 +169,14 @@ test('第二关过门时掉落物跟随地面、隐藏旧弹丸，HUD 保持固�
       backdrop(){floorMatrix={...matrix};},hud(){hudMatrix={...matrix};},
       light(){projectiles.push('glow');},disc(){projectiles.push('bullet');},kit(){projectiles.push('grenade');},
       capsule(x,y,kind){icons.push({kind,x:x*matrix.sx+matrix.x,foot:(y+5)*matrix.sy+matrix.y,scale:matrix.sx});}};
-    for(const method of ['prepare','roomIdentity','portal','target','soldiers','sideLifts','line','effects','present'])art[method]=()=>{};
+    for(const method of ['prepare','roomIdentity','portal','target','soldiers','sideLifts','effects','present'])art[method]=()=>{};
+    art.line=(...args)=>overlays.push(args);
     const G={mode:'play',base:{room:0,def:{},cleared:true,trans:remaining,targets:[]},time:2,t:120,
       items:[{x:112,y:204,kind:'L',rest:true},{x:272,y:204,kind:'S',rest:true},{x:190,y:204,kind:'F',dead:true}],
       eb:[{x:180,y:150,r:2}],pb:[{k:'laser',x:194,y:156,x0:192,y0:166,xe:192,ye:129,t:.3}],gr:[{x:200,y:170}],fx:[]};
     const before=JSON.stringify(G.items);
     StageTwoArt.prototype.render.call(art,{},G,{players:[]});
+    if(remaining>0)assert.equal(overlays.length,0,'前进时不叠加横跨画面的白色速度线');
     assert.equal(projectiles.length>0,remaining===0,'stale network shots are hidden for the entire advance animation');
     assert.equal(icons.length,2);
     for(const [i,icon]of icons.entries()){

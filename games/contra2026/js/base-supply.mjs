@@ -1,7 +1,7 @@
 // Two soldiers in each normal room carry its supplies, during the second and
 // fifth waves. The rest remain ordinary soldiers; passing the room awards none.
 export function baseSupplyKind(stage, room, wave) {
-  if (stage !== 2 || room.boss || wave < 2 || (wave - 2) % 3) return null;
+  if (![2,4].includes(stage) || room.boss || wave < 2 || (wave - 2) % 3) return null;
   return room.supply?.[(wave - 2) / 3] || null;
 }
 

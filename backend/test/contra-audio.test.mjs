@@ -92,7 +92,18 @@ test('参考音轨文件可交付，标题、片头、第一关与第二关走�
   assert.equal(referenceTrackForScene({mode:'intro',stage:2,base:{}}),'stage2');
   assert.equal(referenceTrackForScene({mode:'play',stage:2,base:{room:1,def:{}}}),'stage2');
   assert.equal(referenceTrackForScene({mode:'play',stage:2,base:{room:3,def:{boss:'eye'}}}),'stage2boss');
-  for(const state of [{mode:'play',stage:4},{mode:'play',stage:2,base:{dead:true}},{mode:'pause',stage:2},{mode:'clear',stage:2},{mode:'play',stage:1,boss:{dead:true}},{mode:'pause',stage:1},{mode:'clear',stage:1}])assert.equal(referenceTrackForScene(state),null);
+  for(const state of [{mode:'play',stage:5},{mode:'play',stage:2,base:{dead:true}},{mode:'pause',stage:2},{mode:'clear',stage:2},{mode:'play',stage:1,boss:{dead:true}},{mode:'pause',stage:1},{mode:'clear',stage:1}])assert.equal(referenceTrackForScene(state),null);
+});
+
+test('第四关只使用对应原声，进入双生中枢切曲、暂停续播、摧毁后停止',async()=>{
+  const {music,sources,context}=player(),session=new StageMusicSession(()=>0),choices={4:'random'};
+  const state={mode:'intro',stage:4,base:{room:0,def:{}}};
+  await music.play(session.forScene(state,choices));state.mode='play';state.base.room=3;
+  await music.play(session.forScene(state,choices));assert.equal(sources.length,1);assert.equal(music.inspect().track,'stage4');
+  context.currentTime=6;music.pause();context.currentTime=20;await music.play(session.forScene(state,choices));assert.equal(sources.at(-1).offset,6);
+  state.base.def={boss:'twin'};await music.play(session.forScene(state,choices));assert.equal(music.inspect().track,'stage4boss');assert.equal(sources.at(-1).offset,0);
+  assert.equal(musicForScene(state,{4:'rock'}),'stage4boss');assert.equal(musicForScene(state,{4:'off'}),null);
+  state.base.dead=true;assert.equal(session.forScene(state,choices),null);
 });
 
 test('第二关房间推进不重播，暂停后保留进度，进入中枢时替换走廊音轨',async()=>{
@@ -105,6 +116,17 @@ test('第二关房间推进不重播，暂停后保留进度，进入中枢时�
   scene.base.def={boss:'eye'};await music.play(referenceTrackForScene(scene));
   assert.equal(sources[1].stopped,true);assert.equal(sources[2].offset,0);assert.equal(sources[2].loop,true);
   assert.equal(music.inspect().track,'stage2boss');
+});
+
+test('第三关按原视频连续循环瀑布主题，门卫出现不切歌，暂停续播且摧毁后停止',async()=>{
+  const {music,sources,context}=player();const scene={mode:'intro',stage:3,mech:{active:false,dead:false}};
+  await music.play(referenceTrackForScene(scene));scene.mode='play';context.currentTime=7;
+  scene.mech.active=true;await music.play(referenceTrackForScene(scene));assert.equal(sources.length,1);
+  music.pause();context.currentTime=11;await music.play(referenceTrackForScene(scene));assert.equal(sources.at(-1).offset,7);
+  assert.equal(sources.at(-1).loop,true);assert.equal(music.inspect().track,'stage3');
+  scene.mech.dead=true;assert.equal(referenceTrackForScene(scene),null);music.stop();assert.equal(music.inspect().playing,false);
+  assert.equal(musicForScene({...scene,mech:{active:true}},{3:'rock'}),'stage3');
+  assert.equal(musicForScene({...scene,mech:{active:true}},{3:'off'}),null);
 });
 
 test('参考音乐暂停保留播放位置、继续不重头，重复请求和 Boss 激活不叠加音轨',async()=>{
@@ -155,10 +177,10 @@ test('各关只允许对应配乐，五首改编音乐只属于第一关，原�
     for(const value of ['original','off'])assert.ok(options.includes(value));
     for(const value of ['orchestral','rock','epic','industrial','cyberpunk'])assert.equal(options.includes(value),stage===1);
     assert.equal(options.includes('chiptune'),stage<=2);
-    const fallback=stage===1?'stage1rock':stage===2?'stage2':'synth';
+    const fallback=stage===1?'stage1rock':stage===2?'stage2':stage===3?'stage3':stage===4?'stage4':'synth';
     assert.equal(musicForScene(scene,{...original,[stage]:'rock'}),fallback);
     assert.equal(musicForScene(scene,{...original,[stage]:'off'}),null);
-    assert.equal(musicForScene(scene,original),stage===1?'stage1':stage===2?'stage2':'synth');
+    assert.equal(musicForScene(scene,original),stage===1?'stage1':stage===2?'stage2':stage===3?'stage3':stage===4?'stage4':'synth');
   }
   const boss={mode:'play',stage:2,base:{def:{boss:'eye'}}};
   assert.equal(musicForScene(boss,original),'stage2boss');
@@ -179,7 +201,7 @@ test('第一关新增三首完整配乐可独立保存、循环、暂停续播�
     for(const mode of ['intro','play'])assert.equal(musicForScene({mode,stage:1},saved),key);
     for(let stage=2;stage<=16;stage++){
       const scene={mode:'play',stage,base:{def:{}}};
-      assert.equal(musicForScene(scene,{[stage]:choice}),stage===2?'stage2':'synth');
+      assert.equal(musicForScene(scene,{[stage]:choice}),stage===2?'stage2':stage===3?'stage3':stage===4?'stage4':'synth');
     }
     const prior=sources.at(-1);await music.play(key);
     if(prior)assert.equal(prior.stopped,true);

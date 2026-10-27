@@ -1,4 +1,4 @@
-#scrLoading{z-index:20;text-align:left;align-items:stretch;padding:clamp(18px,6%,80px);background:linear-gradient(90deg,rgba(0,5,8,.96),rgba(0,8,12,.88)),url('../assets/cover-zh.webp') 20% center/cover no-repeat}
+#scrLoading{z-index:20;text-align:left;align-items:stretch;padding:clamp(18px,6%,80px);background:linear-gradient(90deg,rgba(0,5,8,.96),rgba(0,8,12,.88)),var(--loading-cover,none) 20% center/cover no-repeat}
 .loading-content{width:min(100%,660px);margin:auto}
 .loading-brand{margin:0 0 14px;color:#aab6b8;font-size:clamp(11px,calc(var(--s)*4px),17px);font-weight:700;letter-spacing:.2em}
 #loadingTitle{margin:0 0 clamp(14px,5%,32px);font-size:clamp(23px,calc(var(--s)*11px),48px);font-weight:900;letter-spacing:.08em}

@@ -1,6 +1,12 @@
 export const BASE_BOSS_DEVICES=Object.freeze([91,119].flatMap((y,row)=>[116,177,238].map((x,col)=>Object.freeze({k:'device',id:row*3+col,x,y,w:30,h:18,hp:8,max:8,flash:0,fireT:1.4+(row*3+col)*.5}))));
 export const BASE_BOSS_MOVER=Object.freeze({k:'bcore',mover:true,x:177,y:62,w:30,h:18,hp:36,max:36,flash:0,fireT:.7});
 export function bossDevicesRemaining(base){return base.targets.filter(t=>t.k==='device'&&t.hp>0).length;}
+export function deviceAimHint(base){
+  if(base.dead||base.bossPhase!=='devices')return null;
+  const live=base.targets.filter(t=>t.k==='device'&&t.hp>0);
+  if(!live.length)return null;
+  return live.some(t=>t.y<110)?'按上举枪 · 射击上排装置':'松开上键 · 射击下排装置';
+}
 export function movingBossX(time){return 177+Math.sin(time*.92)*66;}
 export function advanceBossLift(player,dt){
   if(!player.liftSide||player.liftDone)return;

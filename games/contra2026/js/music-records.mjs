@@ -15,8 +15,8 @@ export function musicRecord(stage,value){
   const edition=EDITIONS[value]||EDITIONS.original;
   const original=value==='original';
   return {...edition,
-    title:original?(stage<=2?'原视频音乐':'原有电子乐'):edition.title,
-    description:original&&stage===2?'走廊与中枢使用各自对应的原版音乐。':edition.description,
+    title:original?(stage<=4?'原视频音乐':'原有电子乐'):edition.title,
+    description:original&&stage===2?'走廊与中枢使用各自对应的原版音乐。':original&&stage===3?'原视频瀑布主题，攀登与山巅门卫战连续播放。':original&&stage===4?'红色基地走廊主题与双生投影战斗音乐，随场景自动切换。':edition.description,
     art:ROOT+(original?`stage-${String(stage).padStart(2,'0')}`:value)+'.svg'
   };
 }

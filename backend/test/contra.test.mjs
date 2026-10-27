@@ -56,18 +56,18 @@ test('房间隔离、双人开局、输入与快照方向、暂停、掉线重�
   }
   try {
     const host = await connect(), guest = await connect(), other = await connect();
-    for(const stage of [0,3,8,9,16,'1']){host.send({t:'create',stage});assert.match((await host.next('error')).message,/仅开放第一关和第二关/);}
+    for(const stage of [0,5,8,9,16,'1']){host.send({t:'create',stage});assert.match((await host.next('error')).message,/仅开放第一关、第二关、第三关和第四关/);}
     host.send({ t: 'create', stage: 1 }); const room = await host.next('room');
     assert.match(room.code, /^[A-Z2-9]{6}$/);
     host.send({ t: 'start', stage: 1 }); assert.match((await host.next('error')).message, /等待/);
     guest.send({ t: 'join', code: room.code }); assert.equal((await guest.next('room')).role, 'guest'); await host.next('peer');
     other.send({ t: 'join', code: room.code }); assert.match((await other.next('error')).message, /已满/);
     guest.send({ t: 'start', stage: 1 }); assert.match((await guest.next('error')).message, /房主/);
-    host.send({t:'start',stage:3});assert.match((await host.next('error')).message,/仅开放第一关和第二关/);
+    host.send({t:'start',stage:5});assert.match((await host.next('error')).message,/仅开放第一关、第二关、第三关和第四关/);
     host.send({ t: 'start', stage: 1 }); await host.next('started'); await guest.next('started');
     guest.send({ t: 'input', bits: encodeInput({ fire: true, right: true }), seq: 1 });
     assert.equal((await host.next('input')).bits, encodeInput({ fire: true, right: true }));
-    host.send({t:'state',world:packWorld([{stage:3}]),seq:1});assert.match((await host.next('error')).message,/仅开放第一关和第二关/);
+    host.send({t:'state',world:packWorld([{stage:5}]),seq:1});assert.match((await host.next('error')).message,/仅开放第一关、第二关、第三关和第四关/);
     const world = packWorld({ stage: 1, players: [{ x: 10 }, { x: 30 }] });
     host.send({ t: 'state', world, seq: 1 });
     assert.deepEqual(unpackWorld((await guest.next('state')).world), { stage: 1, players: [{ x: 10 }, { x: 30 }] });
@@ -75,6 +75,8 @@ test('房间隔离、双人开局、输入与快照方向、暂停、掉线重�
     guest.ws.close(); await host.next('peer_left');
     other.send({ t: 'join', code: room.code }); assert.equal((await other.next('room')).role, 'guest'); await host.next('peer');
     host.send({ t: 'start', stage: 2 }); assert.equal((await other.next('started')).stage, 2); await host.next('started');
+    host.send({ t: 'start', stage: 3 }); assert.equal((await other.next('started')).stage, 3); await host.next('started');
+    host.send({t:'start',stage:4});assert.equal((await other.next('started')).stage,4);await host.next('started');
     host.ws.close(); assert.match((await other.next('ended')).reason, /房主/);
     assert.equal(service.stats().rooms, 0);
   } finally {

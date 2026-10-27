@@ -1,4 +1,5 @@
-import { StageOneArt } from './stage-one-art.mjs?v=preload-3';
+import { StageOneArt } from './stage-one-art.mjs?v=multi-stage-polish-1';
+import { drawExplosion } from './combat-art.mjs?v=combat-polish-1';
 import { HDActorArt } from './hd-actors.mjs?v=webp-1';
 import { BASE_ACTORS, BASE_KIT } from './stage-two-atlas.mjs?v=webp-1';
 import { BASE_UPWARD, baseActorPose } from './base-actor-poses.mjs?v=webp-1';
@@ -9,7 +10,7 @@ import { drawRiotShield } from './riot-shield.mjs?v=riot-shield-1';
 import { baseRoomTheme, nextBaseRoomTheme, baseRoomSignals } from './stage-two-rooms.mjs?v=room-identities-1';
 import { baseCoreShielded } from './base-shooting.mjs?v=base-up-lift-1';
 import { redSupplyUniform } from './base-supply.mjs?v=red-supply-1';
-import { bossDevicesRemaining, drawBossBubble } from './base-boss.mjs?v=base-up-lift-1';
+import { bossDevicesRemaining, deviceAimHint, drawBossBubble } from './base-boss.mjs?v=polish-closeout-1';
 
 export const STAGE_TWO_ASSETS=Object.freeze({
   corridor:'/games/contra2026/assets/stage2/corridor-hd.webp',
@@ -17,7 +18,9 @@ export const STAGE_TWO_ASSETS=Object.freeze({
   armory:'/games/contra2026/assets/stage2/corridor-armory.webp',
   command:'/games/contra2026/assets/stage2/corridor-command.webp',
   kit:'/games/contra2026/assets/stage2/mechanisms-hd.webp',
-  bossWall:'/games/contra2026/assets/stage2/control-wall-hd.webp',
+  bossWall:'/games/contra2026/assets/stage2/control-wall-v2.webp',
+  defenseDevices:'/games/contra2026/assets/stage2/defense-devices-v2.webp',
+  passage:'/games/contra2026/assets/stage4/breached-passage.webp',
   rearBlue:'/games/contra2026/assets/stage2/commando-back-blue.webp',
   rearRed:'/games/contra2026/assets/stage2/commando-back-red.webp',
   rearUp:'/games/contra2026/assets/stage2/commando-upward-v1.webp',
@@ -39,7 +42,7 @@ export function barrierArc(time,row=0){
 /** Stage-two simulation keeps its original projection. Only artwork uses native display pixels. */
 export class StageTwoArt extends StageOneArt{
   constructor(options){
-    super({...options,assets:STAGE_TWO_ASSETS});this.baseArt=options.baseArt;
+    super({...options,assets:options.assets||STAGE_TWO_ASSETS});this.baseArt=options.baseArt;
     if(this.baseArt)this.hdActors=this.baseArt.hdActors;
     // Rear-view prone art is foreshortened in depth, not a miniature standing figure.
     const sheets=Object.fromEntries(Object.entries(BASE_ACTORS).map(([role,sheet])=>{
@@ -95,12 +98,6 @@ export class StageTwoArt extends StageOneArt{
   roomIdentity(B){
     if(B.def.boss==='eye')return;
     const g=this.g,theme=baseRoomTheme(B);
-    // A small physical lintel sign remains readable in solo and cooperative HUD layouts.
-    this.rect(150,46,84,14,'#060b0d');this.rect(151,47,82,12,theme.panel);
-    this.line(152,47,232,47,'#7f8882',.7);this.line(152,59,232,59,'#030707',1);
-    this.hudText(theme.code,157,49.5,theme.accent,6.8);
-    this.line(170,49,170,57,'#52625c',.6);
-    this.hudText(theme.name,199,50,theme.accent,6,'center',56);
     for(const light of baseRoomSignals(B,this.state.time)){
       g.save();g.globalAlpha=light.alpha;this.rect(light.x,light.y,light.w,light.h,theme.accent);g.restore();
     }
@@ -110,26 +107,19 @@ export class StageTwoArt extends StageOneArt{
     if(!image){
       image=this.createCanvas();image.width=Math.ceil(248*this.scale);image.height=Math.ceil(108*this.scale);
       const ink=image.getContext('2d');ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';
-      if(this.loaded.has('bossWall'))ink.drawImage(this.images.bossWall,0,0,1900,809,0,0,image.width,image.height);
+      if(this.loaded.has('bossWall'))ink.drawImage(this.images.bossWall,0,0,image.width,image.height);
       else{ink.fillStyle='#182421';ink.fillRect(0,0,image.width,image.height);}
       this.cache.set(key,image);
     }
     g.drawImage(image,68,37,248,108);
     for(let i=0;i<13;i++)this.rect(82+i*17,42,3,.8,i%4===(this.state.t>>4)%4?'#d58f43':'#507b70');
     if(B.def.boss==='eye'){
-      // Two rows of three independent red devices sit below the travelling ring.
-      this.rect(103,86,180,55,'#070b09');
-      for(const y of [86,113,140]){
-        this.metalBeam(102,y,182,3);
+      // Register painted recesses to the six unchanged simulation targets.
+      if(this.loaded.has('bossWall')){
+        const wall=this.images.bossWall;
+        g.drawImage(wall,390,68,1125,204,95,50,194,35);
+        g.drawImage(wall,360,265,1190,430,103,86,180,55);
       }
-      for(const x of [103,162,223,282]){
-        this.metalBeam(x,89,2,51);
-      }
-      this.rect(97,52,190,31,'#020607');
-      for(const y of [51,83]){
-        this.metalBeam(95,y,194,2);
-      }
-      for(const x of [95,287])this.metalBeam(x,51,2,34);
       if(B.bossPhase==='reveal'){
         const phase=1-Math.min(1,B.revealT/1.2);
         drawBossBubble(g,192,71,3+phase*11,2+phase*6,this.state.time,true);
@@ -144,6 +134,10 @@ export class StageTwoArt extends StageOneArt{
   }
   portal(B){
     if(!B.cleared||B.def.boss)return;
+    if(this.loaded.has('passage')){
+      const image=this.images.passage,scale=Math.min(76/image.naturalWidth,86/image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
+      this.g.drawImage(image,192-w/2,140-h,w,h);return;
+    }
     const g=this.g;
     g.save();g.beginPath();[[160,58],[170,53],[215,54],[225,65],[223,101],[229,137],[157,140],[162,117],[156,91]].forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.clip();
     const dark=g.createLinearGradient(158,60,224,140);dark.addColorStop(0,'#01080c');dark.addColorStop(.65,'#03111a');dark.addColorStop(1,'#15303d');g.fillStyle=dark;g.fillRect(155,50,76,92);
@@ -162,6 +156,10 @@ export class StageTwoArt extends StageOneArt{
     // The core's explosion reveals the passage; no wreck remains across its floor.
     if(k==='core'&&dead)return;
     if(k==='device'){
+      if(this.loaded.has('defenseDevices')){
+        g.save();if(target.flash>0)g.filter='brightness(1.75) saturate(.7)';
+        g.drawImage(this.images.defenseDevices,dead?512:0,0,512,320,x-7,y-4,w+14,h+8);g.restore();return;
+      }
       this.kit(dead?'coreBroken':'core',x-3,y-1,w+6,h+2);
       if(!dead){
         this.metalBeam(x+4,y+2,w-8,3);
@@ -299,7 +297,7 @@ export class StageTwoArt extends StageOneArt{
     }
   }
   sideLifts(G,players){
-    const B=G.base;if(B.def.boss!=='eye')return;
+    const B=G.base;if(!['eye','twin'].includes(B.def.boss))return;
     for(const side of [-1,1]){
       const x=side<0?13:341,rider=players.find(p=>p.liftSide===side);
       const py=rider?rider.y:204;
@@ -315,6 +313,7 @@ export class StageTwoArt extends StageOneArt{
     const g=this.g;
     for(const f of effects){
       if(f.k!=='baseMineBlast'||f.dead)continue;
+      drawExplosion(g,this.baseArt.images.explosionAtlas,{...f,y:f.y-3,s:12});
       const p=Math.min(1,f.t/f.life),radius=3+23*Math.sqrt(p);
       g.save();g.globalAlpha=(1-p)*.65;g.beginPath();g.ellipse(f.x,f.y+3,radius,radius*.22,0,0,Math.PI*2);
       g.strokeStyle='#ffc98a';g.lineWidth=1.1*(1-p)+.2;g.stroke();
@@ -333,9 +332,10 @@ export class StageTwoArt extends StageOneArt{
       this.hudText('中枢',151,17.5,'#c9b884',5.3);this.rect(166,17.5,66,5.5,'#4b605d');this.rect(166.5,18,65,4.5,'#111c20');
       this.rect(167,18.5,64*Math.max(0,target.hp/target.max),3.5,B.phase2?'#ef8b48':'#b16c3f');
       for(let i=1;i<4;i++)this.rect(167+i*16,18.5,.45,3.5,'#19262b');
-    }else this.hudText(B.dead?'中枢已摧毁':B.def.boss==='eye'?B.bossPhase==='reveal'?'上方装置启动中':`下层装置 ${bossDevicesRemaining(B)} / 6`:B.cleared?'通道已开启':B.targets.some(t=>t.k==='switch'&&t.hp>0)?'跳跃射击上方机关':`${baseRoomTheme(B).code} 区 · ${core&&baseCoreShielded(B,G.empT)?'先摧毁炮台':'核心已暴露'}`,192,18,'#b4c8c7',5.3,'center',90);
+    }else this.hudText(B.dead?'中枢已摧毁':B.def.boss==='eye'?B.bossPhase==='reveal'?'上方装置启动中':`防卫装置 ${bossDevicesRemaining(B)} / 6`:B.cleared?'通道已开启':B.targets.some(t=>t.k==='switch'&&t.hp>0)?'跳跃射击上方机关':`${baseRoomTheme(B).code} 区 · ${core&&baseCoreShielded(B,G.empT)?'先摧毁炮台':'核心已暴露'}`,192,18,'#b4c8c7',5.3,'center',90);
     if(G.bannerT>0&&G.bannerText)this.hudText(G.bannerText,192,43,'#e4c995',6,'center',230);
-    if(B.bossPhase==='mover'&&!B.dead&&!(G.bannerT>0))this.hudText('按上举枪 · 射击顶部装置',192,38,'#d9e8bd',6,'center',180);
+    const aimHint=deviceAimHint(B)||(B.bossPhase==='mover'&&!B.dead?'按上举枪 · 射击顶部装置':null);
+    if(aimHint&&!(G.bannerT>0))this.hudText(aimHint,192,38,'#d9e8bd',6,'center',180);
     if(B.cleared&&B.trans<=0&&!B.def.boss){
       this.hudText('前往'+nextBaseRoomTheme(B).name+' · 按上前进',192,151,'#d9e8de',6,'center',120);
       const yy=164+Math.sin(G.time*4)*1.2;this.line(188,yy,192,yy-4,'#c1dfd8',1);this.line(192,yy-4,196,yy,'#c1dfd8',1);
@@ -360,10 +360,6 @@ export class StageTwoArt extends StageOneArt{
     // Floor drops travel with the same advancing room transform, behind the actors.
     this.groundItems(G);
     g.restore();
-    if(B.trans>0){
-      const phase=(G.time*1.1)%1;
-      for(let i=0;i<6;i++){const z=(i/6+phase)%1,point=basePoint(0,z);this.line(96*z,point.y,384-96*z,point.y,baseRoomTheme(B).trail,.45);}
-    }
     this.soldiers(B);if(!B.cleared&&!B.def.boss&&!B.dead)this.barrier();this.soldiers(B,true);
     this.shots(G);
     this.sideLifts(G,options.players);

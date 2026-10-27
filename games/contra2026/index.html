@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>魂斗罗2026</title>
-<link rel="stylesheet" href="/games/contra2026/css/settings.css?v=record-deck-1">
-<link rel="stylesheet" href="/games/contra2026/css/loading.css?v=preload-2">
+<link rel="stylesheet" href="/games/contra2026/css/settings.css?v=audio-mix-2">
+<link rel="stylesheet" href="/games/contra2026/css/loading.css?v=lean-load-1">
 </head>
 <body>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -176,7 +176,7 @@ body:not(.touchmode) .touch-only{display:none!important}
 
 <div id="wrap">
   <div id="stage">
-    <canvas id="game" width="384" height="216" aria-label="魂斗罗2026第一关游戏画面"></canvas>
+    <canvas id="game" width="384" height="216" aria-label="魂斗罗2026游戏画面"></canvas>
 
     <div id="hud" hidden>
       <button id="btnMute" type="button" aria-label="静音"><svg viewBox="0 0 8 8" fill="currentColor"><rect x="0" y="3" width="2" height="2"/><rect x="2" y="2" width="1" height="4"/><rect x="3" y="1" width="1" height="6"/><g id="muteWave"><rect x="5" y="3" width="1" height="2"/><rect x="6" y="1" width="1" height="6"/></g><g id="muteX" display="none"><rect x="5" y="2" width="1" height="1"/><rect x="7" y="2" width="1" height="1"/><rect x="6" y="3" width="1" height="2"/><rect x="5" y="5" width="1" height="1"/><rect x="7" y="5" width="1" height="1"/></g></svg></button>
@@ -194,7 +194,8 @@ body:not(.touchmode) .touch-only{display:none!important}
       </div>
     </section>
     <section id="scrTitle" class="screen">
-      <h1 class="sr">魂斗罗2026 试玩版：当前开放第一关 雨林要塞、第二关 地下指挥所</h1>
+      <h1 class="sr">魂斗罗2026 本地试玩：雨林要塞、地下指挥所、峡谷瀑布、双生投影基地</h1>
+      <p id="lifeCheatStatus" class="sr" role="status" aria-live="polite"></p>
       <div class="menu"><button id="btnStart" class="btn" type="button">单人闯关</button><button id="btnCoop" class="btn" type="button">双人联网同屏</button><button id="btnSelect" class="btn" type="button">选择关卡</button><button id="btnSettings2" class="btn" type="button">设置与说明</button></div>
       <dl class="keys kb-only">
         <dt><kbd>WASD</kbd> / <kbd>方向键</kbd></dt><dd>移动与 8 方向瞄准</dd>
@@ -214,11 +215,11 @@ body:not(.touchmode) .touch-only{display:none!important}
     <section id="scrCoop" class="screen" hidden aria-labelledby="coopTitle">
       <div class="coop-panel">
         <h2 id="coopTitle">双人联网同屏</h2>
-        <p>当前开放前两关 · 红蓝双人 · 共享镜头，各自操作</p>
+        <p>本地试玩开放前四关 · 红蓝双人 · 共享镜头，各自操作</p>
         <div id="coopSetup">
           <div class="coop-row">
             <label for="coopStage">起始关卡</label>
-            <select id="coopStage" aria-label="起始关卡"><option value="1">01 雨林要塞</option><option value="2">02 地下指挥所</option></select>
+            <select id="coopStage" aria-label="起始关卡"><option value="1">01 雨林要塞</option><option value="2">02 地下指挥所</option><option value="3">03 峡谷瀑布</option></select>
             <button id="coopCreate" class="btn" type="button">创建房间</button>
           </div>
           <form id="coopJoinForm" class="coop-row">
@@ -240,8 +241,8 @@ body:not(.touchmode) .touch-only{display:none!important}
     <section id="scrSelect" class="screen" hidden>
       <div class="dialog">
         <h2 class="h2 px">关卡选择</h2>
-        <p class="sub">当前开放前两关，后续关卡制作中</p>
-        <div class="menu"><button id="btnSel1" class="btn" type="button">第一关 · 雨林要塞</button><button id="btnSel2" class="btn" type="button">第二关 · 地下指挥所</button><button id="btnSel3" class="btn" type="button" hidden disabled>第三关 · 峡谷瀑布</button><button id="btnSel4" class="btn" type="button" hidden disabled>第四关 · 地下指挥所·警戒区</button><button id="btnSel5" class="btn" type="button" hidden disabled>第五关 · 极地冰原</button><button id="btnSel6" class="btn" type="button" hidden disabled>第六关 · 高温能源厂</button><button id="btnSel7" class="btn" type="button" hidden disabled>第七关 · 机械机库</button><button id="btnSel8" class="btn" type="button" hidden disabled>第八关 · 异形巢穴</button><button id="btnSelW1" class="btn" type="button" hidden disabled>水下第一关 · 珊瑚浅海</button><button id="btnSelW2" class="btn" type="button" hidden disabled>水下第二关 · 沉船墓场</button><button id="btnSelW3" class="btn" type="button" hidden disabled>水下第三关 · 海底火山</button><button id="btnSelW4" class="btn" type="button" hidden disabled>水下第四关 · 深海洋流</button><button id="btnSelW5" class="btn" type="button" hidden disabled>水下第五关 · 黑暗深渊</button><button id="btnSelW6" class="btn" type="button" hidden disabled>水下第六关 · 海底要塞</button><button id="btnSelW7" class="btn" type="button" hidden disabled>水下第七关 · 冰封海沟</button><button id="btnSelW8" class="btn" type="button" hidden disabled>水下第八关 · 远古母体</button><button id="btnSelBack" class="btn" type="button">返回</button></div>
+        <p class="sub">本地试玩开放前四关，后续关卡制作中</p>
+        <div class="menu"><button id="btnSel1" class="btn" type="button">第一关 · 雨林要塞</button><button id="btnSel2" class="btn" type="button">第二关 · 地下指挥所</button><button id="btnSel3" class="btn" type="button">第三关 · 峡谷瀑布</button><button id="btnSel4" class="btn" type="button">第四关 · 地下基地 · 双生投影</button><button id="btnSel5" class="btn" type="button" hidden disabled>第五关 · 极地冰原</button><button id="btnSel6" class="btn" type="button" hidden disabled>第六关 · 高温能源厂</button><button id="btnSel7" class="btn" type="button" hidden disabled>第七关 · 机械机库</button><button id="btnSel8" class="btn" type="button" hidden disabled>第八关 · 异形巢穴</button><button id="btnSelW1" class="btn" type="button" hidden disabled>水下第一关 · 珊瑚浅海</button><button id="btnSelW2" class="btn" type="button" hidden disabled>水下第二关 · 沉船墓场</button><button id="btnSelW3" class="btn" type="button" hidden disabled>水下第三关 · 海底火山</button><button id="btnSelW4" class="btn" type="button" hidden disabled>水下第四关 · 深海洋流</button><button id="btnSelW5" class="btn" type="button" hidden disabled>水下第五关 · 黑暗深渊</button><button id="btnSelW6" class="btn" type="button" hidden disabled>水下第六关 · 海底要塞</button><button id="btnSelW7" class="btn" type="button" hidden disabled>水下第七关 · 冰封海沟</button><button id="btnSelW8" class="btn" type="button" hidden disabled>水下第八关 · 远古母体</button><button id="btnSelBack" class="btn" type="button">返回</button></div>
       </div>
     </section>
 
@@ -282,6 +283,7 @@ body:not(.touchmode) .touch-only{display:none!important}
           <button id="btnBack" class="btn" type="button" aria-label="保存并返回">完成 <span aria-hidden="true">↗</span></button>
         </div>
         <div id="paneSet" class="panel-body" role="tabpanel" aria-labelledby="tabSet">
+        <template id="stageMusicTemplate">
         <div class="music-settings" role="group" aria-labelledby="lbl-stage-music">
           <div class="music-heading"><div><span class="settings-eyebrow">SOUNDTRACK COLLECTION</span><h2 id="lbl-stage-music">关卡唱片</h2></div><span class="saved-indicator"><i></i> 自动保存</span></div>
           <label class="music-field" for="set-music-stage"><span class="sr">选择关卡</span><select id="set-music-stage"></select></label>
@@ -300,18 +302,23 @@ body:not(.touchmode) .touch-only{display:none!important}
           <p class="music-note" id="stage-music-note">各关独立保存；暂停中切换，继续游戏后播放。</p>
           <span id="record-key-hint" class="sr">左右滑动或使用左右方向键切换唱片，Home 跳至第一张，End 跳至最后一张。</span>
         </div>
+        </template>
         <div class="settings-controls">
         <h2 class="controls-heading">游玩设置</h2>
         <div class="set-row">
+          <div class="set-name">手柄连接<small>蓝牙配对或 USB 连接后，按任意手柄键激活</small></div>
+          <span id="gamepad-status" role="status" aria-live="polite">等待手柄</span>
+        </div>
+        <div class="set-row">
           <div class="set-name" id="lbl-music">背景音乐</div>
-          <fieldset class="seg" aria-labelledby="lbl-music"><legend>音乐</legend><label><input type="radio" name="music" id="set-music-on" value="on"><span>开</span></label><label><input type="radio" name="music" id="set-music-off" value="off"><span>关</span></label></fieldset>
+          <div class="audio-controls"><fieldset class="seg" aria-labelledby="lbl-music"><legend>音乐</legend><label><input type="radio" name="music" id="set-music-on" value="on"><span>开</span></label><label><input type="radio" name="music" id="set-music-off" value="off"><span>关</span></label></fieldset><div class="volume-control" id="music-volume-control" hidden><input type="range" id="set-music-volume" name="musicVolume" min="0" max="100" step="1" aria-labelledby="lbl-music" aria-describedby="music-volume-value"><output id="music-volume-value" for="set-music-volume">30%</output></div></div>
         </div>
         <div class="set-row">
           <div class="set-name" id="lbl-sfx">音效</div>
-          <fieldset class="seg" aria-labelledby="lbl-sfx"><legend>音效</legend><label><input type="radio" name="sfx" id="set-sfx-on" value="on"><span>开</span></label><label><input type="radio" name="sfx" id="set-sfx-off" value="off"><span>关</span></label></fieldset>
+          <div class="audio-controls"><fieldset class="seg" aria-labelledby="lbl-sfx"><legend>音效</legend><label><input type="radio" name="sfx" id="set-sfx-on" value="on"><span>开</span></label><label><input type="radio" name="sfx" id="set-sfx-off" value="off"><span>关</span></label></fieldset><div class="volume-control" id="sfx-volume-control" hidden><input type="range" id="set-sfx-volume" name="sfxVolume" min="0" max="100" step="1" aria-labelledby="lbl-sfx" aria-describedby="sfx-volume-value"><output id="sfx-volume-value" for="set-sfx-volume">100%</output></div></div>
         </div>
         <div class="set-row">
-          <div class="set-name" id="lbl-inf">无限生命<small>关闭后按原作规则：命用完要续关，从本关开头重来</small></div>
+          <div class="set-name" id="lbl-inf">无限生命<small id="life-rule-note">关闭后按原作规则：命用完要续关，从本关开头重来</small></div>
           <fieldset class="seg" aria-labelledby="lbl-inf"><legend>无限生命</legend><label><input type="radio" name="inf" id="set-inf-on" value="on"><span>开</span></label><label><input type="radio" name="inf" id="set-inf-off" value="off"><span>关</span></label></fieldset>
         </div>
         <div class="set-row">
@@ -349,14 +356,23 @@ body:not(.touchmode) .touch-only{display:none!important}
             <dt><kbd>回车</kbd> / <kbd>退出键</kbd></dt><dd>暂停、继续</dd>
           </dl>
           <h3>手柄</h3>
+          <p>先在系统中通过蓝牙配对或 USB 连接手柄，再按任意手柄键。连接状态可在设置中查看；断开后重新连接即可继续操作。</p>
           <dl>
             <dt>左摇杆 / 十字键</dt><dd>移动与瞄准</dd>
-            <dt>A（下方键）</dt><dd>跳跃、二段跳</dd>
-            <dt>X / RT</dt><dd>射击</dd>
-            <dt>B（右侧键）</dt><dd>扔手雷</dd>
-            <dt>Y</dt><dd>使用特殊道具</dd>
+            <dt>A / ×（下方键）</dt><dd>跳跃、二段跳；菜单确认</dd>
+            <dt>X / □ / RB / RT</dt><dd>射击；菜单确认</dd>
+            <dt>B / ○（右侧键）</dt><dd>扔手雷；菜单返回</dd>
+            <dt>Y / △</dt><dd>使用特殊道具</dd>
             <dt>LB / LT</dt><dd>切换特殊道具</dd>
-            <dt>开始键</dt><dd>暂停</dd>
+            <dt>Start / Options</dt><dd>暂停、继续；菜单确认</dd>
+            <dt>Back / Share</dt><dd>暂停、返回</dd>
+            <dt>菜单方向键</dt><dd>上下选择；左右调整设置</dd>
+          </dl>
+          <h3>30 条命秘籍</h3>
+          <dl>
+            <dt>PC 键盘</dt><dd>在标题画面依次输入 ↑ ↑ ↓ ↓ ← → ← → B A，再选择开始；按键间隔不超过 2 秒，长按不算重复输入。</dd>
+            <dt>手机触屏</dt><dd>在标题画面的魂斗罗 Logo 上，4 秒内轻点 8 次；滑动和长按不计入。</dd>
+            <dt>成功提示</dt><dd>显示“30 条命已就绪”。本局以 30 条命开局，死亡扣命，过关保留剩余生命；重复输入不叠加。退出本局回到标题后取消，本来的无限生命设置保持不变。</dd>
           </dl>
           <h3>触屏</h3>
           <dl>
@@ -393,7 +409,7 @@ body:not(.touchmode) .touch-only{display:none!important}
           </ul>
           <h3>开场与关卡流程</h3>
           <ul>
-            <li>从「开始游戏」或选关第一关进入时会播放开场动画；当前版本完成第二关后进入通关界面，可重玩或返回标题</li>
+            <li>从「开始游戏」或选关第一关进入时会播放开场动画；当前本地试玩完成第四关后进入通关界面，可重玩或返回标题</li>
             <li>动画中按回车、射击、跳跃键，或点一下屏幕都可以跳过</li>
           </ul>
           <h3>道具来源</h3>
@@ -427,7 +443,7 @@ body:not(.touchmode) .touch-only{display:none!important}
 </div>
 <div id="rotate" hidden>把手机横过来玩，画面更大</div>
 <div id="foot">
-  <span><b>WASD</b> 移动 / 瞄准</span><span><b>J</b> 射击</span><span><b>K</b> 跳跃 / 二段跳</span><span><b>I</b> 手雷</span><span><b>L</b> 用道具</span><span><b>Q</b> 切换道具</span><span><b>下 + 跳</b> 落下平台</span><span><b>回车</b> 暂停</span><span>支持手柄</span>
+  <span><b>WASD</b> 移动 / 瞄准</span><span><b>J</b> 射击</span><span><b>K</b> 跳跃 / 二段跳</span><span><b>I</b> 手雷</span><span><b>L</b> 用道具</span><span><b>Q</b> 切换道具</span><span><b>下 + 跳</b> 落下平台</span><span><b>回车</b> 暂停</span><span id="gamepad-indicator">支持蓝牙 / USB 手柄</span>
 </div>
 
 <div id="touch">
@@ -442,44 +458,90 @@ body:not(.touchmode) .touch-only{display:none!important}
 <script src="/backend-config.js"></script>
 <script type="module">
 import { packWorld, unpackWorld } from '/games/contra2026/js/coop-core.mjs';
-import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '/games/contra2026/js/release-stages.mjs?v=two-stage-release-1';
+import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage } from '/games/contra2026/js/release-stages.mjs?v=stage-four-1';
 import { CoopClient } from '/games/contra2026/js/coop-net.mjs';
-import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=preload-3';
-import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=preload-3';
+import { WukongSkin } from '/games/wukong/js/wukong-game.mjs?v=dialogue-4';
+import { wukongMountText } from '/games/wukong/js/wukong-mount.mjs';
+import { advanceStaff, resolveStaff, staffGeometry, startUltimate, ULTIMATE, STAFF_PICKUPS } from '/games/wukong/js/wukong-combat.mjs';
+import { advanceGuard, guardHitsPlayer, GUARD_MELEE } from '/games/wukong/js/wukong-guards.mjs';
+import { navigateGuard } from '/games/wukong/js/wukong-navigation.mjs';
+import { HEAVEN_HP, flyingGuard, advanceFlyingGuard } from '/games/wukong/js/wukong-enemies.mjs';
+import { GIANT_HOME, giantBody, advanceGiant, giantHitsPlayer } from '/games/wukong/js/wukong-boss.mjs?v=giant-phases-1';
+import { giantEncounter, enterColossus, advanceColossus, enterGiantFinale, advanceGiantFinale, colossusDamage } from '/games/wukong/js/wukong-giant-phases.mjs?v=impact-3';
+import { scheduleSupplyFairy, advanceSupplyFairy, releaseFairyPeach } from '/games/wukong/js/wukong-supplies.mjs';
+import { WUKONG_MAGIC, WUKONG_MAGIC_NAMES, WUKONG_MAGIC_SHORT, WUKONG_MAGIC_STAGE, WUKONG_MAGIC_DROPS, activateWukongMagic, advanceWukongMagic, resolveWukongMagic, clearWukongMagic } from '/games/wukong/js/wukong-magic.mjs';
+import { advanceHalberd, halberdHitsPlayer } from '/games/wukong/js/wukong-props.mjs';
+import { TRANSFORM_FORMS, transformation, advanceTransformation, transformationSpeed, cycleTransformation } from '/games/wukong/js/wukong-transform.mjs';
+import { WUKONG_HEALTH, HEALING_ITEMS, HEALING_DROPS, newVitality, receiveHeroHit, advanceVitality, healHero, receiveGuardHit, advanceGuardRecoil, guardDefeat, advanceGuardDefeat, healingEnemyDrop, advanceImpactPause } from '/games/wukong/js/wukong-vitality.mjs';
+import { cancelStaffCharge } from '/games/wukong/js/wukong-special-staff.mjs';
+import { WUKONG_RAGE, rageReady, ultimateSpec } from '/games/wukong/js/wukong-rage.mjs';
+import { WukongBattleAudio, queueEnemyCry } from '/games/wukong/js/wukong-battle-audio.mjs';
+import { WukongHeroAudio, queueHeroSounds } from '/games/wukong/js/wukong-hero-audio.mjs?v=dialogue-4';
+import { normalizeAudioMix, audioMixLevels } from '/games/contra2026/js/audio-mix.mjs';
+import { addMartialHit } from '/games/wukong/js/wukong-impact.mjs';
+import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=breach-fish-2';
+import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=polish-closeout-1';
+import { StageFourArt } from '/games/contra2026/js/stage-four-art.mjs?v=polish-closeout-1';
+import { StageFiveArt } from '/games/contra2026/js/stage-five-art.mjs?v=combat-polish-1';
+import { drawExplosion, drawSupplyDisc, drawEquipmentTurret, drawEquipmentSupply } from '/games/contra2026/js/combat-art.mjs?v=combat-polish-1';
+import { STAGE_FIVE_ROUTE, createSnowDefenders, snowDefenderBox, advanceSnowDefender, advanceSnowOrdnance, createFlyingFortress, placeFlyingFortress, advanceFlyingFortress } from '/games/contra2026/js/stage-five-combat.mjs?v=snow-fortress-1';
+import { isLocalStageFivePreview } from '/games/contra2026/js/local-stage-preview.mjs?v=stage-five-2';
+import { STAGE_FOUR_ROOMS, STAGE_FOUR_DEVICES, makeTwinProjections, advanceTwinProjections, initStageFourDefenses, advanceStageFourShutters, stageFourFacilityClosed, advanceStageFourGallery, stageFourGalleryTargets } from '/games/contra2026/js/stage-four-layout.mjs?v=stage-four-defense-1';
+import { StageThreeArt } from '/games/contra2026/js/stage-three-art.mjs?v=multi-stage-polish-1';
+import { GamepadInput } from '/games/contra2026/js/gamepad-input.mjs?v=controller-refinements-1';
+import { THIRTY_LIVES, ThirtyLivesCheat, inTitleLogo } from '/games/contra2026/js/thirty-lives.mjs?v=thirty-lives-1';
+import { STAGE_THREE, createStageThreeSolids, advanceStageThreePlatforms, flameJetBoxes, makeWaterfallBoss, waterfallNodesAlive, waterfallMouthOpen, waterfallTargetVulnerable, canEnterSummit, beginSummitEntry, advanceSummitEntry, teamInsideSummit, STAGE_THREE_SNIPERS, STAGE_THREE_TURRETS, STAGE_THREE_BOXES, STAGE_THREE_PODS } from '/games/contra2026/js/stage-three-layout.mjs?v=supply-spacing-1';
+import { WATERFALL_ARMS, waterfallArmPose, updateWaterfallArms, waterfallArmBoxes } from '/games/contra2026/js/stage-three-arms.mjs?v=boss-detail-1';
 import { baseUpMuzzle } from '/games/contra2026/js/base-actor-poses.mjs?v=webp-1';
 import { GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox, giantPowerLabel, drawGiantStomp } from '/games/contra2026/js/giant-power.mjs?v=giant-smash-1';
 import { BASE_SOLDIER, baseSoldierScale } from '/games/contra2026/js/base-soldier.mjs?v=base-soldier-size-1';
-import { BASE_HIGH_SWITCH, baseShotHeight, baseTargetAtHeight, baseCoreShielded, baseHomingTarget } from '/games/contra2026/js/base-shooting.mjs?v=base-up-lift-1';
+import { BASE_HIGH_SWITCH, baseShotHeight, baseTargetAtHeight, baseCoreShielded, baseHomingTarget } from '/games/contra2026/js/base-shooting.mjs?v=multi-stage-polish-1';
 import { BASE_BOSS_DEVICES, BASE_BOSS_MOVER, bossDevicesRemaining, movingBossX, advanceBossLift } from '/games/contra2026/js/base-boss.mjs?v=base-up-lift-1';
-import { baseSupplyKind } from '/games/contra2026/js/base-supply.mjs?v=red-supply-1';
+import { baseSupplyKind } from '/games/contra2026/js/base-supply.mjs?v=stage-four-1';
 import { drawSupplySaucer } from '/games/contra2026/js/supply-saucer.mjs?v=pointed-drop-1';
 import { OPENING_DURATION, OPENING_PAGES } from '/games/contra2026/js/opening-story.mjs?v=opening-story-1';
+import { WUKONG_OPENING_DURATION, WUKONG_OPENING_PAGES } from '/games/wukong/js/wukong-opening.mjs';
+import { WUKONG_MUSIC_TRACKS, WUKONG_STARTUP_MUSIC, WUKONG_MUSIC_OPTIONS, WUKONG_MUSIC_RECORD, normalizeWukongMusic, wukongMusicTrack } from '/games/wukong/js/wukong-music.mjs';
 import { canEnterExit, beginExitEntry, advanceExitEntry, teamInsideExit } from '/games/contra2026/js/stage-one-exit.mjs?v=exit-right-1';
 import { addImpact } from '/games/contra2026/js/impact-effects.mjs?v=hit-feedback-1';
 import { beginDeath, advanceDeath } from '/games/contra2026/js/player-death.mjs?v=death-fall-1';
-import { REFERENCE_TRACKS, ReferenceMusic, StageMusicSession, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '/games/contra2026/js/reference-music.mjs?v=preload-2';
-import { musicRecord } from '/games/contra2026/js/music-records.mjs?v=record-deck-1';
-import { ResourcePreloader, gameResourceJobs, musicResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=background-music-1';
+import { CONTRA_TRACKS, fixedStageMusicKeys, fixedMusicTrack } from '/games/contra2026/js/fixed-soundtrack.mjs?v=snow-fortress-1';
+import { versionedAssetUrl } from '/games/contra2026/js/asset-url.mjs?v=lean-load-1';
+import { REFERENCE_TRACKS, ReferenceMusic, StageMusicSession, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '/games/contra2026/js/reference-music.mjs?v=lean-load-1';
+import { musicRecord } from '/games/contra2026/js/music-records.mjs?v=stage-four-1';
+import { ResourcePreloader, gameResourceJobs, musicResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=stage-loading-1';
+import { stageResourceJobs } from '/games/contra2026/js/stage-resources.mjs?v=combat-polish-1';
 (() => {
 'use strict';
 // ================= constants =================
-const WUKONG = false; // This release contains the Contra campaign.
+const WUKONG = new URLSearchParams(location.search).get('theme') === 'wukong';
+const STAGE_FIVE_PREVIEW = !WUKONG && isLocalStageFivePreview(location);
+const canPlayStage = stage => isStageOpen(stage) || STAGE_FIVE_PREVIEW && stage===5 && !cooperative();
+const lastPlayableStage = () => STAGE_FIVE_PREVIEW && !cooperative() ? 5 : LAST_OPEN_STAGE;
+const nextPlayableStage = stage => STAGE_FIVE_PREVIEW && !cooperative() && stage===4 ? 5 : nextOpenStage(stage);
 const W = 384, H = 216, DT = 1 / 60;
 const GRAV = 700, RUN = 90, JUMPV = 280, JUMPV2 = 250, MAXFALL = 360;
 let LEVEL_W = 3334, CAM_MAX = LEVEL_W - W; const BX = 3196;
 const WATER = { x0: 1180, x1: 1560, surf: 186 };
 const $ = id => document.getElementById(id);
+const musicTemplate=$('stageMusicTemplate');
+if(WUKONG&&musicTemplate?.content)musicTemplate.replaceWith(musicTemplate.content.cloneNode(true));else musicTemplate?.remove?.();
+document.body.classList.toggle('fixed-music',!WUKONG);
 const rnd = Math.random;
 let coop = null, primaryContext = null, soloSettings = null;
 let remoteInput = {}, remoteWaiting = false;
 let snapshotClock = 0, pingClock = 0;
 const cooperative = () => !!coop?.playing;
 const players = () => cooperative() && G.p2 ? primaryContext ? [primaryContext, G.p] : [G.p, G.p2] : [G.p];
-const coverArt = new Image(); coverArt.fetchPriority = 'high'; coverArt.decoding = 'async'; if (!WUKONG) coverArt.src = '/games/contra2026/assets/cover-zh.webp';
+const coverArt = new Image(); coverArt.fetchPriority = 'high'; coverArt.decoding = 'async'; if (!WUKONG) coverArt.src = versionedAssetUrl('/games/contra2026/assets/cover-zh.webp');
+$('scrLoading').style.setProperty('--loading-cover',`url("${WUKONG?'/games/wukong/assets/heaven-panorama.webp':versionedAssetUrl('/games/contra2026/assets/cover-zh.webp')}")`);
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cv = $('game'), ctx = cv.getContext('2d');
-const stageOneArt = WUKONG ? new WukongSkin({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image() }) : new StageOneArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), autoLoad:false });
+const stageOneArt = WUKONG ? new WukongSkin({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), autoLoad:false }) : new StageOneArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), autoLoad:false });
 const stageTwoArt = new StageTwoArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), baseArt:stageOneArt, priority:'low', autoLoad:false });
+const stageFourArt = new StageFourArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), baseArt:stageOneArt, priority:'low', autoLoad:false });
+const stageThreeArt = new StageThreeArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), baseArt:stageOneArt, priority:'low', autoLoad:false });
+const stageFiveArt = new StageFiveArt({ createCanvas: () => document.createElement('canvas'), imageFactory: () => new Image(), baseArt:stageOneArt, priority:'low', autoLoad:false });
 const wukong = WUKONG ? stageOneArt : null;
 ctx.imageSmoothingEnabled = false;
 
@@ -517,30 +579,18 @@ const TURRETS = [[888,176],[1720,176],[2288,96],[2350,176],[2700,176]];
 const PODS = [{ at: 160, kind: 'M', y0: 70 }, { at: 520, kind: 'g', y0: 64 }, { at: 980, kind: 'S', y0: 58 }, { at: 1420, kind: 'B', y0: 64 }, { at: 1700, kind: 'u', y0: 62 }, { at: 1880, kind: 'm', y0: 66 }, { at: 2040, kind: 'R', y0: 66 }, { at: 700, kind: 'c', y0: 62 }, { at: 2300, kind: 'f', y0: 60 }, { at: 2780, kind: 't', y0: 60 }, { at: 2560, kind: 'h', y0: 56 }, { at: 2680, kind: 'S', y0: 58 }];
 // ---------- stage 3 · 峡谷瀑布: a vertical climb; the camera only scrolls up ----------
 const SOLIDS1 = solids.slice();
-const TOP_Y = -1526; // camera stops here: the boss arena
-const SOLIDS3 = [
-  { x: 0, y: 176, w: 384, h: 40, g: 1 },
-  ...[[40,150,130],[170,300,84],[250,372,38],[120,240,-8],[12,124,-54],[150,270,-100],[262,374,-146],[110,230,-192],[10,120,-238],[140,250,-284],
-      [250,372,-330],[150,260,-376],[30,150,-422],[150,250,-468],[260,372,-514],[140,240,-560],[20,130,-606],[130,250,-652],[250,370,-698],[140,250,-744],
-      [20,140,-790],[150,260,-836],[260,372,-882],[120,240,-928],[10,120,-974],[130,250,-1020],[250,374,-1066],[140,250,-1112],[20,140,-1158],[150,260,-1204],
-      [264,374,-1250],[120,250,-1296],[40,120,-1400],[264,344,-1400]].map(([a, b, y]) => ({ x: a, y, w: b - a, h: 8, g: 0 })),
-  { x: 0, y: -1350, w: 384, h: 8, g: 0, solid: 1 },
-];
-const SNIPERS3 = [[280,84],[60,-54],[320,-146],[60,-238],[310,-330],[80,-606],[310,-698],[60,-974],[320,-1066],[70,-1158]];
-const TURRETS3 = [[14,-30],[370,-290],[14,-520],[370,-760],[14,-1010],[370,-1230]];
-const BOXES3 = [[200,-8,'k'],[90,-422,'M'],[190,-744,'j'],[200,-1112,'F']];
-const PODS3 = [{ atY: -40, kind: 'S', y0: 60 }, { atY: -330, kind: 'k', y0: 50 }, { atY: -600, kind: 'j', y0: 56 }, { atY: -860, kind: 'g', y0: 60 }, { atY: -1100, kind: 'k', y0: 52 }, { atY: -1300, kind: 'h', y0: 60 }, { atY: -1480, kind: 'R', y0: 70 }];
+const TOP_Y = STAGE_THREE.top;
 // ---------- stage 5 · 极地冰原: a horizontal snowfield with slippery ice, crevasses and blizzards ----------
-const LEVEL_W5 = 3400;
+const LEVEL_W5 = STAGE_FIVE_ROUTE.length;
 const SOLIDS5 = [
-  ...[[0,520,0],[520,760,1],[820,1100,0],[1100,1420,1],[1490,1800,0],[1800,2000,1],[2060,2300,1],[2300,2620,0],[2680,3400,0]].map(([a, b, ic]) => ({ x: a, y: 176, w: b - a, h: 40, g: 1, ice: ic })),
-  ...[[240,128,96],[420,100,80],[600,124,90],[860,120,96],[980,92,80,1],[1180,124,100],[1300,96,80],[1432,120,64],[1560,124,96],[1700,96,80,1],[1880,124,96],[2000,108,72],[2150,124,90],[2360,120,96],[2480,92,80],[2630,116,72],[2800,124,96],[2920,96,80]].map(([x, y, w, ic]) => ({ x, y, w, h: 8, g: 0, ice: ic || 0 })),
+  ...[[0,520,0],[520,760,1],[820,1100,0],[1100,1420,1],[1490,1800,0],[1800,2000,1],[2060,2300,1],[2300,2620,0],[2680,3660,0],[3720,3980,0],[3980,4360,1],[4360,4480,0],[4480,5000,0]].map(([a, b, ic]) => ({ x: a, y: 176, w: b - a, h: 40, g: 1, ice: ic })),
+  ...[[240,128,96],[420,100,80],[600,124,90],[860,120,96],[980,92,80,1],[1180,124,100],[1300,96,80],[1432,120,64],[1560,124,96],[1700,96,80,1],[1880,124,96],[2000,108,72],[2150,124,90],[2360,120,96],[2480,92,80],[2630,116,72],[2800,124,96],[2920,96,80],[3500,124,100],[3640,98,84],[3880,124,100],[4060,120,96],[4240,94,80],[4420,124,96]].map(([x, y, w, ic]) => ({ x, y, w, h: 8, g: 0, ice: ic || 0 })),
 ];
-const SNIPERS5 = [[440,100],[1000,92],[1320,96],[1720,96],[2170,124],[2500,92],[2940,96]];
-const TURRETS5 = [[900,176],[1600,176],[2240,176],[2380,120],[2760,176]];
+const SNIPERS5 = [[440,100],[1000,92],[1320,96],[1720,96],[2170,124],[2500,92],[2940,96],[3660,98],[4260,94]];
+const TURRETS5 = [[900,176],[1600,176],[2240,176],[2380,120],[2760,176],[3900,176],[4400,176]];
 const MORTARS5 = [1150, 1950, 2560, 2890];
-const BOXES5 = [[380,'i'],[1650,'v'],[2440,'L'],[2720,'S']];
-const PODS5 = [{ at: 120, kind: 'M', y0: 66 }, { at: 460, kind: 'i', y0: 60 }, { at: 900, kind: 'S', y0: 58 }, { at: 1250, kind: 'v', y0: 62 }, { at: 1600, kind: 'g', y0: 60 }, { at: 1900, kind: 'i', y0: 56 }, { at: 2000, kind: 'H', y0: 64 }, { at: 2200, kind: 'F', y0: 60 }, { at: 2450, kind: 'v', y0: 58 }, { at: 2700, kind: 'R', y0: 64 }, { at: 2860, kind: 'f', y0: 60 }];
+const BOXES5 = [[380,'i'],[1650,'v'],[2440,'L'],[2720,'S'],[3480,'L'],[4330,'S']];
+const PODS5 = [{ at: 120, kind: 'M', y0: 66 }, { at: 460, kind: 'i', y0: 60 }, { at: 900, kind: 'S', y0: 58 }, { at: 1250, kind: 'v', y0: 62 }, { at: 1600, kind: 'g', y0: 60 }, { at: 1900, kind: 'i', y0: 56 }, { at: 2000, kind: 'H', y0: 64 }, { at: 2200, kind: 'F', y0: 60 }, { at: 2450, kind: 'v', y0: 58 }, { at: 2700, kind: 'R', y0: 64 }, { at: 2860, kind: 'f', y0: 60 },{ at: 3420, kind: 'g', y0: 60 },{ at: 3980, kind: 'v', y0: 58 },{ at: 4450, kind: 'L', y0: 64 }];
 // ---------- stage 6 · 高温能源厂: furnace halls with lava pits and timed flame jets ----------
 const LEVEL_W6 = 3300;
 const SOLIDS6 = [
@@ -634,10 +684,12 @@ const SUBS11 = [[1180,100],[2200,110]];
 const PODS11 = [{ at: 60, kind: 'M', y0: 100 }, { at: 360, kind: 'r', y0: 100 }, { at: 760, kind: 'S', y0: 110 }, { at: 1160, kind: 'A', y0: 100 }, { at: 1480, kind: 'g', y0: 110 }, { at: 1820, kind: 'r', y0: 100 }, { at: 2100, kind: 'H', y0: 100 }, { at: 2400, kind: 'A', y0: 110 }, { at: 2650, kind: 'r', y0: 100 }];
 function floorBelow(x, y) { let best = 1e9; for (const s2 of solids) if (!s2.gone && !s2.wall && x >= s2.x && x <= s2.x + s2.w && s2.y > y && s2.y < best) best = s2.y; return best === 1e9 ? SEA_FLOOR : best; }
 function setLevel(n) {
-  solids.length = 0; for (const s2 of (n === 3 ? SOLIDS3 : n === 5 ? SOLIDS5 : n === 6 ? SOLIDS6 : n === 7 ? SOLIDS7 : n === 8 ? SOLIDS8 : n === 9 ? SOLIDS9 : n === 10 ? SOLIDS10 : n === 11 ? SOLIDS11 : SOLIDS1)) solids.push(s2);
+  solids.length = 0; for (const s2 of (n === 3 ? createStageThreeSolids() : n === 5 ? SOLIDS5 : n === 6 ? SOLIDS6 : n === 7 ? SOLIDS7 : n === 8 ? SOLIDS8 : n === 9 ? SOLIDS9 : n === 10 ? SOLIDS10 : n === 11 ? SOLIDS11 : SOLIDS1)) solids.push(s2);
   LEVEL_W = n === 5 ? LEVEL_W5 : n === 6 ? LEVEL_W6 : n === 7 ? LEVEL_W7 : n === 8 ? LEVEL_W8 : n === 9 ? LEVEL_W9 : n === 10 ? LEVEL_W10 : n === 11 ? LEVEL_W11 : 3334; CAM_MAX = LEVEL_W - W;
 }
 function xMax(m) { // right edge the player can reach in the side-scrolling stages
+  // The celestial arena has no fortress wall; the exit stays locked by updateBoss.
+  if (WUKONG && G.stage === 1) return LEVEL_W - m;
   if (G.stage === 1) return G.boss.dead?FORTRESS_EXIT.x+FORTRESS_EXIT.w/2+5:FORTRESS_ART.wallX-m;
   if (G.stage === 5) { const T = G.tank; return T && !T.dead ? Math.min(LEVEL_W - m, T.x - 7 - (m - 10)) : LEVEL_W - m; }
   if (G.stage === 7 || G.uw) return LEVEL_W - m;
@@ -653,6 +705,8 @@ const SPECIALS = { g: '手雷', f: '闪光弹', m: '摩托车', h: '直升机', 
 const STAGE_ONLY = { c: 1, t: 1, e: 2, d: 2, k: 3, j: 3, o: 4, n: 4, i: 5, v: 5, x: 6, w: 6, y: 7, a: 7, p: 8, z: 8, b: 9, l: 9, q: 10, s: 10, r: 11, A: 11, C: 12, D: 12, E: 13, P: 13, K: 14, T: 14, G: 15, W: 15, N: 16, Q: 16 };
 const SP_SHORT = { g: '手雷', f: '闪光', m: '摩托', h: '飞机', u: '蘑菇', c: '迷彩', t: '炸药', e: '电磁', d: '盾牌', k: '钩爪', j: '头盔', o: '诱饵', n: '扫雷', i: '冰爪', v: '热像', x: '防火', w: '液氮', y: '磁靴', a: '无人机', p: '声波', z: '抗酸', b: '氧气', l: '鱼雷', q: '气囊', s: '声呐', r: '冷却', A: '推进', C: '涡流', D: '时缓', E: '照明', P: '荧光', K: '绝缘', T: '阀门', G: '炸药', W: '暖流', N: '护盾', Q: '哨炮' };
 const SP_CD = 2, INV_MAX = 3;
+
+if(WUKONG){Object.assign(SPECIALS,WUKONG_MAGIC_NAMES);Object.assign(SP_SHORT,WUKONG_MAGIC_SHORT);Object.assign(STAGE_ONLY,WUKONG_MAGIC_STAGE);}
 
 const WEAP = {
   rifle:   { name: '步枪', cd: 0.24, max: 4, per: 1, spd: 270 },
@@ -686,29 +740,54 @@ function groundAt(x) { return solids.find(s => s.g && x >= s.x + 6 && x <= s.x +
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
 // ================= settings =================
-const SET = { music: 'on', sfx: 'on', inf: 'on', diff: 'normal', autofire: 'on', shake: 'on', scan: 'off', pad: 'm', v: 2 };
+const SET = { music: 'on', sfx: 'on', musicVolume:WUKONG?30:100, sfxVolume:100, inf: 'on', diff: 'normal', autofire: 'on', shake: 'on', scan: 'off', pad: 'm', v: 2 };
 try { const saved = JSON.parse(localStorage.getItem(WUKONG ? 'wukong-settings' : 'chiyan-settings') || '{}'); if (saved.v !== 2) { delete saved.scan; saved.v = 2; } Object.assign(SET, saved); } catch (e) {}
-SET.stageMusic = normalizeStageMusic(SET.stageMusic);
+Object.assign(SET,normalizeAudioMix(SET,{musicVolume:WUKONG?30:100,sfxVolume:100}));
+if(WUKONG)SET.stageMusic=normalizeWukongMusic(SET.stageMusic);else delete SET.stageMusic;
 const stageMusicSession = new StageMusicSession();
+const gameMusicOptions=stage=>WUKONG&&stage===1?WUKONG_MUSIC_OPTIONS:stageMusicOptions(stage);
+const gameMusicRecord=(stage,choice)=>WUKONG&&stage===1&&choice!=='off'?WUKONG_MUSIC_RECORD:musicRecord(stage,choice);
+function sceneMusicTrack(state){
+  if(!WUKONG)return fixedMusicTrack(state);
+  const selected=stageMusicSession.forScene(state,SET.stageMusic);
+  return WUKONG?wukongMusicTrack(state,SET.stageMusic,selected):selected;
+}
+const lifeCheat=new ThirtyLivesCheat();
+function infiniteLives(){return SET.inf==='on'&&!G.thirtyLives;}
+function gameplaySettings(){return G.thirtyLives?{...SET,inf:'off'}:SET;}
 let HI = 20000;
 try { HI = Math.max(HI, +localStorage.getItem(WUKONG ? 'wukong-hi' : 'chiyan-hi') || 0); } catch (e) {}
 function saveSettings() { try { localStorage.setItem(WUKONG ? 'wukong-settings' : 'chiyan-settings', JSON.stringify(SET)); } catch (e) {} }
 
 // ================= audio =================
 let AC = null, master, sfxGain, musGain, synthGain, noiseBuf, muted = false;
-const referenceMusic = new ReferenceMusic({ getContext: () => AC, getOutput: () => musGain });
-const gameVisualResources = gameResourceJobs({
-  arts: [stageOneArt, stageTwoArt], imageFactory: () => new Image(),
-  cover: '/games/contra2026/assets/cover-zh.webp',
-  records: OPEN_STAGES.flatMap(stage => stageMusicOptions(stage).map(({value}) => musicRecord(stage,value).art)),
+const musicTracks=WUKONG?{...REFERENCE_TRACKS,...WUKONG_MUSIC_TRACKS}:CONTRA_TRACKS;
+const referenceMusic = new ReferenceMusic({ getContext: () => AC, getOutput: () => musGain, tracks:musicTracks });
+const wukongBattleAudio=WUKONG?new WukongBattleAudio({getContext:()=>AC,getOutput:()=>sfxGain,enabled:()=>SET.sfx==='on'&&!muted}):null;
+const wukongHeroAudio=WUKONG?new WukongHeroAudio({getContext:()=>AC,getOutput:()=>sfxGain,enabled:()=>SET.sfx==='on'&&SET.sfxVolume>0&&!muted}):null;
+const gameResourceOptions = {
+  arts: [stageOneArt, stageTwoArt, stageThreeArt, stageFourArt, stageFiveArt], imageFactory: () => new Image(),
+  cover: WUKONG?null:'/games/contra2026/assets/cover-zh.webp',
+  records: WUKONG?OPEN_STAGES.flatMap(stage => gameMusicOptions(stage).map(({value}) => gameMusicRecord(stage,value).art)):[],
   tracks: {}, music: referenceMusic, fonts: document.fonts?.ready
-});
-let gameResources = new ResourcePreloader(gameVisualResources), backgroundMusic = null;
-const startupMusicTrack = stage => stage === 1 ? 'opening' : 'stage2';
+};
+const resourceCache = new Set();
+const gameVisualResources = stage => WUKONG ? gameResourceJobs(gameResourceOptions) : stageResourceJobs(stage,gameResourceOptions);
+const startupMusicKeys = stage => WUKONG ? (stage===1?WUKONG_STARTUP_MUSIC:[startupMusicTrack(stage)]) : SET.music==='on'?fixedStageMusicKeys(stage):[];
+const stageJobs = stage => [...gameVisualResources(stage),...musicResourceJobs(referenceMusic,startupMusicKeys(stage)),...(WUKONG&&stage===1?[wukongBattleAudio.resourceJob(),wukongHeroAudio.resourceJob()]:[])];
+const stageResourcesReady = stage => stageJobs(stage).every(job=>resourceCache.has(job.id));
+let gameResources = new ResourcePreloader([]), backgroundMusic = null, remoteWorld = null;
+function flushRemoteWorld() {
+  const world=remoteWorld;remoteWorld=null;
+  if(world&&coop.role==='guest'&&cooperative())coop.callbacks.state(world);
+}
+const startupMusicTrack = stage => WUKONG?(stage === 1 ? 'stage1' : stage === 3 ? 'stage3' : stage === 4 ? 'stage4' : 'stage2'):fixedStageMusicKeys(stage)[0];
 function startBackgroundMusic() {
+  if(!WUKONG)return;
   if (backgroundMusic || !gameResources.ready) return;
-  const preferred = musicForScene({mode:'play',stage:G.stage,boss:{},base:{def:{}}},SET.stageMusic);
-  const keys = [preferred,...Object.keys(REFERENCE_TRACKS)].filter(key => REFERENCE_TRACKS[key]);
+  const scene={mode:'play',stage:G.stage,boss:{},base:{def:{}}};
+  const baseTrack=musicForScene(scene,SET.stageMusic),preferred=WUKONG?wukongMusicTrack(scene,SET.stageMusic,baseTrack):baseTrack;
+  const keys = [preferred,...Object.keys(musicTracks)].filter(key => musicTracks[key]&&(!WUKONG||!['opening','stage1orchestral','stage1rock','stage1epic','stage1industrial','stage1cyberpunk'].includes(key)));
   backgroundMusic = new ResourcePreloader(musicResourceJobs(referenceMusic,keys),{concurrency:1});
   void backgroundMusic.load(() => Music.sync()).catch(() => {});
 }
@@ -719,8 +798,8 @@ function initAudio() {
     if (!AC) {
       AC = new (window.AudioContext || window.webkitAudioContext)();
       master = AC.createGain(); master.gain.value = muted ? 0 : 0.6; master.connect(AC.destination);
-      sfxGain = AC.createGain(); sfxGain.gain.value = 0.9; sfxGain.connect(master);
-      musGain = AC.createGain(); musGain.gain.value = 0.55; musGain.connect(master);
+      sfxGain = AC.createGain(); sfxGain.connect(master);
+      musGain = AC.createGain(); musGain.connect(master);
       synthGain = AC.createGain(); synthGain.gain.value = 0; synthGain.connect(musGain);
       applyAudio();
       noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
@@ -752,6 +831,19 @@ const sfx = {
   spread() { tone(700, 0.07, 'sawtooth', 0.05, 250); noise(0.05, 0.06, 3000); },
   eshot() { tone(520, 0.06, 'triangle', 0.06, 300); },
   hit() { tone(260, 0.04, 'square', 0.06, 140); },
+  staffHit(heavy=false,metal=false) {
+    noise(heavy?.095:.055,heavy?.15:.10,metal?1800:900);
+    tone(heavy?145:205,heavy?.13:.075,'triangle',heavy?.11:.075,heavy?46:75);
+    tone(metal?1100:620,.022,'square',.018,180);
+  },
+  hurt() { noise(.11,.12,570);tone(165,.14,'sawtooth',.07,65); },
+  charge(phase) {
+    if(phase==='start')tone(180,.15,'sine',.025,330);
+    else if(phase==='ready'){tone(590,.12,'sine',.045,790);tone(295,.12,'triangle',.025,395);}
+    else{tone(880,.17,'sine',.055,1200);tone(440,.17,'triangle',.035,600);}
+  },
+  staffQi(strength) {noise(strength===2?.24:.16,strength===2?.15:.09,1700);tone(strength===2?210:310,.19,'triangle',.10,65);tone(740,.12,'sine',.035,280);},
+  heal() { [523,659,784].forEach((f,i)=>tone(f,.18,'sine',.07,0,AC&&AC.currentTime+i*.075)); },
   boom() { noise(0.35, 0.35, 900); tone(120, 0.3, 'triangle', 0.25, 40); },
   big() { noise(0.9, 0.5, 600); tone(90, 0.8, 'triangle', 0.35, 30); },
   jump() { tone(300, 0.08, 'square', 0.03, 520); },
@@ -791,13 +883,29 @@ const Music = {
   sync() {
     if (G.mode === 'loading') { this.pause(); return; }
     if (document.hidden || G.mode === 'pause' || (G.mode === 'settings' && G.settingsFrom === 'pause')) { this.pause(); return; }
-    const selected = stageMusicSession.forScene(G, SET.stageMusic);
+    const selected = sceneMusicTrack(G);
+    if(!WUKONG){
+      if(selected==='synth'&&SET.music==='on'&&this.active&&AC&&gameResources.ready){
+        referenceMusic.stop();this.on=true;synthGain.gain.value=1;
+        if(!this.timer)this.timer=setInterval(()=>this.tick(),25);return;
+      }
+      this.on=false;if(synthGain)synthGain.gain.value=0;
+      if(!gameResources.ready){this.pause();return;}
+      if(SET.music==='on'&&selected&&(this.active||G.mode!=='play')){if(AC)referenceMusic.play(selected);return;}
+      referenceMusic.stop();return;
+    }
+    if (G.mode === 'title' || G.mode === 'settings' && G.settingsFrom === 'title') {
+      this.on=false;if(synthGain)synthGain.gain.value=0;
+      if(AC&&SET.music==='on')referenceMusic.play(selected);else referenceMusic.stop();
+      return;
+    }
     if (!gameResources.ready || (!backgroundMusic && !['cine','intro','play'].includes(G.mode))) { this.pause(); return; }
     const cached = gameResources.done.has('music:'+selected) || backgroundMusic?.done.has('music:'+selected);
-    const track = REFERENCE_TRACKS[selected] && !cached ? (gameResources.done.has('music:opening') ? 'opening' : 'stage2') : selected;
+    const fallback = startupMusicTrack(G.stage);
+    const track = musicTracks[selected] && !cached ? (gameResources.done.has('music:'+fallback) ? fallback : null) : selected;
     this.on = false;
     if (synthGain) synthGain.gain.value = 0;
-    if (track && track !== 'synth' && (this.active || G.mode !== 'play')) { if (AC) referenceMusic.play(track); return; }
+    if (track && track !== 'synth' && (this.active || G.mode !== 'play')) { if (AC) referenceMusic.play(track,WUKONG&&G.mode==='cine'&&G.cine?.kind==='open'?{offset:0}:undefined); return; }
     referenceMusic.stop();
     if (track === 'synth' && this.active && AC) {
       this.on = true;
@@ -822,11 +930,14 @@ const Music = {
   },
 };
 function applyAudio() {
-  if (sfxGain) sfxGain.gain.value = SET.sfx === 'on' ? 0.9 : 0;
-  if (musGain) musGain.gain.value = SET.music === 'on' ? 0.55 : 0;
+  const levels=audioMixLevels(SET);
+  if(levels.sfx===0){wukongBattleAudio?.stopAll();wukongHeroAudio?.stopAll();}
+  if (sfxGain) sfxGain.gain.value = levels.sfx;
+  if (musGain) musGain.gain.value = levels.music;
 }
 function setMuted(m) {
   muted = m;
+  if(m){wukongBattleAudio?.stopAll();wukongHeroAudio?.stopAll();}
   try { localStorage.setItem('chiyan-muted', m ? '1' : '0'); } catch (e) {}
   if (master) master.gain.value = m ? 0 : 0.6;
   $('muteWave').setAttribute('display', m ? 'none' : 'inline'); $('muteX').setAttribute('display', m ? 'inline' : 'none');
@@ -854,21 +965,21 @@ function unlockReferenceAudio() {
 addEventListener('pointerdown', unlockReferenceAudio, true);
 addEventListener('keydown', unlockReferenceAudio, true);
 
-function pollPad() {
-  const r = { up: false, down: false, left: false, right: false, fire: false, jump: false, gren: false, nade: false, cyc: false, start: false };
-  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
-  for (const gp of pads) {
-    if (!gp) continue;
-    const b = i => gp.buttons[i] && gp.buttons[i].pressed;
-    const ax = gp.axes[0] || 0, ay = gp.axes[1] || 0;
-    r.left = r.left || ax < -0.45 || b(14); r.right = r.right || ax > 0.45 || b(15);
-    r.up = r.up || ay < -0.45 || b(12); r.down = r.down || ay > 0.45 || b(13);
-    r.jump = r.jump || b(0); r.fire = r.fire || b(2) || b(5) || b(7); r.nade = r.nade || b(1); r.gren = r.gren || b(3); r.cyc = r.cyc || b(4) || b(6); r.start = r.start || b(9);
-  }
-  return r;
+function updateGamepadUI(state) {
+  const connected=state.status==='connected';
+  const status=$('gamepad-status'),indicator=$('gamepad-indicator');
+  if(status){status.textContent=connected?state.active.name:({waiting:'等待手柄 · 点击游戏后按 A 激活',unsupported:'浏览器未提供手柄接口',blocked:'暂时无法读取手柄'}[state.status]||'等待手柄');status.title=connected?state.active.id:'';}
+  if(indicator)indicator.textContent=connected?'手柄已连接 · '+state.active.name:'手柄：点击游戏后按 A 激活';
 }
+const gamepads=new GamepadInput({
+  getGamepads:typeof navigator.getGamepads==='function'?()=>navigator.getGamepads():undefined,
+  onChange:updateGamepadUI
+});
+function pollPad() { return gamepads.poll(); }
+addEventListener('gamepadconnected',pollPad);
+addEventListener('gamepaddisconnected',pollPad);
 const T = { up: false, down: false, left: false, right: false, fire: false, jump: false, gren: false, nade: false };
-const prev = { jump: false, start: false, fire: false, gren: false, nade: false, cyc: false, esc: false, up: false, down: false };
+const prev = { jump: false, start: false, fire: false, gren: false, nade: false, cyc: false, esc: false, up: false, down: false, left:false, right:false };
 function readInput() {
   const gp = pollPad();
   const I = {
@@ -882,10 +993,11 @@ function readInput() {
     nade: K.KeyI || K.KeyV || gp.nade || T.nade,
     cyc: K.KeyQ || gp.cyc,
     start: K.Enter || gp.start,
-    esc: K.Escape || K.KeyP,
+    esc: K.Escape || K.KeyP || gp.back || (gp.cancel && ['title','select','pause','settings','lobby','loading','clear','over'].includes(G.mode)),
   };
   I.jumpEdge = I.jump && !prev.jump; I.startEdge = I.start && !prev.start; I.fireEdge = I.fire && !prev.fire; I.grenEdge = I.gren && !prev.gren; I.nadeEdge = I.nade && !prev.nade; I.cycEdge = I.cyc && !prev.cyc; I.escEdge = I.esc && !prev.esc; I.upEdge = I.up && !prev.up; I.downEdge = I.down && !prev.down;
   prev.jump = I.jump; prev.start = I.start; prev.fire = I.fire; prev.gren = I.gren; prev.nade = I.nade; prev.cyc = I.cyc; prev.esc = I.esc; prev.up = I.up; prev.down = I.down;
+  I.leftEdge=I.left&&!prev.left;I.rightEdge=I.right&&!prev.right;prev.left=I.left;prev.right=I.right;
   return I;
 }
 
@@ -943,23 +1055,29 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 // ================= game state =================
 const G = { mode: 'title' };
 function newPlayer(x) {
-  return { pid: 1, x, y: 176, vx: 0, vy: 0, face: 1, onGround: true, support: null, inWater: false, prone: false, dive: false, spin: false,
+  return { pid: 1, ...(WUKONG?{heroFrames:true,...newVitality()}:{}), x, y: 176, vx: 0, vy: 0, face: 1, onGround: true, support: null, inWater: false, prone: false, dive: false, spin: false,
     dropT: 0, coyote: 0, airJumps: 0, cool: 0, wantFire: false, spCd: 0, ride: null, rideT: 0, giantT: 0, giantHits: 0, giantGraceT: 0, giantHitT: 0, giantCrushT: 0, wet: false, camoT: 0, riot: 0, helmT: 0, cleatT: 0, thermT: 0, fireproofT: 0, magnetT: 0, droneT: 0, droneCd: 0, acidT: 0, o2T: 0, coolT: 0, boostT: 0, torpCd: 0, dashT: 0, dashCd: 0, iceAir: false, skid: false, hook: null, invT: 2, shieldT: 0, dead: false, deadT: 0, weapon: 'rifle', rapid: false, ax: 1, ay: 0, anim: 0, flashT: 0 };
 }
 function reset(stage, carry) {
+  wukongBattleAudio?.resetEvents();
+  wukongHeroAudio?.resetEvents();
+  const thirtyLives=!WUKONG&&(lifeCheat.enabled||!!(carry&&G.thirtyLives));
   const keep2 = carry && G.p2 ? { weapon: G.p2.weapon, rapid: G.p2.rapid, inv: G.inv2 || [] } : null;
   const keep = carry && G.p ? { score: G.score, lives: G.lives, nextLife: G.nextLife, deaths: G.deaths, time: G.time, inv: G.inv.slice(), sel: G.sel, weapon: G.p.weapon, rapid: G.p.rapid } : null;
   Object.assign(G, {
-    camX: 0, camY: 0, t: 0, time: 0, score: 0, lives: SET.diff === 'easy' ? 5 : 3, nextLife: 20000, deaths: 0, shake: 0,
+    camX: 0, camY: 0, t: 0, time: 0, score: 0, lives: thirtyLives?THIRTY_LIVES:SET.diff === 'easy' ? 5 : 3, thirtyLives, nextLife: 20000, deaths: 0, shake: 0,
     p: newPlayer(40), pb: [], eb: [], gr: [], en: [], flashT: 0, nadeCd: 0, freezeT: 0, empT: 0, decoyT: 0, decoyX: 0, sweepT: 0, inv: [], sel: 0, pods: [], items: [], fx: [],
-    spawnT: 2.5, podTrig: PODS.map(p => ({ ...p, done: false })), boss: makeBoss(), bannerT: 0,
+    spawnT: 2.5, podTrig: [...PODS,...(WUKONG&&(stage||1)===1?[...WUKONG_MAGIC_DROPS,...HEALING_DROPS]:[])].map(p => ({ ...p, done: false })), boss: makeBoss(), bannerT: 0,
   });
+  delete G.wukongSupplies;
+  delete G.wukongRecovery;delete G.martialCombo;delete G.hitStop;delete G.hitStopInputs;delete G.impactPauseLock;delete G.martialSoundAt;
   G.p.invT = 1.5;
   setLevel(stage === 3 || stage >= 5 ? stage : 1);
   resetBridges();
-  for (const [x, y] of SNIPERS) G.en.push({ t: 'snp', x, y, hp: 1, fireT: (stage || 1) === 1 ? 2.4 + rnd() : 1 + rnd(), face: -1, ax: -1, ay: 0, flash: 0 });
+  for (const [x, y] of SNIPERS) G.en.push({ t: 'snp', x, y, hp: WUKONG&&(stage||1)===1?HEAVEN_HP.snp:1, ...(WUKONG&&(stage||1)===1?{maxHp:HEAVEN_HP.snp}:{}), fireT: (stage || 1) === 1 ? 2.4 + rnd() : 1 + rnd(), face: -1, ax: -1, ay: 0, flash: 0 });
   BOXES.forEach(([x, item], i) => G.en.push({ t: 'box', x, y: (stage || 1) === 1 ? groundAt(x)?.y || 176 : 176, hp: 4, item, open: false, st: 0.8 + i * 0.35, flash: 0 }));
-  for (const [x, y] of TURRETS) G.en.push({ t: 'tur', x, y: ((stage || 1) === 1 && y === 176 ? groundAt(x)?.y || y : y) - 16, hp: 6, idx: 6, rotT: 0, fireT: (stage || 1) === 1 ? 2.2 + rnd() : 0.9, flash: 0 });
+  for (const [x, y] of TURRETS) G.en.push({ t: 'tur', x, y: ((stage || 1) === 1 && y === 176 ? groundAt(x)?.y || y : y) - 16, hp: WUKONG&&(stage||1)===1?HEAVEN_HP.tur:6, ...(WUKONG&&(stage||1)===1?{maxHp:HEAVEN_HP.tur}:{}), idx: 6, rotT: 0, fireT: (stage || 1) === 1 ? 2.2 + rnd() : 0.9, flash: 0 });
+  if(WUKONG&&(stage||1)===1)G.wukongFlights=[320,900,1520,2140].map(at=>({at,done:false}));else delete G.wukongFlights;
   G.stage = stage || 1;
   stageMusicSession.begin(G.stage);
   if (G.stage === 1) { G.p.y = groundAt(G.p.x)?.y || 144; G.p.support = groundAt(G.p.x); }
@@ -1007,7 +1125,7 @@ function addScore(n) {
   if (G.score > HI) { HI = G.score; try { localStorage.setItem(WUKONG ? 'wukong-hi' : 'chiyan-hi', String(HI)); } catch (e) {} }
   if (G.score >= G.nextLife) { G.lives++; G.nextLife += 70000; banner('奖励一条命'); sfx.pick(); }
 }
-function banner(text, sec) { G.bannerText = text; G.bannerT = sec || 1.8; }
+function banner(text, sec) { G.bannerText = WUKONG&&G.stage===1?wukongMountText(text):text; G.bannerT = sec || 1.8; }
 function shake(n) { if (!reduceMotion && SET.shake === 'on') G.shake = Math.max(G.shake, n); }
 
 // ================= effects =================
@@ -1039,6 +1157,23 @@ function spark(x, y, options={}) {
 }
 function puff(x, y) { for (let i = 0; i < 5; i++) G.fx.push({ k: 'puff', x: x + (i - 2) * 3, y: y - 2, vx: (i - 2) * 28, vy: 24, t: 0, life: 0.25 }); }
 function giantSmashFX(x, y) { G.fx.push({ k: 'stomp', x, y, t: 0, life: .32 }); shake(2.5); }
+function martialImpact(x,y,{heavy=false,player=false,killed=false,metal=false,blood=false,face=1,damage=0,target,weapon,angle=0,form=null}={}) {
+  // A crowd of helpers may hit on adjacent ticks. Bound global pauses while
+  // retaining every enemy's independent recoil, contact flash and damage.
+  if(player||G.hitStop>0||!(G.impactPauseLock>0)){
+    G.hitStop=Math.max(G.hitStop||0,killed?.075:heavy?.065:.04);G.impactPauseLock=.16;
+  }
+  addMartialHit(G.fx,{x,y,target,face,heavy,killed,metal,player,blood,weapon,angle,form,seed:(G.t*131+Math.round(x*17+y*13))|0});
+  if(damage)G.fx.push({k:'combatNumber',x,y:y-6,text:String(damage),player,t:0,life:.55});
+  shake(player?2:heavy||killed?1.8:.7);
+  if(G.martialSoundAt===undefined||G.time-G.martialSoundAt>=.035){
+    G.martialSoundAt=G.time;if(player)sfx.hurt();else sfx.staffHit(heavy||killed,metal);
+  }
+  if(!player){
+    const combo=G.martialCombo??={hits:0,remaining:0};
+    combo.hits=combo.remaining>0?combo.hits+1:1;combo.remaining=1.5;
+  }
+}
 
 // ================= player =================
 function pBox(p) {
@@ -1072,9 +1207,9 @@ function dismount(wreck) {
   p.invT = Math.max(p.invT, 1.5);
   if (was === 'heli') { p.vy = -80; p.onGround = false; p.airJumps = 1; p.spin = true; }
 }
-function killPlayer(force) {
+function killPlayer(force,hit={}) {
   const p = G.p;
-  if (p.dead || G.boss.dead || (G.stage === 5 && G.tank && G.tank.dead) || (G.stage === 6 && G.golem && G.golem.dead) || (G.stage === 7 && G.ship && G.ship.dead) || (G.stage === 8 && G.hive && G.hive.dead) || (G.uw && ((G.stage === 9 && G.shark && G.shark.dead) || (G.stage === 10 && G.ghost && G.ghost.dead) || (G.stage === 11 && G.crab && G.crab.dead) || (G.stage === 12 && G.queen && G.queen.dead) || (G.stage === 13 && G.angler && G.angler.dead) || (G.stage === 14 && G.fcore && G.fcore.dead) || (G.stage === 15 && G.serp && G.serp.dead) || (G.stage === 16 && G.mcore && G.mcore.dead)))) return;
+  if (p.dead || G.boss.dead || (G.stage === 5 && G.fortress?.dead) || (G.stage === 6 && G.golem && G.golem.dead) || (G.stage === 7 && G.ship && G.ship.dead) || (G.stage === 8 && G.hive && G.hive.dead) || (G.uw && ((G.stage === 9 && G.shark && G.shark.dead) || (G.stage === 10 && G.ghost && G.ghost.dead) || (G.stage === 11 && G.crab && G.crab.dead) || (G.stage === 12 && G.queen && G.queen.dead) || (G.stage === 13 && G.angler && G.angler.dead) || (G.stage === 14 && G.fcore && G.fcore.dead) || (G.stage === 15 && G.serp && G.serp.dead) || (G.stage === 16 && G.mcore && G.mcore.dead)))) return;
   if (!force && (p.invT > 0 || p.shieldT > 0)) return;
   if (!force && p.ride) { dismount(true); return; } // the vehicle takes the hit
   if (!force && p.giantT > 0) {
@@ -1085,9 +1220,20 @@ function killPlayer(force) {
     else { spark(p.x, p.y - 30, { material: 'metal' }); banner('巨大化护甲剩余 ' + p.giantHits + ' 次', 1); }
     return;
   }
+  if(WUKONG&&G.stage===1){
+    if(!force){
+      const result=receiveHeroHit(p,hit);if(!result)return;
+      martialImpact(hit.x??p.x,hit.y??p.y-18,{...result,player:true,damage:result.amount});
+      if(result.rageReady&&!result.lethal){banner('怒气已满 · I / 大招可释放',1.8);tone(660,.18,'triangle',.08,990);tone(880,.22,'sine',.06,1320);}
+      if(!result.lethal)return;
+    }else p.hp=0;
+  }
   p.ride = null; endGiant(p, false);
   beginDeath(p);
-  p.weapon = 'rifle'; p.rapid = false; p.shieldT = 0; if (SET.inf !== 'on') G.lives--; G.deaths++; // infinite lives (default): dying still costs your weapon
+  if(WUKONG&&G.stage===1)cancelStaffCharge(p,true);
+  if(WUKONG&&G.stage===1){if(p.hurt)p.hurt=null;if(p.staff)p.staff=null;if(hit.face)p.vx=Math.sign(hit.face)*70;}
+  if(WUKONG&&G.stage===1)clearWukongMagic(p);
+  p.weapon = 'rifle'; p.rapid = false; p.shieldT = 0; if (!infiniteLives()) G.lives--; G.deaths++; // infinite lives (default): dying still costs your weapon
   sfx.die(); shake(3);
 }
 function respawn() {
@@ -1134,11 +1280,12 @@ function withPlayer2(fn) {
 function updatePartner(input) {
   withPlayer2(() => {
     if (G.nadeCd > 0) G.nadeCd -= DT;
-    if (input.nadeEdge && !G.p.dead && !G.p.enteringExit && !G.p.exitEntered && !(isBase()&&(G.base.trans>0||(G.stage===2&&G.base.dead))) && G.nadeCd <= 0) { G.nadeCd = nadeCooldown(); throwGrenade(); }
+    if (input.nadeEdge) requestNade();
     updateActor(input);
   });
 }
 function updateActor(input) {
+  if(G.stage===3&&(G.p.summitEntry||G.p.summitEntered)){advanceSummitEntry(G.p,DT);return;}
   if(G.stage===1&&(G.p.enteringExit||G.p.exitEntered)){advanceExitEntry(G.p,FORTRESS_EXIT,DT);return;}
   const first = G.pb.length, owner = G.p.pid || 1;
   if (isBase()) updatePlayerBase(input); else updatePlayer(input);
@@ -1158,7 +1305,7 @@ function collidePartnerHazards() {
   withPlayer2(() => {
     const p = G.p, b = pBox(p); if (p.dead || !b) return;
     let hit = false;
-    if (G.stage === 3) hit = G.mech.active && G.mech.parts.some(q => q.hp > 0 && overlap(b, q));
+    if (G.stage === 3) hit = G.freezeT<=0&&G.mech.active&&!G.mech.dead&&waterfallArmBoxes(G.mech,STAGE_THREE.top).some(q=>overlap(b,q));
     if (G.stage === 5) hit = G.tank.mode === 'fwd' && overlap(b, tankHull(G.tank));
     if (G.stage === 6) hit = overlap(b, golemBody(G.golem)) || (!(p.fireproofT > 0) && [...G.jets.map(jetBox).filter(Boolean), ...G.s6.waves.map(waveBox)].some(q => overlap(b, q)));
     if (G.stage === 7) hit = G.s7.presses.some(q => q.k >= .15 && overlap(b, pressBox(q))) || (G.ship.active && !G.ship.dead && (overlap(b, shipBody(G.ship)) || G.ship.parts.some(q => q.hp > 0 && overlap(b, q))));
@@ -1186,13 +1333,8 @@ const BASE_ROOMS = [
   { name: '第 3 区 · 武备仓库', guns: [136, 158, 226, 248], sol: 9, chg: 0.35, rol: 7, supply: ['S', 'e'] },
   { name: '指挥中枢', boss: 'eye' },
 ];
-// stage 4 · 地下指挥所·警戒区: alert-mode corridors, rail cannons, faster rolling mines, and the twin-projection boss
-const BASE_ROOMS4 = [
-  { name: '警戒一区', guns: [139, 245], rails: 1, sol: 7, chg: 0.3, rol: 5, rolSpd: 0.55, drop: ['M', 'o'] },
-  { name: '警戒二区', guns: [130, 154, 230, 254], rails: 1, sol: 8, chg: 0.35, rol: 7, rolSpd: 0.58, drop: ['n', 'F'] },
-  { name: '警戒三区', guns: [130, 154, 230, 254], rails: 2, sol: 10, chg: 0.4, rol: 9, rolSpd: 0.62, drop: ['S', 'o'] },
-  { name: '双生投影', boss: 'twin' },
-];
+// stage 4 · 地下基地 · 双生投影: alert-mode corridors, rail cannons, faster rolling mines, and the twin-projection boss
+const BASE_ROOMS4 = STAGE_FOUR_ROOMS;
 const ROOMS = () => G.stage === 4 ? BASE_ROOMS4 : BASE_ROOMS;
 const aimX = () => G.decoyT > 0 ? G.decoyX : G.p.x; // a hologram decoy draws all fire
 function initBase() {
@@ -1206,13 +1348,9 @@ function loadRoom(i) {
   Object.assign(B, { room: i, def, cleared: false, clearT: 0, trans: 0, spawned: 0, rolled: 0, spawnT: 1.4, rollT: 3, coreT: 2, sol: [], rol: [], dead: false, deadT: 0, phase2: false,bossPhase:null,bossTime:0,revealT:0,exitReady:false,bubbleShots:0 });
   G.eb.length = 0; G.pb.length = 0; G.gr.length = 0; G.items = [];
   if (def.boss === 'twin') {
-    B.targets = [
-      { k: 'twin', id: 0, x: 108, y: 96, w: 40, h: 40, hp: 30, max: 30, solid: true, fireT: 1.6, rollT: 2.4, flash: 0, warp: 0 },
-      { k: 'twin', id: 1, x: 236, y: 96, w: 40, h: 40, hp: 30, max: 30, solid: false, fireT: 2.4, rollT: 1.2, flash: 0, warp: 0 },
-    ];
-    B.swapT = 3.2;
-    banner('警告 · 双生投影', 2.2);
-    if (G.mode === 'play') Music.start(true, -1);
+    B.targets=STAGE_FOUR_DEVICES.map(t=>({...t,fireT:2.6+rnd()*2}));B.bossPhase='devices';
+    banner('先摧毁四个防卫装置 · 跳跃射击高位装置',2.5);
+    if(G.mode==='play')Music.start(true,-1);
   } else if (def.boss) {
     B.targets = BASE_BOSS_DEVICES.map(t=>({...t}));B.bossPhase='devices';
     banner('先摧毁两排共六个装置', 2.2);
@@ -1220,11 +1358,12 @@ function loadRoom(i) {
   } else {
     B.targets = def.guns.map(x => ({ k: 'gun', x: x - 9, y: 120, w: 18, h: 14, hp: 4, max: 4, fireT: 1.6 + rnd() * 1.6, flash: 0 }));
     B.targets.push({ k: 'core', x: 179, y: 116, w: 26, h: 22, hp: 12, max: 12, flash: 0 });
-    if (G.stage === 2) B.targets.push({ ...BASE_HIGH_SWITCH, k: 'switch', fireT: 2.8 + rnd(), flash: 0 });
+    if (G.stage === 2 || def.high) B.targets.push({ ...BASE_HIGH_SWITCH, k: 'switch', fireT: 2.8 + rnd(), flash: 0 });
     // rail cannons glide along the back wall in front of everything else, so they are listed (and hit) first
     for (let r = 0; r < (def.rails || 0); r++) B.targets.unshift({ k: 'rail', cx: 182, x: 182, y: 121, w: 20, h: 14, hp: 6, max: 6, fireT: 1.8 + r, flash: 0, ph: r * Math.PI, spd: 1 + r * 0.35 });
     if (i > 0) banner(def.name, 1.4);
   }
+  if(G.stage===4)initStageFourDefenses(B);
 }
 const coreShielded = () => baseCoreShielded(G.base, G.empT);
 const nearestTarget = (x, height) => baseHomingTarget(G.base, x, height, G.stage);
@@ -1235,15 +1374,19 @@ function baseShot(x0, y0, x1, y1, dur) {
 function killSoldier(s) {
   if (s.dead) return;
   s.dead = true;
-  const x = bx(s.u, s.z), y = by(s.z) - (G.stage===2?BASE_SOLDIER.height*.5*baseSoldierScale(s.z):14*sc(s.z));
+  const x = bx(s.u, s.z), y = by(s.z) - (isBase()?BASE_SOLDIER.height*.5*baseSoldierScale(s.z):14*sc(s.z));
   boom(x, y, 6); sfx.boom(); addScore(100);
-  if (G.stage === 2 && s.dropKind && !G.base.cleared && !G.base.dead) {
+  if (isBase() && s.dropKind && !G.base.cleared && !G.base.dead) {
     G.items.push({ base: true, x, y, vy: -90, kind: s.dropKind, fromSoldier: true });
   }
+}
+function killGallerySoldier(s){
+  if(!s||s.dead)return;s.hp=0;s.dead=true;boom(s.x,s.y-12,6);sfx.boom();addScore(100);
 }
 function hitTarget(tg, dmg) {
   const B = G.base;
   if (tg.hp <= 0 || B.dead) return;
+  if(stageFourFacilityClosed(tg)){sfx.hit();return;}
   if (tg.k === 'core' && coreShielded()) { sfx.hit(); return; }
   if (tg.k === 'twin' && !tg.solid) return; // a projection: bullets pass through
   tg.hp -= dmg; tg.flash = 0.06; sfx.hit();
@@ -1259,34 +1402,37 @@ function hitTarget(tg, dmg) {
   }
   else {
     addScore(tg.k === 'sat' ? 1000 : 500);
-    if(tg.k==='device'&&!bossDevicesRemaining(B)){B.bossPhase='reveal';B.revealT=1.2;B.phase2=true;G.eb=[];banner('六个装置已摧毁 · 顶部装置启动',1.8);}
+    if(tg.k==='device'&&!bossDevicesRemaining(B)){B.bossPhase='reveal';B.revealT=G.stage===4?1.4:1.2;B.phase2=true;G.eb=[];banner(G.stage===4?'四个装置已摧毁 · 双生投影启动':'六个装置已摧毁 · 顶部装置启动',1.8);}
     if (tg.k === 'switch') banner(coreShielded() ? '高位机关已摧毁' : '高位机关已摧毁 · 核心防护解除', 1.5);
   }
 }
 function roomCleared() {
   const B = G.base;
   B.cleared = true; B.clearT = 3.5;
+  if(B.gallery)B.gallery.length=0;
   for (const tg of B.targets) if (tg.hp > 0) { tg.hp = 0; boom(tg.x + tg.w / 2, tg.y + tg.h / 2, 10); }
   for (const s of B.sol) if (s.st !== 'charge') { s.st = 'leave'; s.dir = s.u < 0 ? -1 : 1; } else killSoldier(s);
   for (const r of B.rol) { r.dead = true; boom(bx(r.u0 + (r.ut - r.u0) * (1 - r.z), r.z), by(r.z) - 3, 6); }
   for (const b of G.eb) b.dead = true;
-  if (G.stage !== 2) B.def.drop.forEach((k, i) => G.items.push({ base: true, x: i ? 240 + rnd() * 50 : 94 + rnd() * 50, y: 140, vy: -40 - i * 30, kind: k }));
+  // Supplies come from red carriers during the fight, never from room clearance.
   addScore(2000); banner('电网解除', 1.4);
 }
 function bossDown() {
   const B = G.base;
-  B.dead = true; B.deadT = G.stage===2?1.5:3; if(G.stage===2){B.bossPhase='exit';B.exitReady=false;} addScore(10000);
-  if(G.stage===2){G.pb.length=G.gr.length=0;for(const actor of players()){actor.flashT=0;actor.wantFire=false;}}
+  B.dead = true; B.deadT = isBase()?1.5:3; if(isBase()){B.bossPhase='exit';B.exitReady=false;} addScore(10000);
+  if(B.gallery)B.gallery.length=0;
+  if(isBase()){G.pb.length=G.gr.length=0;for(const actor of players()){actor.flashT=0;actor.wantFire=false;}}
   for (const s of B.sol) if (!s.dead) killSoldier(s);
-  B.rol.length = 0; G.eb.length = 0; Music.stop(); banner(B.def.boss === 'twin' ? '投影摧毁' : '中枢摧毁 · 两侧升降梯解锁', 2.4);
+  B.rol.length = 0; G.eb.length = 0; Music.stop(); banner(B.def.boss === 'twin' ? '双生投影摧毁 · 两侧升降梯解锁' : '中枢摧毁 · 两侧升降梯解锁', 2.4);
 }
 function baseBlast(x, y) {
   const B = G.base;
   G.fx.push({ k: 'boom', x, y, t: 0, life: 0.7, s: 24 });
   for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; boom(x + Math.cos(a) * 22, y + Math.sin(a) * 12, 10); }
   sfx.big(); shake(4);
-  for (const tg of B.targets) if (tg.hp > 0 && (tg.k !== 'switch' || baseTargetAtHeight(tg, y)) && Math.hypot(tg.x + tg.w / 2 - x, tg.y + tg.h / 2 - y) < 52) hitTarget(tg, 16);
+  for (const tg of B.targets) if (tg.hp > 0 && (!['switch','device','twin'].includes(tg.k) || baseTargetAtHeight(tg, y)) && Math.hypot(tg.x + tg.w / 2 - x, tg.y + tg.h / 2 - y) < 52) hitTarget(tg, 16);
   for (const s of B.sol) if (!s.dead && s.z > 0.5 && Math.abs(bx(s.u, s.z) - x) < 60) killSoldier(s);
+  for(const s of B.gallery||[])if(!s.dead&&Math.hypot(s.x-x,s.y-12-y)<52)killGallerySoldier(s);
   for (const b of G.eb) if (Math.hypot(b.x - x, b.y - y) < 40) b.dead = true;
 }
 function updatePlayerBase(I) {
@@ -1305,7 +1451,7 @@ function updatePlayerBase(I) {
   const h = (I.right ? 1 : 0) - (I.left ? 1 : 0), v = (I.down ? 1 : 0) - (I.up ? 1 : 0);
   if (h) p.face = h;
   if (B.trans > 0) { p.prone = p.spin = p.aimUp = false; p.vx = 0; p.anim += DT * 10; p.x += (192 - p.x) * Math.min(1, DT * 2); return; }
-  p.aimUp=G.stage===2&&B.bossPhase==='mover'&&!B.dead&&v<0;
+  p.aimUp=['devices','mover','twins'].includes(B.bossPhase)&&!B.dead&&v<0;
   p.prone = p.onGround && v > 0;
   p.vx = p.prone ? 0 : h * RUN;
   if (I.jumpEdge) {
@@ -1317,7 +1463,7 @@ function updatePlayerBase(I) {
   if (p.y >= BASE_FLOOR) { p.y = BASE_FLOOR; p.vy = 0; p.onGround = true; p.spin = false; p.airJumps = 1; } else p.onGround = false;
   if(p.aimUp)p.spin=false;
   if (p.onGround && p.vx) p.anim += DT * 10; else if (p.spin) p.anim += DT * 16; else p.anim = 0;
-  if(G.stage===2&&B.dead&&B.exitReady&&p.onGround&&(p.x<=42||p.x>=342)){
+  if(isBase()&&B.dead&&B.exitReady&&p.onGround&&(p.x<=42||p.x>=342)){
     const side=p.x<192?-1:1;
     if(!players().some(q=>q!==p&&q.liftSide===side&&!q.liftDone)){p.liftSide=side;p.liftT=0;p.spin=p.prone=p.aimUp=false;p.flashT=0;sfx.mount();return;}
   }
@@ -1328,20 +1474,20 @@ function updatePlayerBase(I) {
   p.cool -= DT;
   if (I.fireEdge) p.wantFire = true;
   const trigger = SET.autofire === 'on' ? I.fire : p.wantFire;
-  if (trigger && p.cool <= 0 && !(G.stage===2&&B.dead)) {
+  if (trigger && p.cool <= 0 && !B.dead) {
     p.wantFire = false;
     const w = WEAP[p.weapon];
     if (p.weapon === 'laser') for (const b of G.pb) if (b.k === 'laser' && (b.owner || 1) === p.pid) b.dead = true;
     if (G.pb.filter(b => !b.dead && (b.owner || 1) === p.pid).length + w.per <= w.max) {
       const g = giant ? 2 : 1;
       const muzzle=p.aimUp?baseUpMuzzle(p,StageOneArt.playerRole(cooperative(),p.pid===2?1:0)):null;
-      const ox = muzzle?.x ?? p.x + 1 + p.aimDx * 8 * g, oy = muzzle?.y ?? (p.spin ? p.y - 15 * g : p.prone ? p.y - (G.stage === 2 ? 26 : 16) * g : p.y - 38 * g);
-      const xe = 192 + (p.x - 192) * 0.5 + p.aimDx * 60, ye = baseShotHeight(p, G.stage, B.def.boss==='eye'), spd = 1.8 * (p.rapid ? 1.4 : 1);
+      const ox = muzzle?.x ?? p.x + 1 + p.aimDx * 8 * g, oy = muzzle?.y ?? (p.spin ? p.y - 15 * g : p.prone ? p.y - (isBase() ? 26 : 16) * g : p.y - 38 * g);
+      const xe = 192 + (p.x - 192) * 0.5 + p.aimDx * 60, ye = baseShotHeight(p, G.stage, !!B.def.boss, B.bossPhase), spd = 1.8 * (p.rapid ? 1.4 : 1);
       const shot = (k, dx, extra) => G.pb.push(Object.assign({ k, t: 0, x0: ox, y0: oy, x: ox, y: oy, xe: xe + dx, ye, spd, dmg: g,upward:!!p.aimUp }, extra || {}));
       if (p.weapon === 'spread') { for (const d of [-40, -20, 0, 20, 40]) shot('sp', d); sfx.spread(); }
-      else if (p.weapon === 'laser') { shot('laser', 0, { dmg: 2 * g, hits: new Set(), spd: G.stage === 2 ? 8 : spd * 1.3 }); sfx.laser(); }
+      else if (p.weapon === 'laser') { shot('laser', 0, { dmg: 2 * g, hits: new Set(), spd: isBase() ? 8 : spd * 1.3 }); sfx.laser(); }
       else if (p.weapon === 'fire') { shot('fire', 0, { dmg: 2 * g, spd: spd * 0.8 }); sfx.fire(); }
-      else if (p.weapon === 'homing') { const tg = nearestTarget(xe, ye); shot('msl', tg ? tg.x + tg.w / 2 - xe : 0, { dmg: 2 * g, spd: spd * 0.9, lock:tg?.mover?'bcore':null,ye: G.stage === 2 && tg ? tg.y + tg.h / 2 : ye }); sfx.msl(); }
+      else if (p.weapon === 'homing') { const tg = nearestTarget(xe, ye); shot('msl', tg ? tg.x + tg.w / 2 - xe : 0, { dmg: 2 * g, spd: spd * 0.9, lock:tg?.mover?'bcore':tg?.k==='twin'?'twin'+tg.id:tg?.k==='gallery'?'gallery'+tg.galleryId:null,ye: tg ? tg.y + tg.h / 2 : ye }); sfx.msl(); }
       else { shot('b', 0); sfx.shoot(); }
       p.cool = w.cd * (p.rapid ? 0.7 : 1); p.flashT = 0.05; p.flashUp=!!p.aimUp; p.fx = ox; p.fy = oy;
     }
@@ -1372,13 +1518,13 @@ function updateBase() {
     return;
   }
   if (B.dead) {
-    if(G.stage===2){G.pb.length=G.eb.length=G.gr.length=0;for(const actor of players()){actor.flashT=0;actor.wantFire=false;}}
+    if(isBase()){G.pb.length=G.eb.length=G.gr.length=0;for(const actor of players()){actor.flashT=0;actor.wantFire=false;}}
     if(B.deadT>0){B.deadT=Math.max(0,B.deadT-DT);if(rnd()<.3)boom(110+rnd()*164,65+rnd()*70,8+rnd()*8);shake(2);}
-    if(G.stage===2){
+    if(isBase()){
       if(B.deadT<=0)B.exitReady=true;
       const alive=players().filter(q=>!q.dead);
       if(alive.length&&alive.every(q=>q.liftDone)){
-        const next=nextOpenStage(G.stage);if(next)startStage(next,true);else stageClear();
+        const next=nextPlayableStage(G.stage);if(next)startStage(next,true);else stageClear();
       }
     }else if(B.deadT<=0)stageClear();
     return;
@@ -1398,8 +1544,25 @@ function updateBase() {
       }
     }
   }
+  if(G.stage===4&&def.boss==='twin'&&!frozen){
+    if(B.bossPhase==='reveal'){
+      B.revealT-=DT;
+      if(B.revealT<=0){B.bossPhase='twins';B.bossTime=0;B.targets.push(...makeTwinProjections());banner('按上举枪 · 面具合拢时攻击实体',2.4);}
+    }else if(B.bossPhase==='twins'){
+      const alive=players().filter(q=>!q.dead&&!q.liftSide);
+      for(const shot of advanceTwinProjections(B,DT))if(alive.length&&G.empT<=0){
+        const target=alive[shot.id%alive.length];
+        G.eb.push({base:true,ring:true,x0:shot.x,y0:shot.y,x1:Math.max(30,Math.min(354,target.x+shot.offset)),y1:BASE_FLOOR-18,x:shot.x,y:shot.y,t:0,dur:1.65/(SET.diff==='easy'?.8:1),r:3.5,phase:shot.phase});sfx.eshot();
+      }
+    }
+  }
   if (B.cleared) B.clearT -= DT;
   if (!frozen && !B.cleared) {
+    if(G.stage===4){
+      advanceStageFourShutters(B,DT);
+      const alive=players().filter(q=>!q.dead&&!q.liftSide);
+      if(alive.length)for(const shot of advanceStageFourGallery(B,DT)){const target=alive[shot.id%alive.length];baseShot(shot.x,shot.y,target.x,BASE_FLOOR-18,1.55);G.eb.at(-1).galleryTier=shot.tier;sfx.eshot();}
+    }
     // soldiers out of the two side doors on the back wall
     if (!def.boss && B.spawned < def.sol) {
       B.spawnT -= DT;
@@ -1427,7 +1590,7 @@ function updateBase() {
       } else if (s.st === 'aim') {
         s.t -= DT;
         if (s.t <= 0) {
-          if (!p.dead && !B.cleared) { baseShot(bx(s.u, s.z), by(s.z) - (G.stage===2?BASE_SOLDIER.muzzleHeight*baseSoldierScale(s.z):18*sc(s.z)), aimX(), BASE_FLOOR - 18, 1.2); sfx.eshot(); }
+          if (!p.dead && !B.cleared) { baseShot(bx(s.u, s.z), by(s.z) - (isBase()?BASE_SOLDIER.muzzleHeight*baseSoldierScale(s.z):18*sc(s.z)), aimX(), BASE_FLOOR - 18, 1.2); sfx.eshot(); }
           s.st = 'leave'; s.dir = s.u < 0 ? -1 : 1;
         }
       } else if (s.st === 'leave') {
@@ -1449,33 +1612,8 @@ function updateBase() {
       if (!r.dead && r.z <= 0) detonateBaseMine(r);
     }
     for (const tg of B.targets) if (tg.k === 'rail' && tg.hp > 0) tg.x = tg.cx + Math.sin(G.t * 0.02 * tg.spd + tg.ph) * 84;
-    if (def.boss === 'twin' && !p.dead) {
-      // twins: one solid, one projection; they swap and teleport, and the projection keeps rolling mines
-      const twins = B.targets.filter(t2 => t2.hp > 0);
-      if (twins.length === 2) {
-        B.swapT -= DT;
-        if (B.swapT <= 0) {
-          B.swapT = 3.2;
-          const slots = [108, 172, 236].sort(() => rnd() - 0.5);
-          twins.forEach((t2, i) => { t2.solid = !t2.solid; t2.x = slots[i]; t2.warp = 0.35; });
-          sfx.flash();
-        }
-      }
-      for (const t2 of twins) {
-        if (t2.warp > 0) t2.warp -= DT;
-        const cx = t2.x + t2.w / 2, cy = t2.y + t2.h / 2;
-        if (t2.solid) {
-          t2.fireT -= DT;
-          if (t2.fireT <= 0) { t2.fireT = B.phase2 ? 1.3 : 2.0; for (const d of [-70, -35, 0, 35, 70]) baseShot(cx, cy, aimX() + d, BASE_FLOOR - 18, 1.6); sfx.eshot(); }
-        }
-        if (!t2.solid || B.phase2) {
-          t2.rollT -= DT;
-          if (t2.rollT <= 0) { t2.rollT = B.phase2 ? 1.6 : 2.4; B.rol.push({ u0: (cx - 192) * 2, ut: aimX() - 192, z: 1, a: 0, spd: 0.55 }); sfx.toss(); }
-        }
-      }
-    }
     for (const tg of B.targets) {
-      if (tg.hp <= 0 || B.cleared || players().every(q=>q.dead) || tg.k === 'core' || tg.k === 'bcore' || tg.k === 'twin' || G.empT > 0) continue;
+      if (tg.hp <= 0 || B.cleared || players().every(q=>q.dead) || tg.k === 'core' || tg.k === 'bcore' || tg.k === 'twin' || stageFourFacilityClosed(tg) || G.empT > 0) continue;
       tg.fireT -= DT;
       if (tg.fireT > 0) continue;
       const cx = tg.x + tg.w / 2, cy = tg.y + tg.h / 2;
@@ -1490,19 +1628,21 @@ function updateBase() {
   for (const b of G.eb) {
     if (!b.base) continue;
     if (!frozen) b.t += DT / b.dur;
-    b.x = b.x0 + (b.x1 - b.x0) * b.t+(b.bubble?Math.sin(b.t*7+b.phase)*4*Math.sin(b.t*Math.PI):0); b.y = b.y0 + (b.y1 - b.y0) * b.t; b.r = b.bubble?3.5+Math.min(1,b.t)*3:1+Math.min(2,b.t*2);
+    b.x = b.x0 + (b.x1 - b.x0) * b.t+(b.bubble?Math.sin(b.t*7+b.phase)*4*Math.sin(b.t*Math.PI):0); b.y = b.y0 + (b.y1 - b.y0) * b.t; b.r = b.bubble?3.5+Math.min(1,b.t)*3:b.ring?3.2+Math.min(1,b.t)*3.5:1+Math.min(2,b.t*2);
     if (b.t > 1.2) b.dead = true;
   }
   // player bullets travel down the corridor; soldiers are hit when the bullet reaches their depth
   for (const b of G.pb) {
     if(b.lock==='bcore'){const live=B.targets.find(t=>t.mover&&t.hp>0);if(live){b.xe=live.x+live.w/2;b.ye=live.y+live.h/2;}}
+    if(b.lock?.startsWith('twin')){const live=B.targets.find(t=>t.k==='twin'&&'twin'+t.id===b.lock&&t.hp>0);if(live){b.xe=live.x+live.w/2;b.ye=live.y+live.h/2;}}
+    if(b.lock?.startsWith('gallery')){const live=stageFourGalleryTargets(B).find(t=>'gallery'+t.galleryId===b.lock);if(live){b.xe=live.x+live.w/2;b.ye=live.y+live.h/2;}}
     b.t += DT * b.spd;
     b.x = b.x0 + (b.xe - b.x0) * Math.min(1, b.t); b.y = b.y0 + (b.ye - b.y0) * Math.min(1, b.t);
     if (b.k === 'msl' && (G.t & 1) === 0) G.fx.push({ k: 'smoke', x: b.x, y: b.y + 3, t: 0, life: 0.3 });
     for (const s of B.sol) {
       if (s.dead || (b.hits && b.hits.has(s))) continue;
-      if (Math.abs(b.t - s.z) < 0.07 && Math.abs(b.x - bx(s.u, s.z)) < (G.stage===2?BASE_SOLDIER.halfWidth*baseSoldierScale(s.z):8*sc(s.z)) + 2
-        && (G.stage !== 2 || (b.y >= by(s.z) - BASE_SOLDIER.height * baseSoldierScale(s.z) - 2 && b.y <= by(s.z) + 2))) {
+      if (Math.abs(b.t - s.z) < 0.07 && Math.abs(b.x - bx(s.u, s.z)) < (isBase()?BASE_SOLDIER.halfWidth*baseSoldierScale(s.z):8*sc(s.z)) + 2
+        && (!isBase() || (b.y >= by(s.z) - BASE_SOLDIER.height * baseSoldierScale(s.z) - 2 && b.y <= by(s.z) + 2))) {
         killSoldier(s); spark(b.x, b.y,{material:'body',vx:b.x-b.x0,vy:b.y-b.y0});
         if (b.hits) b.hits.add(s); else { b.dead = true; break; }
       }
@@ -1510,7 +1650,9 @@ function updateBase() {
     if (b.dead || b.t < 1) continue;
     b.dead = true;
     const tg = B.targets.find(t2 => t2.hp > 0 && !(t2.k === 'twin' && !t2.solid) && b.xe >= t2.x - 2 && b.xe <= t2.x + t2.w + 2 && b.ye >= t2.y - 2 && b.ye <= t2.y + t2.h + 2);
-    spark(b.xe, b.ye,{material:tg?.k==='core'&&coreShielded()?'shield':tg&&(tg.k==='core'||tg.k==='bcore')?'core':'metal',vx:b.xe-b.x0,vy:b.ye-b.y0,target:tg});
+    const gallery=!tg&&G.stage===4?stageFourGalleryTargets(B).find(t=>b.xe>=t.x&&b.xe<=t.x+t.w&&b.ye>=t.y&&b.ye<=t.y+t.h):null;
+    if(gallery){killGallerySoldier(B.gallery.find(s=>s.id===gallery.galleryId));spark(b.xe,b.ye,{material:'body',vx:b.xe-b.x0,vy:b.ye-b.y0});continue;}
+    spark(b.xe, b.ye,{material:tg&&stageFourFacilityClosed(tg)?'metal':tg?.k==='core'&&coreShielded()?'shield':tg&&(tg.k==='core'||tg.k==='bcore')?'core':'metal',vx:b.xe-b.x0,vy:b.ye-b.y0,target:tg});
     if (tg) hitTarget(tg, b.dmg);
   }
   for (const g of G.gr) {
@@ -1556,7 +1698,7 @@ function collideBasePlayer() {
   }
   for (const s of B.sol) {
     if (s.dead || s.st !== 'charge' || s.z > 0.08) continue;
-    const size=G.stage===2?baseSoldierScale(s.z):1,half=G.stage===2?BASE_SOLDIER.halfWidth*size:6,height=G.stage===2?BASE_SOLDIER.height*size:28;
+    const size=isBase()?baseSoldierScale(s.z):1,half=isBase()?BASE_SOLDIER.halfWidth*size:6,height=isBase()?BASE_SOLDIER.height*size:28;
     if (overlap(pb, { x: bx(s.u, s.z) - half, y: by(s.z) - height, w: half*2, h: height })) {
       if (p.shieldT > 0 || p.giantT > 0 || riotBlock()) { killSoldier(s); if (p.giantT > 0) giantSmashFX(p.x, p.y); continue; }
       killPlayer(); return;
@@ -1804,103 +1946,102 @@ function renderBase() {
 }
 
 // =====================================================================
-// STAGE 3 · 峡谷瀑布: vertical climb, boulders, and the cliff-top mech
+// STAGE 3 · 峡谷瀑布: reference waterfall, flame bridges and alien gate
 // =====================================================================
 function initStage3() {
-  G.en = []; G.pods = []; G.items = []; G.camX = 0; G.camY = 0;
-  for (const [x, y] of SNIPERS3) G.en.push({ t: 'snp', x, y, hp: 1, fireT: 1 + rnd(), face: -1, ax: -1, ay: 0, flash: 0 });
-  BOXES3.forEach(([x, y, item], i) => G.en.push({ t: 'box', x, y, hp: 4, item, open: false, st: 0.8 + i * 0.35, flash: 0 }));
-  for (const [x, y] of TURRETS3) G.en.push({ t: 'tur', x, y, hp: 6, idx: x < 192 ? 0 : 6, rotT: 0, fireT: 0.9, flash: 0 });
-  G.podTrig = PODS3.map(t => ({ ...t, done: false }));
-  G.s3 = { rockT: 3, runT: 5 };
-  G.mech = { active: false, dead: false, deadT: 0, phase2: false, rockT: 1.4, fanT: 2.2, parts: [
-    { mech: 1, k: 'armL', x: 84, y: -1452, baseY: -1452, w: 30, h: 18, hp: 25, max: 25, fireT: 1.4, flash: 0, ph: 0 },
-    { mech: 1, k: 'armR', x: 270, y: -1452, baseY: -1452, w: 30, h: 18, hp: 25, max: 25, fireT: 2.4, flash: 0, ph: 2 },
-    { mech: 1, k: 'core', x: 176, y: -1488, w: 32, h: 28, hp: 50, max: 50, flash: 0 },
-  ] };
-  Object.assign(G.p, { x: 60, y: 176 });
+  G.en=[];G.pods=[];G.items=[];G.camX=G.camY=0;G.spawnT=9999;
+  for(const [x,y]of STAGE_THREE_SNIPERS)G.en.push({t:'snp',x,y,hp:1,fireT:2.6+rnd(),face:-1,ax:-1,ay:0,flash:0});
+  for(const [x,y]of STAGE_THREE_TURRETS)G.en.push({t:'tur',x,y,hp:5,idx:x<192?0:6,rotT:0,fireT:2.8+rnd(),flash:0});
+  STAGE_THREE_BOXES.forEach(([x,y,item],i)=>G.en.push({t:'box',x,y,hp:3,item,open:false,st:.9+i*.25,flash:0}));
+  G.podTrig=STAGE_THREE_PODS.map(trigger=>({...trigger,done:false}));
+  G.s3={rockT:2.8,runT:5.5,bridgeWarned:false,stoneWarned:false};
+  G.mech=makeWaterfallBoss();
+  Object.assign(G.p,{x:54,y:STAGE_THREE.bottom,onGround:true,support:solids.find(s=>s.id==='cliff-0')});
+  banner('沿岩台向上攀登 · 小心落石',2.4);
 }
-function hitMech(pt, dmg) {
-  const M = G.mech;
-  if (pt.hp <= 0 || M.dead) return;
-  pt.hp -= dmg; pt.flash = 0.06; sfx.hit();
-  if (pt.k === 'core' && !M.phase2 && pt.hp <= pt.max / 2) { M.phase2 = true; banner('机甲过载 · 小心落石', 1.6); }
-  if (pt.hp > 0) return;
-  boom(pt.x + pt.w / 2, pt.y + pt.h / 2, 18); sfx.big(); shake(4);
-  if (pt.k === 'core') {
-    M.dead = true; M.deadT = 3; addScore(15000);
-    for (const e of G.en) if (!e.dead) { e.dead = true; boom(e.x, e.y - 10, 6); }
-    G.eb.length = 0; Music.stop(); banner('机甲摧毁', 2.4);
-  } else addScore(2000);
+function hitMech(part,damage) {
+  const boss=G.mech;
+  if(!boss.active||boss.dead||!waterfallTargetVulnerable(part,boss))return;
+  part.hp=Math.max(0,part.hp-damage);part.flash=.07;sfx.hit();
+  if(part.hp>0)return;
+  boom(part.x+part.w/2,part.y+part.h/2,15);sfx.big();shake(3);
+  if(part.k!=='core'){
+    for(const joint of waterfallArmPose(part.k==='armL'?-1:1,boss.age,STAGE_THREE.top).points.slice(1))boom(joint.x,joint.y,7);
+    addScore(2000);
+    if(!waterfallNodesAlive(boss)){boss.age=0;boss.fireT=.9;banner('链臂已摧毁 · 瞄准张开的嘴',3);}
+    return;
+  }
+  boss.dead=true;boss.deadT=2.1;boss.open=false;addScore(15000);
+  for(const node of boss.parts)node.hp=0;
+  for(const enemy of G.en)if(!enemy.dead){enemy.dead=true;boom(enemy.x,enemy.y-10,6);}
+  G.eb.length=0;G.pb.length=0;G.pods.length=0;G.podTrig.forEach(trigger=>trigger.done=true);
+  Music.stop();banner('门卫已摧毁 · 通道正在打开',2.2);
+}
+function waterfallFire(x,y,speed=88) {
+  const aim=aimAtPlayer(x,y),bullet=ebullet(x,y,Math.cos(aim)*speed,Math.sin(aim)*speed,0,5);
+  Object.assign(bullet,{waterfallFire:true,age:0,cx:x,cy:y,seed:rnd()*Math.PI*2});sfx.eshot();
 }
 function updateStage3() {
-  const p = G.p, M = G.mech, S = G.s3, frozen = G.freezeT > 0;
-  for (const pt of M.parts) if (pt.flash > 0) pt.flash -= DT;
-  if (!M.active && !p.dead && p.onGround && p.y <= -1345) { M.active = true; banner('警告 · 岩壁巨型机甲', 2.2); Music.start(true, 2); for (const e of G.en) if (e.t === 'rock' || e.t === 'run') e.dead = true; }
-  if (M.dead) {
-    M.deadT -= DT;
-    if (rnd() < 0.32) { boom(120 + rnd() * 144, -1520 + rnd() * 90, 8 + (rnd() * 10 | 0)); if (rnd() < 0.4) sfx.boom(); }
-    shake(2);
-    if (M.deadT <= 0) stageClear();
-    return;
+  const boss=G.mech,S=G.s3;
+  for(const part of boss.parts)part.flash=Math.max(0,part.flash-DT);
+  if(!boss.active&&players().some(p=>!p.dead&&p.onGround&&p.y<=STAGE_THREE.summit+1)){
+    boss.active=true;boss.age=0;banner('警告 · 异形门卫 · 先击破两只红色手爪',3);
+    updateWaterfallArms(boss,STAGE_THREE.top);
+    for(const enemy of G.en)if(enemy.t==='rock'||enemy.t==='run')enemy.dead=true;
+    Music.sync();
   }
-  if (frozen) return;
-  // the climb: boulders from above and soldiers dropping onto the upper ledges
-  if (!M.active) {
-    S.rockT -= DT;
-    if (S.rockT <= 0) { S.rockT = 2.0 + rnd() * 1.6; G.en.push({ t: 'rock', x: 40 + rnd() * 304, y: G.camY - 8, vx: (rnd() - 0.5) * 40, vy: 30, hp: 3, r: 5 + rnd() * 2.5, rot: 0, bounce: 0, flash: 0 }); }
-    S.runT -= DT;
-    if (S.runT <= 0) {
-      S.runT = 3.5 + rnd() * 2;
-      const ledges = solids.filter(q => !q.g && !q.solid && q.y > G.camY + 30 && q.y < G.camY + 110);
-      if (ledges.length && G.en.filter(e => e.t === 'run').length < 2) { const q = ledges[(rnd() * ledges.length) | 0], left = rnd() < 0.5; G.en.push(runner(left ? q.x + 4 : q.x + q.w - 4, q.y, left ? 1 : -1)); }
+  if(boss.dead){
+    if(boss.deadT>0){
+      boss.deadT=Math.max(0,boss.deadT-DT);
+      if(rnd()<.22){boom(155+rnd()*74,TOP_Y+30+rnd()*115,7+rnd()*7);if(rnd()<.3)sfx.boom();}
+      shake(1.3);
+    }
+    if(boss.deadT<=0&&!boss.exitOpen){boss.exitOpen=true;banner('洞口已打开 · 走入中间通道',3.5);sfx.pick();}
+    if(boss.exitOpen){
+      for(const actor of players())if(canEnterSummit(actor,boss))beginSummitEntry(actor);
+      if(teamInsideSummit(players(),G.lives))stageClear();
     }
     return;
   }
-  // the boss
-  for (const pt of M.parts) if (pt.baseY !== undefined) pt.y = pt.baseY + Math.sin(G.t * 0.035 + pt.ph) * 6;
-  for (const pt of M.parts) {
-    if (pt.k === 'core' || pt.hp <= 0 || p.dead) continue;
-    pt.fireT -= DT;
-    if (pt.fireT <= 0) {
-      pt.fireT = M.phase2 ? 1.2 : 1.8;
-      const mx = pt.x + pt.w / 2, my = pt.y + pt.h, a = aimAtPlayer(mx, my);
-      for (const d of [-0.2, 0, 0.2]) ebullet(mx, my, Math.cos(a + d) * 110, Math.sin(a + d) * 110);
-      sfx.eshot();
+  if(G.freezeT>0)return;
+  if(boss.active){boss.age+=DT;updateWaterfallArms(boss,STAGE_THREE.top);boss.open=waterfallMouthOpen(boss);}
+  const flames=flameJetBoxes(G.time);
+  const hazards=()=>{
+    const actor=G.p,box=pBox(actor);if(actor.dead||!box||actor.summitEntry)return;
+    if(flames.some(f=>overlap(box,f))){killPlayer();return;}
+    // The static body/core is a bullet target, never a contact hazard.
+    if(boss.active&&waterfallArmBoxes(boss,STAGE_THREE.top).some(part=>overlap(box,part)))killPlayer();
+  };
+  hazards();withPlayer2(hazards);
+  if(!boss.active){
+    if(!S.bridgeWarned&&G.camY<-330){S.bridgeWarned=true;banner('喷火桥 · 等火焰熄灭或跳过火柱',2.5);}
+    if(!S.stoneWarned&&G.camY<STAGE_THREE.stoneLine+110){S.stoneWarned=true;banner('接近山顶 · 沿灰岩台继续攀登',2.2);}
+    S.rockT-=DT;
+    if(S.rockT<=0){
+      S.rockT=3.6+rnd()*1.6;
+      // Full-height boulders stay sparse enough to leave a climbing route.
+      if(G.camY>STAGE_THREE.stoneLine-40&&G.en.filter(e=>e.t==='rock'&&!e.dead).length<2){
+        const vx=(rnd()-.5)*34;
+        G.en.push({t:'rock',waterfallRock:true,x:38+rnd()*308,y:G.camY-10,vx,vy:28,hp:3,r:13+rnd()*3,rot:rnd()*Math.PI*2,spinDir:vx<0?-1:1,bounce:0,flash:0});
+      }
     }
-  }
-  if (M.phase2 && !p.dead) {
-    M.fanT -= DT;
-    if (M.fanT <= 0) { M.fanT = 2.2; for (const d of [-0.6, -0.3, 0, 0.3, 0.6]) ebullet(192, -1460, Math.sin(d) * 120, Math.cos(d) * 120); sfx.eshot(); }
-    M.rockT -= DT;
-    if (M.rockT <= 0) { M.rockT = 1.3; G.en.push({ t: 'rock', x: Math.max(30, Math.min(354, p.x + (rnd() - 0.5) * 120)), y: G.camY - 8, vx: (rnd() - 0.5) * 30, vy: 40, hp: 3, r: 5 + rnd() * 2, rot: 0, bounce: 1, flash: 0 }); shake(1); }
-  }
-  // touching the mech hurts
-  const pb = pBox(p);
-  if (pb && !p.dead) for (const pt of M.parts) if (pt.hp > 0 && overlap(pb, pt)) { killPlayer(); break; }
-}
-function drawCanyonBg(cy) {
-  const off = (((-cy * 0.35) % 432) + 432) % 432;
-  ctx.drawImage(CANYON, 0, off - 432, W, 432); ctx.drawImage(CANYON, 0, off, W, 432);
-  ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 0.7; ctx.lineCap = 'round'; ctx.beginPath();
-  for (let i = 0; i < 46; i++) {
-    const x = 146 + hash(i * 7) * 92, len = 8 + hash(i * 3) * 16, y = ((G.t * (2.2 + hash(i) * 1.6) + i * 53 - cy * 0.35) % 250 + 250) % 250 - 20;
-    ctx.moveTo(x, y); ctx.lineTo(x, y + len);
-  }
-  ctx.stroke();
-}
-function drawCliffWalls(cy) {
-  for (const side of [0, 1]) {
-    const x0 = side ? W - 18 : 0;
-    const g = ctx.createLinearGradient(x0, 0, x0 + 18, 0);
-    g.addColorStop(0, side ? '#2a1f22' : '#4a3a38'); g.addColorStop(1, side ? '#4a3a38' : '#2a1f22');
-    ctx.fillStyle = g; ctx.fillRect(x0, cy - 12, 18, H + 24);
-    for (let y = Math.floor((cy - 12) / 12) * 12; y < cy + H + 12; y += 12) {
-      const r = hash(y * 7 + side * 131), base = r < 0.5 ? '#5d4b45' : '#6a564d';
-      rr(x0 + (side ? 3 : 1) + r * 2, y + 1, 13, 10, 2.6, base); rr(x0 + (side ? 4 : 2) + r * 2, y + 1.6, 11, 2, 1, shade(base, 0.2));
-      if (r > 0.75) el(x0 + 9, y + 9, 3.5, 1.4, '#2f6a3a');
+    S.runT-=DT;
+    if(S.runT<=0){
+      S.runT=5+rnd()*2;
+      // Reinforcements walk in from beyond a connected screen edge, never materialize on an island.
+      const ledges=solids.filter(s=>s.cliff&&!s.summit&&s.w>=100&&(s.x<=0||s.x+s.w>=W)&&s.y>G.camY+48&&s.y<G.camY+115);
+      if(ledges.length&&G.en.filter(e=>e.t==='run'&&!e.dead).length<3){
+        const s=ledges[Math.floor(rnd()*ledges.length)],left=s.x<=0;
+        G.en.push(Object.assign(runner(left?-28:W+28,s.y,left?1:-1),{waterfallEntry:{ledge:s.id,y:s.y},on:true}));
+      }
     }
+    return;
   }
+  for(const node of boss.parts.slice(0,2))if(node.hp>0){
+    node.fireT-=DT;
+    if(node.fireT<=0){node.fireT=2.7;waterfallFire(node.x+node.w/2,node.y+node.h/2,78);}
+  }
+  if(boss.open){boss.fireT-=DT;if(boss.fireT<=0){boss.fireT=1.45;const mouth=boss.parts[2];waterfallFire(mouth.x+mouth.w/2,mouth.y+mouth.h,98);}}
 }
 function drawRock(e) {
   const fl = e.flash > 0, cx2 = e.x, cy2 = e.y - e.r;
@@ -1909,43 +2050,6 @@ function drawRock(e) {
   el(-e.r * 0.3, -e.r * 0.3, e.r * 0.55, e.r * 0.38, fl ? '#ffffff' : '#9a8a7c');
   seg(-e.r * 0.2, e.r * 0.1, e.r * 0.5, e.r * 0.5, 0.6, '#3e342d');
   ctx.restore();
-}
-function drawMech() {
-  const M = G.mech; if (!M || G.camY > TOP_Y + 260) return;
-  const t = G.t, [aL, aR, core] = M.parts, steel = '#56606e', dark = '#2c323b';
-  // claws gripping the cliff edges
-  for (const sd of [-1, 1]) {
-    seg(192 + sd * 36, -1452, 192 + sd * 120, -1420, 7, dark); seg(192 + sd * 120, -1420, 192 + sd * 166, -1408, 6, dark);
-    seg(192 + sd * 36, -1452, 192 + sd * 120, -1420, 4, steel); seg(192 + sd * 120, -1420, 192 + sd * 166, -1408, 3.4, steel);
-    el(192 + sd * 120, -1420, 4.5, 4.5, '#7c8797');
-  }
-  // arms from the shoulders down to the cannon hands
-  for (const a of [aL, aR]) {
-    const sd = a === aL ? -1 : 1, shx = 192 + sd * 52, shy = -1494, hx = a.x + a.w / 2, hy = a.y + 4;
-    const ex = (shx + hx) / 2 + sd * 8, ey = (shy + hy) / 2 + 4;
-    seg(shx, shy, ex, ey, 7, dark); seg(ex, ey, hx, hy, 6, dark);
-    seg(shx, shy, ex, ey, 4.4, steel); seg(ex, ey, hx, hy, 3.6, steel);
-    if (a.hp > 0) {
-      const g = ctx.createLinearGradient(0, a.y, 0, a.y + a.h); g.addColorStop(0, a.flash > 0 ? '#ffffff' : '#8a96a8'); g.addColorStop(1, a.flash > 0 ? '#ffffff' : '#3a414c');
-      rr(a.x, a.y, a.w, a.h, 4, g); rr(a.x + a.w / 2 - 3, a.y + a.h - 2, 6, 6, 1.5, dark);
-      el(a.x + a.w / 2, a.y + 7, 3, 3, (t >> 3) % 2 ? '#ff5a2a' : '#ffb03a');
-    } else { rr(a.x + 6, a.y + 4, a.w - 12, 8, 2, '#2a2a2e'); if (t % 10 < 5) el(a.x + a.w / 2 + (t % 7) - 3, a.y - (t % 12), 2.5, 2.5, 'rgba(120,110,110,0.7)'); }
-    el(shx, shy, 14, 12, steel); el(shx - sd * 3, shy - 4, 6, 4, '#8995a6');
-  }
-  // torso, head and core
-  const tg = ctx.createLinearGradient(0, -1512, 0, -1444); tg.addColorStop(0, '#6c7685'); tg.addColorStop(1, '#2f353e');
-  rr(150, -1512, 84, 66, 12, tg);
-  seg(162, -1470, 222, -1470, 1, '#2a2f37'); seg(170, -1500, 170, -1452, 1, '#2a2f37'); seg(214, -1500, 214, -1452, 1, '#2a2f37');
-  rr(170, -1526, 44, 18, 6, '#3a414c');
-  const eye = M.phase2 ? '#ff3a2a' : '#ff8a2a';
-  rr(176, -1520, 32, 6, 3, '#120c0c'); rr(178 + Math.sin(t * 0.05) * 8 + 8, -1519, 8, 4, 2, eye);
-  if (core.hp > 0) {
-    rr(core.x - 2, core.y - 2, core.w + 4, core.h + 4, 6, '#1d2127');
-    glow(core.x + core.w / 2, core.y + core.h / 2, 20, M.phase2 ? 'rgba(255,80,40,0.7)' : 'rgba(255,170,60,0.55)', 'rgba(255,80,20,0)');
-    el(core.x + core.w / 2, core.y + core.h / 2, 11, 10, core.flash > 0 ? '#ffffff' : (M.phase2 ? '#e8401c' : '#f08a24'));
-    el(core.x + core.w / 2, core.y + core.h / 2, 5 + Math.sin(t * 0.15), 5 + Math.sin(t * 0.15), core.flash > 0 ? '#ffffff' : '#ffe08a');
-  } else rr(core.x, core.y + 6, core.w, core.h - 6, 4, '#1a1414');
-  if (G.freezeT > 0 && M.active) for (const pt of M.parts) if (pt.hp > 0) ice(pt);
 }
 
 // =====================================================================
@@ -1959,16 +2063,25 @@ function initStage5() {
   for (const [x, y] of SNIPERS5) G.en.push({ t: 'snp', x, y, hp: 1, fireT: 1 + rnd(), face: -1, ax: -1, ay: 0, flash: 0 });
   BOXES5.forEach(([x, item], i) => G.en.push({ t: 'box', x, y: 176, hp: 4, item, open: false, st: 0.8 + i * 0.35, flash: 0 }));
   for (const [x, y] of TURRETS5) G.en.push({ t: 'tur', x, y: y - 16, hp: 6, idx: 6, rotT: 0, fireT: 0.9, flash: 0 });
-  for (const x of MORTARS5) G.en.push({ t: 'mor', x, y: 176, hp: 2, fireT: 1.2 + rnd(), face: -1, recoil: 0, flash: 0 });
+  G.en.push(...createSnowDefenders());
   G.podTrig = PODS5.map(t => ({ ...t, done: false }));
   G.s5 = { phase: 'calm', t: 7, bliz: 0, wind: 0 };
-  const x = LEVEL_W5 - 164;
+  banner('大雪封锁 · 小心林间手雷与炮击',2.4);
+  G.fortress=createFlyingFortress();
+  const x = STAGE_FIVE_ROUTE.tankHome;
   G.tank = { x, home: x, active: false, dead: false, deadT: 0, phase2: false, mode: 'idle', modeT: 3, tread: 0, burst: 0, burstT: 0, mgT: 1.8, canT: 2.6, spawnT: 3, parts: [
     { tank: 1, k: 'mg', ox: -8, oy: 146, w: 22, h: 14, hp: 20, max: 20, flash: 0 },
     { tank: 1, k: 'cannon', ox: -2, oy: 106, w: 34, h: 12, hp: 24, max: 24, flash: 0 },
     { tank: 1, k: 'core', ox: 52, oy: 102, w: 54, h: 32, hp: 70, max: 70, flash: 0 },
   ] };
   placeTank();
+}
+function hitFlyingFortress(pt,dmg){
+  const F=G.fortress;if(!F?.active||F.dead||F.entryT>0||pt.hp<=0)return;
+  pt.hp-=dmg||1;pt.flash=.09;sfx.hit();
+  if(pt.hp>0)return;boom(pt.x+pt.w/2,pt.y+pt.h/2,16);sfx.big();shake(3);
+  if(pt.k==='core'){F.dead=true;F.deadT=3;G.eb.length=0;G.en=[];G.podTrig.forEach(t=>t.done=true);addScore(25000);Music.stop();banner('空中堡垒摧毁 · 冰原突破',2.6);}
+  else addScore(3000);
 }
 function placeTank() { const T = G.tank; for (const pt of T.parts) { pt.x = T.x + pt.ox; pt.y = pt.oy; } }
 const tankHull = T => ({ x: T.x + 2, y: 134, w: 150, h: 42 });
@@ -1982,12 +2095,12 @@ function hitTank(pt, dmg) {
   boom(pt.x + pt.w / 2, pt.y + pt.h / 2, 18); sfx.big(); shake(4);
   if (pt.k === 'core') {
     T.dead = true; T.deadT = 3.2; addScore(15000);
-    for (const e of G.en) if (!e.dead) { e.dead = true; boom(e.x, e.y - 10, 6); }
-    G.eb.length = 0; Music.stop(); banner('战车摧毁', 2.4);
+    for (const e of G.en) if (!e.dead&&e.x>=G.camX-40&&e.x<=T.home+170) { e.dead = true; boom(e.x, e.y - 10, 6); }
+    G.eb.length = 0; banner('战车摧毁 · 继续向基地前进', 3);
   } else addScore(2000);
 }
 function updateStage5() {
-  const p = G.p, S = G.s5, T = G.tank;
+  const p = G.p, S = G.s5, T = G.tank, F=G.fortress;
   // blizzard waves: calm, then a storm that whites out the screen and pushes you back
   S.t -= DT;
   if (S.t <= 0) {
@@ -1999,17 +2112,18 @@ function updateStage5() {
   if (S.bliz < 0.004) S.bliz = 0;
   S.wind = -30 * S.bliz;
   if (S.phase === 'storm' && G.t % 50 === 0) noise(1.2, 0.05 * S.bliz + 0.001, 500);
+  // The tank guards the midpoint. The flying fortress alone clears the stage.
+  if(T.dead){
+    if(T.deadT>0){T.deadT=Math.max(0,T.deadT-DT);if(G.t%9===0)boom(T.x+rnd()*150,108+rnd()*66,12);}
+    if(!F.active&&G.camX>=STAGE_FIVE_ROUTE.arena-.5){F.active=true;G.eb.length=0;G.en=G.en.filter(e=>e.t==='box');G.podTrig.forEach(t=>t.done=true);G.spawnT=9999;banner('警告 · 空中堡垒',2.4);}
+    if(F.dead){F.deadT-=DT;if(G.t%8===0){boom(F.x+(rnd()-.5)*120,F.y+(rnd()-.5)*50,14);shake(2);}if(F.deadT<=0)stageClear();return;}
+    for(const shot of advanceFlyingFortress(F,p,DT,{frozen:G.freezeT>0})){const {vx,vy,g,r,...shape}=shot;Object.assign(ebullet(shot.x,shot.y,vx,vy,g,r),shape);}
+    return;
+  }
   // the tank
   for (const pt of T.parts) if (pt.flash > 0) pt.flash -= DT;
   if (!T.dead && G.t % 10 === 0 && onScreen(T.x + 146, 10)) G.fx.push({ k: 'smoke', x: T.x + 147, y: 131, t: 0, life: 0.9 });
-  if (!T.active && G.camX >= CAM_MAX - 0.5) { T.active = true; banner('警告 · 重装履带战车', 2.2); Music.start(true, -2); }
-  if (T.dead) {
-    T.deadT -= DT;
-    if (rnd() < 0.32) { boom(T.x + rnd() * 150, 108 + rnd() * 66, 8 + (rnd() * 10 | 0)); if (rnd() < 0.4) sfx.boom(); }
-    shake(2);
-    if (T.deadT <= 0) stageClear();
-    return;
-  }
+  if (!T.active && G.camX >= STAGE_FIVE_ROUTE.tankCamera - 0.5) { T.active = true; banner('警告 · 重装履带战车', 2.2); Music.start(true, -2); }
   if (!T.active || G.freezeT > 0) return;
   const [mg, can] = T.parts;
   // phase 2: it rams forward, holds, then backs up to its spot; soldiers come in from the left
@@ -5614,6 +5728,8 @@ function updatePlayer(I) {
     if (ready) { if (G.lives > 0) respawn(); else if (!cooperative() || players().every(q => q.dead && (q.deathHidden || q.deadT <= 0))) gameOver(); }
     return;
   }
+  const recoiling=WUKONG&&G.stage===1&&advanceVitality(p,DT);
+  if(recoiling)I={...I,left:false,right:false,up:false,down:false,jumpEdge:false,fire:false,fireEdge:false,grenEdge:false};
   if (p.invT > 0) p.invT -= DT;
   if (p.shieldT > 0) p.shieldT -= DT;
   if (p.camoT > 0) p.camoT -= DT;
@@ -5626,6 +5742,8 @@ function updatePlayer(I) {
   if (p.hook && (p.vy >= 0 || p.onGround)) p.hook = null;
   if (p.spCd > 0) p.spCd -= DT;
   if (p.ride) { p.rideT -= DT; if (p.rideT <= 0) { banner(p.ride === 'heli' ? '直升机时间到' : '摩托车时间到', 1); dismount(false); } }
+  const changed=WUKONG&&G.stage===1?advanceTransformation(p,I,DT):null;
+  if(changed?.attack?.t===0)queueHeroSounds(G,p,changed.form==='tortoise'?'heavy':changed.form==='peng'?'qi':'spin');
   const giant = p.giantT > 0, moto = p.ride === 'moto', heli = p.ride === 'heli';
   const h = (I.right ? 1 : 0) - (I.left ? 1 : 0), v = (I.down ? 1 : 0) - (I.up ? 1 : 0);
   if (h) p.face = h;
@@ -5645,6 +5763,13 @@ function updatePlayer(I) {
     const y0 = p.y; p.y += p.vy * DT; { const top = G.vert ? G.camY + 4 : SEA_SURF; if (p.y < top) { p.y = top; p.vy = Math.max(0, p.vy); } } swimCollideY(p, y0);
     p.anim += DT * (Math.abs(p.vx) + Math.abs(p.vy) > 10 ? 9 : 3);
     if (G.t % 50 === 0) G.fx.push({ k: 'bub', x: p.x + p.face * 9, y: p.y - 4, vx: 0, vy: -24, t: 0, life: 1.2 });
+  } else if (changed?.form==='peng') {
+    p.prone=p.dive=p.spin=p.inWater=p.onGround=false;p.support=null;
+    p.vx=recoiling?p.knockVX:h*TRANSFORM_FORMS.peng.speed;p.vy=v*105;
+    const x0=p.x;p.x+=p.vx*DT;wallCollide(p,x0,5);
+    p.x=Math.max(G.camX+8,Math.min(p.x,xMax(12)));
+    const y0=p.y;p.y=Math.max(G.camY+50,Math.min(p.y+p.vy*DT,G.camY+166));swimCollideY(p,y0);
+    p.anim+=DT*10;
   } else if (heli) {
     // free flight inside the screen
     p.prone = p.dive = p.spin = p.inWater = p.onGround = false; p.support = null;
@@ -5653,9 +5778,9 @@ function updatePlayer(I) {
     p.y = Math.max(G.camY + 44, Math.min(p.y + p.vy * DT, G.camY + 166));
     p.anim += DT * 10;
   } else {
-    p.prone = p.onGround && !p.inWater && !moto && v > 0 && h === 0;
+    p.prone = !changed && p.onGround && !p.inWater && !moto && v > 0 && h === 0 && !(WUKONG&&G.stage===1&&(p.staff?.airCleave||p.staff?.command||p.staffCharge?.active));
     p.dive = p.inWater && v > 0 && h === 0;
-    const tvx = (p.prone || p.dive) ? 0 : h * (moto ? 170 : RUN * (p.magnetT > 0 ? 1.25 : 1));
+    const tvx = recoiling?p.knockVX:(p.prone || p.dive) ? 0 : changed?transformationSpeed(p,h):h * (moto ? 170 : RUN * (p.magnetT > 0 ? 1.25 : 1));
     // stage 5 ice: speed changes slowly, so you keep sliding after letting go (and in the air after leaving ice)
     const slick = G.stage === 5 && !moto && !(p.cleatT > 0) && (p.onGround ? !!(p.support && p.support.ice) : p.iceAir);
     if (slick) { p.vx += (tvx - p.vx) * Math.min(1, (p.onGround ? 1.7 : 4.5) * DT); if (!tvx && Math.abs(p.vx) < 2) p.vx = 0; }
@@ -5708,7 +5833,15 @@ function updatePlayer(I) {
   if (G.subMode) { p.ax = p.face; p.ay = 0; } // the sub's cannon only fires forward
 
   if (WUKONG && G.stage === 1) {
-    advanceStaff(p, I, DT, { autofire: SET.autofire === 'on', onSwing: () => { noise(.065,.045,1000); tone(300,.075,'triangle',.045,110); } });
+    if(!changed)advanceStaff(p, I, DT, {
+      playerActions:true,autofire:SET.autofire==='on',random:rnd,onCharge:phase=>{sfx.charge(phase);if(phase==='start')queueHeroSounds(G,p,'charge');},onRelease:()=>queueHeroSounds(G,p,'qi'),
+      onSlamLand:()=>{
+        const q=staffGeometry(p),u=(p.y-q.origin.y)/(q.tip.y-q.origin.y||1);
+        const x=q.tip.y>=p.y&&u>=0&&u<=1?q.origin.x+(q.tip.x-q.origin.x)*u:p.x;
+        G.fx.push({k:'slamLand',x,y:p.y,t:0,life:.35,size:p.giantT>0?2:1});shake(1.8);queueHeroSounds(G,p,'land');
+      },
+      onSwing:()=>queueHeroSounds(G,p)
+    });
     if (I.cycEdge && G.inv.length > 1) { G.sel = (G.sel + 1) % G.inv.length; sfx.hit(); }
     if (I.grenEdge) useSpecial();
     return;
@@ -5765,6 +5898,12 @@ function riotBlock() {
 }
 function pickItem(kind) {
   const p = G.p;
+  if(WUKONG&&G.stage===1&&HEALING_ITEMS[kind]){
+    const gained=healHero(p,kind);sfx.heal();addScore(200);
+    G.fx.push({k:'combatNumber',x:p.x,y:p.y-34,text:gained?'+'+gained:'已满血',heal:true,t:0,life:.85});
+    G.fx.push({k:'healing',x:p.x,y:p.y-14,t:0,life:.7});
+    banner(HEALING_ITEMS[kind].name+(gained?' · 生命 +'+gained:' · 生命已满'),1.5);return;
+  }
   sfx.pick(); addScore(200); banner(ITEM_NAMES[kind], 1);
   if (kind === 'M') p.weapon = 'machine';
   else if (kind === 'S') p.weapon = 'spread';
@@ -5774,6 +5913,7 @@ function pickItem(kind) {
   else if (kind === 'R') p.rapid = true;
   else if (kind === 'B') p.shieldT = 10;
   else if (kind in SPECIALS) addSpecial(kind);
+  if(WUKONG&&G.stage===1&&STAFF_PICKUPS[kind])banner(STAFF_PICKUPS[kind],2.2);
 }
 function addSpecial(k) {
   if (G.inv.length >= INV_MAX) { G.inv.shift(); if (G.sel > 0) G.sel--; } // full: the oldest one makes room
@@ -5783,8 +5923,13 @@ function addSpecial(k) {
 function useSpecial() {
   const p = G.p;
   if (p.dead || p.dive || p.spCd > 0) return;
+  if(WUKONG&&G.stage===1&&transformation(p)){
+    if(cycleTransformation(p)){p.spCd=.15;puff(p.x,p.y-14);sfx.grow();banner('七十二变 · '+TRANSFORM_FORMS[transformation(p).form].name+' · J '+TRANSFORM_FORMS[transformation(p).form].skill,1.1);}return;
+  }
   if (!G.inv.length) { banner('没有特殊道具', 0.8); return; }
   const k = G.inv[G.sel];
+  if(WUKONG&&G.stage===1&&k==='g'&&!rageReady(p)){throwGrenade();return;}
+  if(WUKONG&&WUKONG_MAGIC[k]&&G.stage!==1){banner('仙术道具只在天宫关使用',1);return;}
   if ((k === 'm' || k === 'h') && isBase()) { banner('这里用不了载具', 1); return; }
   if ((k === 'm' || k === 'h' || k === 'u') && G.uw) { banner('水下用不了这个道具', 1); return; }
   if ((k === 'm' || k === 'h') && (p.ride || p.giantT > 0)) { banner(p.ride ? '已在载具上' : '变大时不能乘坐', 1); return; }
@@ -5798,7 +5943,10 @@ function useSpecial() {
   if (k === 'm' && p.inWater) { banner('水里不能骑摩托车', 1); return; }
   G.inv.splice(G.sel, 1);
   if (G.sel >= G.inv.length) G.sel = Math.max(0, G.inv.length - 1);
-  p.spCd = SP_CD;
+  p.spCd = k==='transform'?.6:SP_CD;
+  if(WUKONG&&G.stage===1&&WUKONG_MAGIC[k]){
+    activateWukongMagic(p,k,solids);sfx.grow();puff(p.x,p.y-14);banner(WUKONG_MAGIC[k].description,2.2);return;
+  }
   if (k === 'g') throwGrenade();
   else if (k === 'f') { G.flashT = 0.35; G.freezeT = 5; for (const b of G.eb) b.dead = true; sfx.flash(); banner('敌人冻结 5 秒', 1.2); }
   else if (k === 'm') { p.ride = 'moto'; p.rideT = 15; p.spin = false; p.prone = false; sfx.mount(); banner('摩托车 15 秒', 1.2); }
@@ -5845,11 +5993,23 @@ function useSpecial() {
   else if (k === 'w') { if (G.s6) { G.s6.coolT = 8; for (const w2 of G.s6.waves) { w2.dead = true; puff(w2.x, 172); } } G.flashT = 0.15; sfx.flash(); banner('液氮罐 8 秒：所有喷火口熄火', 1.4); }
   else if (k === 'v') { p.thermT = 15; sfx.flash(); banner('热成像镜 15 秒：暴风雪中看清敌人', 1.4); }
 }
+function requestNade() {
+  const p=G.p;
+  if(p.dead||p.enteringExit||p.exitEntered||(isBase()&&(G.base.trans>0||G.base.dead)))return false;
+  if(WUKONG&&G.stage===1)return throwGrenade();
+  if(G.nadeCd>0){tone(180,.05,'square',.03,150);return false;}
+  G.nadeCd=nadeCooldown();throwGrenade();return true;
+}
 function throwGrenade() {
   const p = G.p;
   if (WUKONG && G.stage === 1) {
-    if(startUltimate(p)){tone(160,.4,'triangle',.12,65);noise(.22,.14,500);banner('横扫天宫 · 三段棍阵',1);}
-    return;
+    if(!rageReady(p)){banner('怒气不足 · 受击积攒怒气 '+Math.floor(p.rage||0)+'/'+WUKONG_RAGE.max,.9);tone(180,.06,'triangle',.035,140);return false;}
+    if(startUltimate(p,rnd)){
+      const move=ultimateSpec(p.staff);tone(move.id==='pillar'?110:move.id==='qi'?420:160,.4,'triangle',.12,65);noise(.22,.14,500);
+      queueHeroSounds(G,p,'ultimate');
+      banner(move.name+' · 怒气释放',1.3);shake(1.8);return true;
+    }
+    return false;
   }
   if (G.rail) { railBlast(); return; }
   if (G.momm) { const up = p.ay < 0, dn = p.ay > 0 && !p.onGround; G.mom.nades.push({ x: p.x + p.face * 6, y: p.y - 18, vx: dn ? p.face * 20 : up ? p.face * 60 : p.face * 160 + p.vx * 0.3, vy: dn ? 80 : up ? -330 : -170, t: 0 }); sfx.toss(); return; }
@@ -5858,7 +6018,7 @@ function throwGrenade() {
   if (G.tdm) { G.td.nades.push({ x: p.x + Math.cos(p.aim) * 8, y: p.y + Math.sin(p.aim) * 8, vx: Math.cos(p.aim) * 210 + p.vx * 0.5, vy: Math.sin(p.aim) * 210 + p.vy * 0.5, t: 0 }); sfx.toss(); return; }
   if (G.uw) { G.gr.push({ x: p.x + p.face * 10, y: p.y, vx: p.face * 150 + p.vx * 0.3, vy: p.ay * 120, fuse: 1.2, a: 0, uw: true }); sfx.toss(); return; }
   if (isBase()) {
-    G.gr.push({ base: true, t: 0, x0: p.x, y0: p.y - 30, x: p.x, y: p.y - 30, xe: 192 + (p.x - 192) * 0.5 + (p.aimDx || 0) * 60, ye: baseShotHeight(p, G.stage,G.base.def.boss==='eye'), a: 0 });
+    G.gr.push({ base: true, t: 0, x0: p.x, y0: p.y - 30, x: p.x, y: p.y - 30, xe: 192 + (p.x - 192) * 0.5 + (p.aimDx || 0) * 60, ye: baseShotHeight(p, G.stage,!!G.base.def.boss,G.base.bossPhase), a: 0 });
     sfx.toss(); return;
   }
   const up = p.ay < -0.5;
@@ -5870,10 +6030,11 @@ function throwGrenade() {
 }
 
 // ================= enemies =================
-function runner(x, y, dir) { return { t: 'run', x, y, vx: dir * 62, vy: 0, hp: 1, on: false, sup: null, dec: false, anim: rnd() * 4, flash: 0 }; }
+function runner(x, y, dir) { return { t: 'run', x, y, vx: dir * 62, vy: 0, hp: WUKONG&&G.stage===1?HEAVEN_HP.run:1, ...(WUKONG&&G.stage===1?{maxHp:HEAVEN_HP.run}:{}), on: false, sup: null, dec: false, anim: rnd() * 4, flash: 0 }; }
 const onScreen = (x, m) => x > G.camX - m && x < G.camX + W + m;
 const inViewY = y => y > G.camY + 4 && y < G.camY + H + 24;
 function ebox(e) {
+  const defender=G.stage===5?snowDefenderBox(e):null;if(defender)return defender;
   if (e.t === 'fish') return { x: e.x - 6, y: e.y - 4, w: 12, h: 8 };
   if (e.t === 'tur' && G.uw) return { x: e.x - 8, y: e.y - 8, w: 16, h: 16 };
   if (e.t === 'valve') return { x: e.x - 7, y: e.y - 7, w: 14, h: 14 };
@@ -5899,7 +6060,8 @@ const stageOneTarget = x => players().filter(q => !q.dead && !(q.camoT > 0) && !
   .sort((a,b) => Math.abs(a.x-x)-Math.abs(b.x-x))[0];
 
 function runnerAttack(e) {
-  if (G.stage !== 1) return false;
+  if (G.stage !== 1 && G.stage !== 3) return false;
+  if(WUKONG){if(e.hitStun>0)return true;return advanceGuard(e,stageOneTarget(e.x),DT,{active:!G.boss.dead&&!!e.on&&onScreen(e.x,-14)&&inViewY(e.y),onAttack:()=>noise(.05,.025,700)});}
   if (e.shotFlash > 0) e.shotFlash = Math.max(0, e.shotFlash - DT);
   const target = stageOneTarget(e.x);
   if (e.dead || e.hp <= 0 || G.boss.dead || !e.on || !onScreen(e.x, -14) || !inViewY(e.y) || !target || Math.abs(target.x - e.x) > 240 || Math.abs(target.x - e.x) < 28 || Math.abs(target.y - e.y) > 100) {
@@ -5927,13 +6089,14 @@ function runnerAttack(e) {
   return true;
 }
 function updateEnemies() {
-  const p = G.p;
+  const p = G.p, horizontal = G.stage === 1 || G.stage === 3;
   if (G.freezeT <= 0) { // frozen by a flash grenade: no spawns, no AI
+  if(WUKONG&&G.stage===1&&!G.boss.dead)for(const trigger of G.wukongFlights||[])if(!trigger.done&&G.camX>=trigger.at){trigger.done=true;G.en.push(flyingGuard(G.camX+W-32));}
   // spawner
   G.spawnT -= DT;
   if (G.spawnT <= 0) {
     G.spawnT = 1.3 + rnd() * 1.6;
-    if (!G.uw && G.camX < CAM_MAX - 80 && G.en.filter(e => e.t === 'run').length < 4) {
+    if (G.stage !== 3 && !G.uw && G.camX < CAM_MAX - 80 && !(G.stage===5&&G.fortress?.active) && G.en.filter(e => e.t === 'run').length < 4) {
       const left = rnd() < 0.2 && G.camX > 60;
       const sx = left ? G.camX - 10 : G.camX + W + 10, s = groundAt(sx);
       if (s && !s.water) G.en.push(runner(sx, s.y, left ? 1 : -1));
@@ -5941,8 +6104,31 @@ function updateEnemies() {
   }
   for (const e of G.en) {
     if (e.flash > 0) e.flash -= DT;
+    if(G.stage===5&&(e.t==='artillery'||e.t==='grenadier')){
+      if(e.x<G.camX-100){e.dead=true;continue;}
+      const target=stageOneTarget(e.x),shot=advanceSnowDefender(e,target,DT,{active:onScreen(e.x,24)&&inViewY(e.y)&&!!target&&Math.abs(target.x-e.x)<300});
+      if(shot){
+        const {vx,vy,g,r,...shape}=shot,projectile=ebullet(shot.x,shot.y,vx,vy,g,r);Object.assign(projectile,shape);
+        if(e.t==='artillery'){sfx.boom();shake(.6);}else sfx.toss();puff(shot.x,shot.y);
+      }
+      continue;
+    }
+    if(WUKONG&&G.stage===1&&advanceGuardRecoil(e,DT,{land:findLand,wall:wallCollide,clampX:x=>Math.max(6,Math.min(xMax(6),x)),gravity:GRAV}))continue;
+    if(WUKONG&&G.stage===1&&e.t==='fly'){
+      if(e.x<G.camX-40){e.dead=true;continue;}
+      if(onScreen(e.x,-8))advanceFlyingGuard(e,stageOneTarget(e.x),solids,DT);
+      continue;
+    }
     if (e.t === 'run') {
-      const holding = runnerAttack(e);
+      if(G.stage===3&&e.waterfallEntry){
+        // The offscreen approach continues the ledge at its original height until the feet reach it.
+        e.x+=e.vx*DT;e.y=e.waterfallEntry.y;e.vy=0;e.on=true;e.anim+=DT*10;
+        if(e.x>=8&&e.x<=W-8){e.sup=solids.find(s=>s.id===e.waterfallEntry.ledge);e.waterfallEntry=null;}
+        if(e.y>G.camY+250)e.dead=true;
+        continue;
+      }
+      let holding = runnerAttack(e);
+      if(WUKONG&&G.stage===1)holding=navigateGuard(e,stageOneTarget(e.x),solids,DT,{holding,gravity:GRAV,maxFall:MAXFALL,patrol:true})||holding;
       e.vy = Math.min(e.vy + GRAV * DT, MAXFALL);
       const x0 = e.x, want = e.x + (holding ? 0 : e.vx * DT); e.x = want; wallCollide(e, x0, 5);
       if (Math.abs(e.x - want) > 0.01) e.vx = -e.vx;
@@ -5950,7 +6136,7 @@ function updateEnemies() {
       if (e.vy >= 0) { const s = findLand(e.x, b0, e.y, 4, false); if (s) { e.y = s.y; e.vy = 0; e.on = true; e.sup = s; } }
       if (e.on && e.sup.water) { if (onScreen(e.x, 0)) splash(e.x); e.dead = true; continue; }
       if (e.on && e.sup.conv) e.x += e.sup.conv * DT;
-      if (e.on && !holding) {
+      if (e.on && !holding && !(WUKONG&&G.stage===1)) {
         const ahead = e.x + Math.sign(e.vx) * 7;
         const footing = solids.some(o => !o.gone && o.y === e.sup.y && ahead >= o.x && ahead <= o.x + o.w);
         if (!footing) { if (!e.dec) { e.dec = true; if (rnd() < 0.55) { e.vy = -235; e.on = false; } } }
@@ -5961,14 +6147,15 @@ function updateEnemies() {
     } else if (e.t === 'snp') {
       if (e.x < G.camX - 40 || e.y > G.camY + H + 80) { e.dead = true; continue; }
       if (!onScreen(e.x, -6) || !inViewY(e.y)) continue;
-      const target = G.stage === 1 ? stageOneTarget(e.x) : p;
-      const a = G.stage === 1 ? (target?.x < e.x ? Math.PI : 0) : aimAtPlayer(e.x, e.y - 20), q = Math.round(a / (Math.PI / 4)) * Math.PI / 4;
+      if(WUKONG&&G.stage===1){advanceGuard(e,stageOneTarget(e.x),DT,{active:!G.boss.dead,onAttack:()=>noise(.05,.025,700)});continue;}
+      const target = horizontal ? stageOneTarget(e.x) : p;
+      const a = horizontal ? (target?.x < e.x ? Math.PI : 0) : aimAtPlayer(e.x, e.y - 20), q = Math.round(a / (Math.PI / 4)) * Math.PI / 4;
       e.ax = Math.cos(q); e.ay = Math.sin(q); e.face = e.ax < -0.1 ? -1 : e.ax > 0.1 ? 1 : e.face;
-      if(G.stage===1){e.ax=e.face;e.ay=0;}
+      if(horizontal){e.ax=e.face;e.ay=0;}
       e.fireT -= DT;
       if (e.fireT <= 0 && target && !target.dead && !(target.camoT > 0)) {
-        e.fireT = G.stage === 1 ? 3.4 + rnd() : 1.8 + rnd() * 1.2;
-        ebullet(e.x + e.ax * 11, e.y - 20 + e.ay * 11, G.stage===1?e.face*118:Math.cos(a)*118, G.stage===1?0:Math.sin(a)*118); sfx.eshot();
+        e.fireT = horizontal ? 3.4 + rnd() : 1.8 + rnd() * 1.2;
+        ebullet(e.x + e.ax * 11, e.y - 20 + e.ay * 11, horizontal?e.face*118:Math.cos(a)*118, horizontal?0:Math.sin(a)*118); sfx.eshot();
       }
     } else if (e.t === 'diver') {
       // frogman: swims in from the right and fires harpoons
@@ -6058,57 +6245,86 @@ function updateEnemies() {
       e.st -= DT;
       if (e.st <= 0) { e.open = !e.open; e.st = e.open ? 1.6 : 1.8; }
     } else if (e.t === 'rock') {
-      e.vy = Math.min(e.vy + 420 * DT, 260); e.x += e.vx * DT; e.rot += e.vx * DT * 0.12;
+      const waterfallRock=G.stage===3&&e.waterfallRock===true;
+      e.vy = Math.min(e.vy + 420 * DT, 260); e.x += e.vx * DT;
+      if(waterfallRock){
+        if(Math.abs(e.vx)>.01)e.spinDir=Math.sign(e.vx);
+        e.rot+=(e.spinDir||1)*(1.7+Math.abs(e.vx)/e.r*.55)*DT;
+      }else e.rot += e.vx * DT * 0.12;
       const r0 = e.y; e.y += e.vy * DT;
-      if (e.vy > 0 && e.bounce < 3) { const s2 = findLand(e.x, r0, e.y, 2, false); if (s2) { e.y = s2.y; e.vy = -110 - rnd() * 50; e.vx = (rnd() < 0.5 ? -1 : 1) * (30 + rnd() * 45); e.bounce++; if (inViewY(e.y)) sfx.hit(); } }
-      if (e.x < 20 || e.x > W - 20) e.vx = -e.vx;
+      if (e.vy > 0 && e.bounce < (waterfallRock?2:3)) { const s2 = findLand(e.x, r0, e.y, waterfallRock?e.r*.55:2, false); if (s2) { e.y = s2.y; e.vy = -110 - rnd() * 50; e.vx = (rnd() < 0.5 ? -1 : 1) * (30 + rnd() * 45); e.bounce++; if(waterfallRock)e.spinDir=Math.sign(e.vx); if (inViewY(e.y)) sfx.hit(); } }
+      if(waterfallRock){
+        const edge=Math.max(20,e.r+4);
+        if(e.x<edge){e.x=edge;e.vx=Math.abs(e.vx);e.spinDir=1;}
+        else if(e.x>W-edge){e.x=W-edge;e.vx=-Math.abs(e.vx);e.spinDir=-1;}
+      }else if (e.x < 20 || e.x > W - 20) e.vx = -e.vx;
       if (e.y > G.camY + H + 40) e.dead = true;
     } else if (e.t === 'tur') {
       if (e.x < G.camX - 40 || e.y > G.camY + H + 80) { e.dead = true; continue; }
       if (!onScreen(e.x, -4) || !inViewY(e.y)) continue;
-      const pivotY=e.y+(G.stage===1?3.5:0);
-      const target=G.stage===1?stageOneTarget(e.x):p;
-      const a = G.stage===1?(target?.x<e.x?Math.PI:0):aimAtPlayer(e.x, pivotY), tgt = ((Math.round(a / (Math.PI / 6)) % 12) + 12) % 12;
-      if(G.stage===1)e.idx=tgt;
+      if(WUKONG&&G.stage===1){advanceHalberd(e,stageOneTarget(e.x),DT);continue;}
+      const pivotY=e.y+(horizontal?3.5:0);
+      const target=horizontal?stageOneTarget(e.x):p;
+      const a = horizontal?(target?.x<e.x?Math.PI:0):aimAtPlayer(e.x, pivotY), tgt = ((Math.round(a / (Math.PI / 6)) % 12) + 12) % 12;
+      if(horizontal)e.idx=tgt;
       e.rotT -= DT;
       if (e.rotT <= 0 && e.idx !== tgt) { const d = (tgt - e.idx + 12) % 12; e.idx = (e.idx + (d <= 6 ? 1 : 11)) % 12; e.rotT = 0.17; }
       e.fireT -= DT;
       if (e.fireT <= 0 && e.idx === tgt && target && !target.dead && !(target.camoT > 0)) {
-        const ang = e.idx * Math.PI / 6; e.fireT = G.stage===1?3.2+rnd():1.5;
+        const ang = e.idx * Math.PI / 6; e.fireT = horizontal?3.2+rnd():1.5;
         const face=e.idx===6?-1:1;
-        ebullet(e.x + Math.cos(ang) * 11, pivotY + (G.stage===1?0:Math.sin(ang)*11), G.stage===1?face*130:Math.cos(ang)*130, G.stage===1?0:Math.sin(ang)*130); sfx.eshot();
+        ebullet(e.x + Math.cos(ang) * 11, pivotY + (horizontal?0:Math.sin(ang)*11), horizontal?face*130:Math.cos(ang)*130, horizontal?0:Math.sin(ang)*130); sfx.eshot();
       }
     }
   }
   }
   // pods & items
-  for (const t of G.podTrig) if (!t.done && (t.downY !== undefined ? G.camY >= t.downY : t.atY !== undefined ? G.camY <= t.atY : G.camX >= t.at)) { t.done = true; const y0 = t.atY !== undefined || t.downY !== undefined ? G.camY + t.y0 : t.y0; G.pods.push({ x: G.camX - 12, y0, y: y0, t: 0, kind: t.kind }); }
-  for (const pd of G.pods) { pd.t += DT; pd.x += 96 * DT; pd.y = pd.y0 + Math.sin(pd.t * 3.2) * 18; if (pd.x > G.camX + W + 20) pd.dead = true; }
+  if(WUKONG&&G.stage===1){
+    const fairy=scheduleSupplyFairy(G,DT,rnd);if(fairy)G.pods.push(fairy);
+  }else for (const t of G.podTrig) if (!t.done && (t.downY !== undefined ? G.camY >= t.downY : t.atY !== undefined ? G.camY <= t.atY : G.camX >= t.at)) { t.done = true; const y0 = t.atY !== undefined || t.downY !== undefined ? G.camY + t.y0 : t.y0; G.pods.push({ x: G.camX - 12, y0, y: y0, t: 0, kind: t.kind }); }
+  for (const pd of G.pods) {
+    if(pd.fairy){advanceSupplyFairy(pd,DT,G.camX);continue;}
+    pd.t += DT; pd.x += 96 * DT; pd.y = pd.y0 + Math.sin(pd.t * 3.2) * 18; if (pd.x > G.camX + W + 20) pd.dead = true;
+  }
   for (const it of G.items) {
-    if (it.rest) { if (it.x < G.camX - 16 || it.y > G.camY + H + 40) it.dead = true; continue; }
+    if (it.rest) { if(WUKONG&&G.stage===1&&it.fromPod)it.landed=true; if (it.x < G.camX - 16 || it.y > G.camY + H + 40) it.dead = true; continue; }
     it.vy = G.uw ? Math.min(it.vy + 140 * DT, 40) : Math.min(it.vy + GRAV * 0.8 * DT, 300); it.x += it.vx * DT * (G.uw ? 0.5 : 1);
     const b0 = it.y; it.y += it.vy * DT;
     if (it.vy > 0) { const s = findLand(it.x, b0, it.y, 5, false); if (s) { it.y = s.y; if(it.fromPod){it.landed=true;it.rest=true;it.vx=it.vy=0;} else if (it.vy > 90) { it.vy = -it.vy * 0.35; it.vx *= 0.5; } else { it.vy = 0; it.rest = true; } } }
     if (it.y > G.camY + 240 || it.x < G.camX - 16) it.dead = true;
   }
 }
-function killEnemy(e) {
+function killEnemy(e,shot) {
   if (e.dead) return;
   e.dead = true;
   if (e.t === 'valve') { e.hatch.gone = true; banner('舱门已打开', 1); [60, 67, 72].forEach((m, i) => tone(mfreq(m), 0.08, 'square', 0.06, 0, AC && AC.currentTime + i * 0.06)); for (let i = 0; i < 6; i++) G.fx.push({ k: 'bub', x: e.hatch.x + rnd() * e.hatch.w, y: e.hatch.y + 6, vx: 0, vy: -30 - rnd() * 20, t: 0, life: 1 }); }
-  const c = ebox(e), small = e.t === 'run' || e.t === 'snp' || e.t === 'rock' || e.t === 'mor' || e.t === 'larva' || e.t === 'diver' || e.t === 'jelly' || e.t === 'fish';
-  boom(c.x + c.w / 2, c.y + c.h / 2, small ? 7 : 12); sfx.boom();
-  addScore({ run: 100, snp: 300, tur: 500, box: 500, rock: 100, mor: 300, cart: 200, sac: 500, larva: 50, diver: 200, mine: 100, jelly: 100, msub: 500, boat: 500, eel: 300, valve: 200, fish: 100 }[e.t] || 100);
+  const c = ebox(e), small = e.t === 'run' || e.t === 'snp' || e.t === 'fly' || e.t === 'rock' || e.t === 'mor' || e.t === 'grenadier' || e.t === 'larva' || e.t === 'diver' || e.t === 'jelly' || e.t === 'fish';
+  if(WUKONG&&G.stage===1&&['run','snp','fly'].includes(e.t)){
+    G.fx.push(guardDefeat(e,shot));
+    queueEnemyCry(G,e,e.t==='fly'?'fly':'guard');
+    const recovery=healingEnemyDrop(G,e,rnd);if(recovery)G.items.push(recovery);
+    if(!shot)martialImpact(c.x+c.w/2,c.y+c.h/2,{killed:true,heavy:true,blood:true,target:c,face:-(e.face||1)});
+  }else{boom(c.x + c.w / 2, c.y + c.h / 2, small ? 7 : 12); sfx.boom();}
+  addScore({ artillery:800, grenadier:300, run: 100, snp: 300, tur: 500, box: 500, rock: 100, mor: 300, cart: 200, sac: 500, larva: 50, diver: 200, mine: 100, jelly: 100, msub: 500, boat: 500, eel: 300, valve: 200, fish: 100 }[e.t] || 100);
   if (!small) shake(2);
   if (e.t === 'box') G.items.push({ x: e.x, y: e.y - 14, vx: 20, vy: -170, kind: e.item });
 }
 function damageEnemy(e, dmg, x, y, shot) {
-  const impact={material:['tur','box','cart'].includes(e.t)?'metal':'body',target:ebox(e),vx:shot?.vx??1,vy:shot?.vy??0,weapon:shot?.k};
+  const impact={material:['tur','box','cart','artillery'].includes(e.t)?'metal':'body',target:ebox(e),vx:shot?.vx??1,vy:shot?.vy??0,weapon:shot?.k};
   if (e.t === 'box' && !e.open) { spark(x, y,impact); return; } // closed sensor box shrugs off hits
   e.hp -= dmg; e.flash = 0.07; spark(x, y,impact);
+  if(WUKONG&&G.stage===1){
+    if(['run','snp','fly'].includes(e.t))receiveGuardHit(e,shot,dmg);
+    martialImpact(x,y,{heavy:!!shot?.heavy||dmg>=4,killed:e.hp<=0,metal:impact.material==='metal',blood:['run','snp','fly'].includes(e.t),face:Math.sign(shot?.vx||1),damage:dmg,target:impact.target,weapon:shot?.k,angle:shot?.impactAngle??Math.atan2(shot?.vy||0,shot?.vx||1),form:shot?.form||null});
+    if(e.hp<=0)killEnemy(e,shot);return;
+  }
   if (e.hp <= 0) killEnemy(e); else sfx.hit();
 }
 function popPod(pd) {
+  if(WUKONG&&G.stage===1){
+    const peach=releaseFairyPeach(pd);if(!peach)return false;
+    G.items.push(peach);tone(780,.08,'sine',.04);return true;
+  }
   pd.dead = true; boom(pd.x, pd.y, 8); sfx.boom();
   G.items.push({ x: pd.x, y: pd.y, vx: 30, vy: 20, kind: pd.kind, fromPod:true, landed:false });
 }
@@ -6117,14 +6333,20 @@ function popPod(pd) {
 function updateBoss() {
   if (G.stage !== 1) return;
   const B = G.boss, p = G.p;
-  if (!B.active && G.camX >= CAM_MAX - 0.5) { B.active = true; banner('警告 · 要塞炮阵', 2.2); Music.start(true); }
+  if (!B.active && G.camX >= CAM_MAX - 0.5) { B.active = true; banner(WUKONG?'南天门守将 · 巨灵神':'警告 · 要塞炮阵', 2.2); Music.start(true); }
   if (!B.active) return;
+  if(WUKONG&&!B.giant){
+    B.giant={...GIANT_HOME,vx:0,vy:0,onGround:true,clock:0,gait:0,walkBlend:0,cooldown:.65,attack:null,turn:0};
+    giantEncounter(B);
+    B.parts[0].hp=B.parts[1].hp=0;
+    Object.assign(B.parts[2],giantBody(B.giant),{hitBox:giantBody(B.giant)});
+  }
   for (const pt of B.parts) if (pt.flash > 0) pt.flash -= DT;
   if (B.dead) {
     if(B.deadT>0){
       B.deadT=Math.max(0,B.deadT-DT);
-      if(rnd()<.2){const r=FORTRESS_EXIT;boom(r.x+rnd()*r.w,r.y+rnd()*r.h,5+rnd()*4);}
-      shake(1.5);
+      if(!WUKONG&&rnd()<.2){const r=FORTRESS_EXIT;boom(r.x+rnd()*r.w,r.y+rnd()*r.h,5+rnd()*4);}
+      if(!WUKONG)shake(1.5);
     }
     if(B.deadT<=0&&!B.exitOpen){B.exitOpen=true;banner('入口已打开 · 跳入缺口进入下一关',3);sfx.pick();}
     if(B.exitOpen){
@@ -6137,6 +6359,21 @@ function updateBoss() {
     return;
   }
   if (G.freezeT > 0) return;
+  if(WUKONG){
+    const core=B.parts[2];
+    if(giantEncounter(B).stage===1&&core.hp<=core.max/2)growGiantBoss();
+    if(B.encounter.stage===3)return;
+    if(B.encounter.stage===2)advanceColossus(B,stageOneTarget(B.giant.x),DT,{
+      onTell:a=>{banner(a.kind==='skyAxe'?'裂空巨斧 · 退到'+(a.safeSide==='left'?'左':'右')+'侧安全区':'天外巨足 · 离开脚印，再跳起避震',a.windup);tone(a.kind==='skyAxe'?165:76,.24,'triangle',.07);},
+      onImpact:a=>{const stomp=a.kind==='skyStomp';noise(stomp?.48:.20,stomp?.24:.17,stomp?90:850);tone(stomp?42:115,stomp?.42:.20,'triangle',.15,stomp?24:38);shake(stomp?9:6);G.hitStop=Math.max(G.hitStop||0,stomp?.055:.035);puff(stomp?a.aimX:B.giant.x,176);}
+    });
+    else advanceGiant(B,stageOneTarget(B.giant.x),DT,{
+      onAttack:kind=>{noise(.16,.08,240);if(kind==='cleave'||kind==='leap')tone(110,.12,'triangle',.06);},
+      onLand:g=>{noise(.2,.12,140);shake(2.4);puff(g.x,g.y);}
+    });
+    Object.assign(core,giantBody(B.giant),{hitBox:giantBody(B.giant)});
+    return;
+  }
   const [gA, gB, core] = B.parts;
   const target=stageOneTarget(gA.x);
   if (!B.phase2 && core.hp <= core.max / 2) { B.phase2 = true; banner('核心过载', 1.4); }
@@ -6158,38 +6395,81 @@ function updateBoss() {
     if (B.spawnT <= 0) { B.spawnT = 2.3; if (G.en.filter(e => e.t === 'run').length < 3) G.en.push(runner(3200, 176, -1)); }
   }
 }
-function hitPart(pt, dmg) {
+function growGiantBoss(){
+  if(!enterColossus(G.boss,{left:G.camX,width:W}))return;
+  for(const p of players())if(!p.dead)p.invT=Math.max(p.invT,1.8);
+  G.eb=[];G.en=[];banner('第二阶段 · 巨灵神显圣',2.1);tone(70,.5,'triangle',.08,160);shake(2.5);
+}
+function startGiantFinale(){
+  if(!enterGiantFinale(G.boss,players()))return;
+  G.eb=[];G.pb=[];G.gr=[];G.en=[];G.pods=[];G.items=[];G.fx=[];G.hitStop=0;G.freezeT=0;G.bannerT=0;
+  wukongHeroAudio?.resetEvents({keepDialogue:true});wukongBattleAudio?.stopAll();
+}
+function stepGiantFinale(){
+  G.t++;G.time+=DT;
+  const done=advanceGiantFinale(G.boss,players(),DT,{
+    onShout:()=>{const p=players().find(p=>!p.dead)||G.p;queueHeroSounds(G,p,'finisher');},
+    onImpact:i=>{const p=players().find(p=>!p.dead)||G.p;queueHeroSounds(G,p,i>=4?'heavy':'spin');noise(i>=4?.24:.12,i>=4?.15:.09,180);tone(i>=4?62:110,.15,'triangle',.08,45);shake(i>=4?4:2);}
+  });
+  updateFx();sweep(G.fx);G.shake=Math.max(0,G.shake-DT*12);
+  if(done)hitPart(G.boss.parts[2],1,{k:'staff',heavy:true,finisher:true,vx:1});
+}
+function hitPart(pt, dmg, shot) {
   const B = G.boss;
   if (pt.hp <= 0 || B.dead) return;
-  pt.hp -= dmg || 1; pt.flash = 0.06; sfx.hit();
+  if(WUKONG&&G.stage===1&&B.giant){
+    const encounter=giantEncounter(B);
+    if(encounter.stage===3||encounter.stage===2&&encounter.growth>0)return;
+  }
+  pt.hp -= dmg || 1; pt.flash = 0.06;
+  if(WUKONG&&G.stage===1){
+    martialImpact(shot?.x??pt.x+pt.w/2,shot?.y??pt.y+pt.h*.7,{heavy:!!shot?.heavy,killed:pt.hp<=0&&B.encounter?.stage===4,metal:true,blood:true,face:Math.sign(shot?.vx||1),damage:dmg||1,target:pt,weapon:shot?.k,angle:shot?.impactAngle??Math.atan2(shot?.vy||0,shot?.vx||1)});
+    const giant=B.giant;
+    if(giant&&giantEncounter(B).stage===1&&shot?.heavy&&!(giant.poiseCooldown>0)&&giant.onGround!==false&&(!giant.attack||giant.attack.t<giant.attack.windup)){
+      giant.hurt={t:0,duration:.24,face:Math.sign(shot.vx||1)};giant.attack=null;giant.cooldown=.55;giant.poiseCooldown=1.5;
+    }
+  }else sfx.hit();
+  if(WUKONG&&G.stage===1&&B.giant){
+    const stage=giantEncounter(B).stage;
+    if(stage===1&&pt.hp<=pt.max/2){growGiantBoss();return;}
+    if(stage===2&&pt.hp<=0){startGiantFinale();return;}
+  }
   if (pt.hp > 0) return;
   pt.destroyedAt = G.time;
   boom(pt.x + pt.w / 2, pt.y + pt.h / 2, 16); sfx.big(); shake(4);
   if (pt.k === 'core') {
     B.dead = true; B.deadT = 1.1; B.exitOpen=false; B.exitTransitionT=0; addScore(10000);
+    if(WUKONG)queueEnemyCry(G,B.giant||{x:pt.x,y:pt.y},'giant');
     for (const gun of B.parts) if (gun.hp > 0) {
       gun.hp = 0; gun.destroyedAt = G.time;
       boom(gun.x + gun.w / 2, gun.y + gun.h / 2, 12);
     }
     for (const e of G.en) if (!e.dead) { e.dead = true; boom(e.x, e.y - 12, 7); }
     G.eb.length = 0; G.spawnT=9999;G.podTrig.forEach(trigger=>trigger.done=true);
-    Music.stop(); banner('核心炸裂 · 通道正在打开',1.4);
+    if(WUKONG&&B.giant){
+      B.defeatRig={...B.giant,attack:B.giant.attack?{...B.giant.attack,hits:[]}:null};
+      B.giant.attack=null;B.giant.vx=B.giant.vy=0;
+    }
+    Music.stop(); banner(WUKONG?'巨灵神败退 · 南天门已破':'核心炸裂 · 通道正在打开',1.4);
   } else addScore(1000);
 }
 
 // ================= collisions & bullets =================
 function bossParts() {
   if (G.stage === 3) { const M = G.mech; return M && M.active && !M.dead ? M.parts : []; }
-  if (G.stage === 5) { const T = G.tank; return T && T.active && !T.dead ? T.parts : []; }
+  if (G.stage === 5) { const F=G.fortress,T=G.tank;return F?.active&&!F.dead&&F.entryT<=0?F.parts:T?.active&&!T.dead?T.parts:[]; }
   if (G.stage === 6) { const Gm = G.golem; return Gm && Gm.active && !Gm.dead ? Gm.parts : []; }
   if (G.stage === 11) { const Cr = G.crab; return Cr && Cr.active && !Cr.dead ? Cr.parts : []; }
   if (G.stage === 10) { const Gh = G.ghost; return Gh && Gh.active && !Gh.dead && Gh.alpha > 0.6 ? Gh.parts : []; }
   if (G.uw) { const Sk = G.shark; return Sk && Sk.active && !Sk.dead ? Sk.parts : []; }
   if (G.stage === 8) { const Hv = G.hive; return Hv && Hv.active && !Hv.dead ? Hv.parts : []; }
   if (G.stage === 7) { const Sh = G.ship; return Sh && Sh.active && !Sh.entering && !Sh.dead ? Sh.parts : []; }
-  const B = G.boss; return B && B.active && !B.dead ? B.parts : [];
+  const B = G.boss;
+  if(!B||!B.active||B.dead)return [];
+  if(WUKONG&&G.stage===1){const core=B.parts[2];return B.encounter?.stage===2&&!(core.w>0&&core.h>0)?[]:[core];}
+  return B.parts;
 }
-const hitBossPart = (pt, d) => pt.mech ? hitMech(pt, d) : pt.tank ? hitTank(pt, d) : pt.golem ? hitGolem(pt, d) : pt.ship ? hitShip(pt, d) : pt.hive ? hitHive(pt, d) : pt.shark ? hitShark(pt, d) : pt.ghost ? hitGhost(pt, d) : pt.crab ? hitCrab(pt, d) : hitPart(pt, d);
+const hitBossPart = (pt, d, shot) => pt.fortress ? hitFlyingFortress(pt,d) : pt.mech ? hitMech(pt, d) : pt.tank ? hitTank(pt, d) : pt.golem ? hitGolem(pt, d) : pt.ship ? hitShip(pt, d) : pt.hive ? hitHive(pt, d) : pt.shark ? hitShark(pt, d) : pt.ghost ? hitGhost(pt, d) : pt.crab ? hitCrab(pt, d) : hitPart(pt, d, shot);
 function findTarget(x, y) {
   let best = null, bd = 260;
   const consider = (cx, cy) => { const d = Math.hypot(cx - x, cy - y); if (d < bd) { bd = d; best = { x: cx, y: cy }; } };
@@ -6197,9 +6477,9 @@ function findTarget(x, y) {
     if (e.dead || !onScreen(e.x, 0) || (e.t === 'box' && !e.open) || e.t === 'beam' || (e.t === 'eel' && e.out < 0.3)) continue;
     const b = ebox(e); consider(b.x + b.w / 2, b.y + b.h / 2);
   }
-  for (const pd of G.pods) if (!pd.dead) consider(pd.x, pd.y);
+  for (const pd of G.pods) if (!pd.dead&&!pd.flee) consider(pd.x, pd.y);
   const B = G.boss;
-  for (const pt of bossParts()) if (pt.hp > 0) consider(pt.x + pt.w / 2, pt.y + pt.h / 2);
+  for (const pt of bossParts()) if (pt.hp > 0 && (G.stage !== 3 || waterfallTargetVulnerable(pt,G.mech))) consider(pt.x + pt.w / 2, pt.y + pt.h / 2);
   return best;
 }
 function updateBullets() {
@@ -6222,12 +6502,20 @@ function updateBullets() {
     if (hx < G.camX - m || hx > G.camX + W + m || hy < G.camY - m || hy > G.camY + H + m) b.dead = true;
   }
   for (const b of G.eb) {
-    b.vy += b.g * DT; b.x += b.vx * DT; b.y += b.vy * DT;
+    if(b.snowOrdnance){
+      if(advanceSnowOrdnance(b,DT,findLand)){boom(b.x,b.y,12);sfx.boom();shake(1);}
+      if(b.x<G.camX-64||b.x>G.camX+W+64||b.y<G.camY-180||b.y>G.camY+H+40)b.dead=true;
+      continue;
+    }
+    if(b.waterfallFire){
+      b.age+=DT;b.cx+=b.vx*DT;b.cy+=b.vy*DT;
+      b.x=b.cx+Math.sin(b.age*7+b.seed)*5;b.y=b.cy+Math.cos(b.age*7+b.seed)*3;
+    }else{b.vy += b.g * DT; b.x += b.vx * DT; b.y += b.vy * DT;}
     if (b.x < G.camX - 12 || b.x > G.camX + W + 12 || b.y < G.camY - 20 || b.y > G.camY + H + 8) b.dead = true;
     if (b.g) { const s = findLand(b.x, b.y - b.vy * DT, b.y, 1, false); if (s && b.vy > 0) { b.dead = true; boom(b.x, b.y - 3, 6); } }
   }
 }
-const podBox = pd => ({ x: pd.x - 12, y: pd.y - 6, w: 24, h: 11 });
+const podBox = pd => pd.fairy?{x:pd.x-28,y:pd.y-17,w:42,h:30}:({ x: pd.x - 12, y: pd.y - 6, w: 24, h: 11 });
 function inWall(x, y) {
   if (G.stage === 8) return inHive(x, y);
   if (G.stage === 5) return inTank(x, y);
@@ -6257,7 +6545,7 @@ function blast(x, y, R = 64, dmg = 16, bdmg = 12) {
     const b = ebox(e), cx = b.x + b.w / 2, cy = b.y + b.h / 2;
     if (Math.hypot(cx - x, cy - y) <= R + 6) damageEnemy(e, dmg, cx, cy);
   }
-  for (const pd of G.pods) if (!pd.dead && Math.hypot(pd.x - x, pd.y - y) <= R) popPod(pd);
+  for (const pd of G.pods) if (!pd.dead&&!pd.flee && Math.hypot(pd.x - x, pd.y - y) <= R) popPod(pd);
   const B = G.boss;
   for (const pt of bossParts()) if (pt.hp > 0 && Math.hypot(pt.x + pt.w / 2 - x, pt.y + pt.h / 2 - y) <= R + 12) hitBossPart(pt, bdmg);
   for (const b of G.eb) if (Math.hypot(b.x - x, b.y - y) < R) b.dead = true;
@@ -6286,7 +6574,7 @@ function updateGrenades() {
       if (landing) hit = true;
     }
     const gb = { x: g.x - radius, y: g.y - radius, w: radius * 2, h: radius * 2 };
-    if (!hit) hit = G.en.some(e => !e.dead && overlap(gb, ebox(e))) || G.pods.some(pd => !pd.dead && overlap(gb, podBox(pd)));
+    if (!hit) hit = G.en.some(e => !e.dead && overlap(gb, ebox(e))) || G.pods.some(pd => !pd.dead&&!pd.flee && overlap(gb, podBox(pd)));
     if (!hit) hit = bossParts().some(pt => pt.hp > 0 && overlap(gb, pt.hitBox || pt));
     if (hit) { g.dead = true; if (G.stage === 1 && g.x > WATER.x0 && g.x < WATER.x1 && g.y > WATER.surf) splash(g.x); blast(g.x, Math.min(g.y, 196), 64, 16, 12); }
   }
@@ -6302,10 +6590,12 @@ function bulletBoxes(b) {
 const anyOverlap = (boxes, t) => boxes.some(bx => overlap(bx, t));
 function collide() {
   const p = G.p, B = G.boss;
-  if (WUKONG && G.stage === 1) for (const actor of players()) resolveStaff(actor, {
-    enemies: G.en, pods: G.pods, parts: bossParts(), solids, enemyBox: ebox, podBox,
-    damageEnemy, popPod, hitPart: hitBossPart, bullets:G.eb,
-  });
+  if (WUKONG && G.stage === 1) {
+    const combat={enemies:G.en,pods:G.pods,parts:bossParts(),solids,enemyBox:ebox,podBox,
+      damageEnemy,popPod,hitPart:hitBossPart,bullets:G.eb,
+      onWaveImpact:(x,y,wave)=>G.fx.push({k:'qiBurst',x,y,strength:wave.strength,t:0,life:.24})};
+    for(const actor of players()){resolveStaff(actor,combat);resolveWukongMagic(actor,combat);}
+  }
   for (const b of G.pb) {
     if (b.dead) continue;
     const bxs = bulletBoxes(b), pierce = b.k === 'laser';
@@ -6318,7 +6608,7 @@ function collide() {
     }
     if (b.dead) continue;
     for (const pd of G.pods) {
-      if (pd.dead || !anyOverlap(bxs, podBox(pd))) continue;
+      if (pd.dead||pd.flee || !anyOverlap(bxs, podBox(pd))) continue;
       popPod(pd);
       if (!pierce) { b.dead = true; break; }
     }
@@ -6338,11 +6628,21 @@ function collidePlayer() {
   const p = G.p;
   if (p.dead) return;
   const pb = pBox(p);
+  const celestial=WUKONG&&G.stage===1;
   for (const it of G.items) {
-    if (it.dead || (it.fromPod&&!it.landed) || !pb || !overlap(pb, { x: it.x - 6, y: it.y - 10, w: 12, h: 10 })) continue;
+    // Resting drops are already on the floor, including restored older states
+    // without the separate landed flag. Healing uses body contact, rather than
+    // the narrow original damage box at the centre of the painted Wukong.
+    if (it.dead || (it.fromPod&&!it.landed&&!(celestial&&it.rest)) || !pb) continue;
+    const pickup=celestial&&HEALING_ITEMS[it.kind]?{x:pb.x-8,y:pb.y-2,w:pb.w+16,h:pb.h+4}:pb;
+    if(!overlap(pickup,{x:it.x-6,y:it.y-10,w:12,h:10}))continue;
     it.dead = true; pickItem(it.kind);
   }
   if (!pb) return;
+  if(WUKONG&&G.stage===1&&G.boss.active&&!G.boss.dead&&G.freezeT<=0&&p.invT<=0&&giantHitsPlayer(G.boss,p,pb,solids)){
+    if(p.shieldT>0||riotBlock()||p.ride==='moto'){spark(p.x,p.y-16,{material:'shield',vx:G.boss.giant.face,vy:0});}
+    else {killPlayer(false,{damage:colossusDamage(G.boss,pb),heavy:true,face:G.boss.giant.face,x:p.x,y:p.y-18});return;}
+  }
   const feet = giantCrushBox(p);
   if (feet) {
     for (const e of G.en) {
@@ -6361,11 +6661,29 @@ function collidePlayer() {
     if (overlap(pb, { x: b.x - b.r, y: b.y - b.r, w: b.r * 2, h: b.r * 2 })) {
       if (p.shieldT > 0 || riotBlock()) { b.dead = true; spark(b.x, b.y,{material:'shield',vx:b.vx,vy:b.vy}); continue; }
       if (p.invT > 0) continue;
-      b.dead = true; killPlayer(); return;
+      b.dead = true;if(b.snowOrdnance){boom(b.x,b.y,11);sfx.boom();}
+      if(WUKONG&&G.stage===1)killPlayer(false,{damage:WUKONG_HEALTH.projectile,face:Math.sign(b.vx),x:b.x,y:b.y});else killPlayer();
+      return;
     }
   }
   for (const e of G.en) {
-    if (e.dead || e.t === 'tur' || e.t === 'box' || e.t === 'sac' || e.t === 'valve' || G.freezeT > 0 || (e.t === 'beam' && e.st !== 'fall') || (e.t === 'eel' && e.out < 0.3)) continue; // frozen enemies are harmless
+    if (e.dead || e.t === 'box' || e.t === 'grenadier' || e.t === 'sac' || e.t === 'valve' || G.freezeT > 0 || (e.t === 'beam' && e.st !== 'fall') || (e.t === 'eel' && e.out < 0.3)) continue; // frozen enemies are harmless
+    if(e.t==='tur'){
+      if(WUKONG&&G.stage===1&&p.invT<=0&&halberdHitsPlayer(e,p,pb,solids)){
+        if(p.shieldT>0||riotBlock()||p.ride==='moto')spark(p.x,p.y-16,{material:'shield',vx:e.melee.face,vy:0});
+        else {killPlayer(false,{damage:WUKONG_HEALTH.halberd,face:e.melee.face,heavy:true,x:p.x,y:p.y-18});return;}
+      }
+      continue;
+    }
+    if(WUKONG&&G.stage===1&&(e.t==='run'||e.t==='snp'||e.t==='fly')){
+      if(overlap(pb,ebox(e))&&(p.shieldT>0||p.ride==='moto'||p.giantT>0||p.acidT>0||p.boostT>0)){killEnemy(e);continue;}
+      if(p.invT>0)continue;
+      if(guardHitsPlayer(e,p,pb,solids)){
+        if(p.shieldT>0||riotBlock()||p.ride==='moto'){spark(p.x,p.y-16,{material:'shield',vx:e.melee.face,vy:0});continue;}
+        killPlayer(false,{damage:e.t==='fly'?WUKONG_HEALTH.fly:WUKONG_HEALTH.guard,face:e.melee.face,heavy:e.melee.kind==='sweep',x:p.x,y:p.y-18});return;
+      }
+      continue;
+    }
     if (overlap(pb, ebox(e))) {
       if (p.shieldT > 0 || p.ride === 'moto' || p.giantT > 0 || (e.t === 'rock' && p.helmT > 0) || (p.acidT > 0 && (e.t === 'run' || e.t === 'larva')) || (p.boostT > 0 && e.t !== 'beam')) { killEnemy(e); continue; } // shield, motorbike ram, giant stomp, helmet vs boulder
       if (e.t === 'mine') killEnemy(e); // the mine goes off as it hits you
@@ -6376,7 +6694,12 @@ function collidePlayer() {
 function updateFx() {
   for (const f of G.fx) {
     f.t += DT;
-    if (f.k === 'smoke') { f.y -= 10 * DT; }
+    if(WUKONG&&G.stage===1&&f.k==='guardDefeat'){
+      if(advanceGuardDefeat(f,DT,{land:findLand,wall:wallCollide,gravity:GRAV})){
+        G.fx.push({k:'landingDust',x:f.x,y:f.y,t:0,life:.3});noise(.07,.06,800);
+      }
+    }
+    else if (f.k === 'smoke') { f.y -= 10 * DT; }
     else if (f.k === 'spark' || f.k === 'drop' || f.k === 'debris' || f.k === 'acid') { f.vy += 420 * DT; f.x += f.vx * DT; f.y += f.vy * DT; }
     else if (f.k === 'puff') { f.x += f.vx * DT; f.y += f.vy * DT; }
     else if (f.k === 'bub') { f.x += f.vx * DT + Math.sin(f.t * 9) * 0.15; f.y += f.vy * DT; }
@@ -6422,7 +6745,7 @@ function updateCamera() {
     if (target < G.camY) G.camY = Math.max(TOP_Y, G.camY - Math.min(G.camY - target, (p.y < G.camY + 40 ? 400 : 150) * DT));
     return;
   }
-  if (!p.dead) G.camX = Math.min(CAM_MAX, Math.max(G.camX, p.x - 150));
+  if (!p.dead) {const limit=G.stage===5&&!G.tank.dead?STAGE_FIVE_ROUTE.tankCamera:CAM_MAX;G.camX=Math.min(limit,Math.max(G.camX,p.x-150));}
 }
 function step() {
   const I = readInput();
@@ -6432,14 +6755,14 @@ function step() {
     if ((I.startEdge || I.fireEdge || I.jumpEdge) && menuButtons().includes(document.activeElement)) document.activeElement.click();
     return;
   }
-  if (G.mode === 'lobby') return;
+  if (G.mode === 'lobby') { if(I.escEdge)$('coopBack').click();else handleGamepadMenu(I,$('scrCoop'));return; }
   if (cooperative()) {
     if (coop.role === 'guest') { coop.input(I); return; }
     remoteInput = coop.remote.read();
     if (G.mode === 'play' && (remoteInput.startEdge || remoteInput.escEdge)) return pause();
     if (G.mode === 'pause' && (remoteInput.startEdge || remoteInput.escEdge)) return resume();
   }
-  if (G.mode === 'settings') { if (I.escEdge) closeSettings(); return; }
+  if (G.mode === 'settings') { if (I.escEdge) closeSettings();else handleGamepadMenu(I,$('scrSettings'));return; }
   if (G.mode === 'cine') {
     G.t++; const Cn = G.cine; Cn.t += DT;
     if (Cn.t > 0.6 && (I.startEdge || I.fireEdge || I.jumpEdge || I.escEdge || Cn.skip)) return endCine();
@@ -6463,13 +6786,16 @@ function step() {
     G.t++;
     return;
   }
+  if(WUKONG&&G.stage===1&&G.boss.encounter?.stage===3){stepGiantFinale();return;}
+  if(WUKONG&&G.stage===1&&advanceImpactPause(G,DT,[I,remoteInput]))return;
   G.t++; G.time += DT;
+  if(G.martialCombo?.remaining>0)G.martialCombo.remaining=Math.max(0,G.martialCombo.remaining-DT);
   for (const actor of players()) if (updateGiant(actor, DT)) {
     puff(actor.x, actor.y); sfx.hit(); banner('巨大化时间结束 · 恢复原尺寸', 1.4);
   }
-  // hand grenade (I key) in every stage, then a cooldown
+  // Wukong spends a full rage meter; original stages keep grenade cooldowns.
   if (G.nadeCd > 0) G.nadeCd -= DT;
-  if (I.nadeEdge && !G.p.dead && !G.p.enteringExit && !G.p.exitEntered && !(isBase()&&(G.base.trans>0||(G.stage===2&&G.base.dead)))) { if (G.nadeCd <= 0) { G.nadeCd = nadeCooldown(); throwGrenade(); } else tone(180, 0.05, 'square', 0.03, 150); }
+  if (I.nadeEdge) requestNade();
   if (G.momm) {
     updateMom(I);
     if (G.mode !== 'play') return;
@@ -6499,6 +6825,7 @@ function step() {
     updateFx();
     sweep(G.base.sol); sweep(G.base.rol);
   } else {
+  if(G.stage===3)advanceStageThreePlatforms(solids,players(),G.time);
   updateActor(I);
   updatePartner(remoteInput);
   if (G.mode !== 'play') return;
@@ -6517,6 +6844,10 @@ function step() {
   if (G.uw) updateSea();
   updateBullets();
   updateGrenades();
+  if(WUKONG&&G.stage===1){
+    const world={enemies:G.en,parts:bossParts(),solids,enemyBox:ebox,camera:G.camX,width:W,bottom:G.camY+H};
+    for(const actor of players())advanceWukongMagic(actor,DT,world);
+  }
   collide();
   updateFx();
   }
@@ -6538,8 +6869,8 @@ function setRes(r) {
   if (r !== R || cv.width !== W * r) {
     R = r; cv.width = W * R; cv.height = H * R; ctx.imageSmoothingEnabled = true;
   }
-  // The first two stages own their image layers; avoid unused legacy backdrops at 4K.
-  if (G.stage !== 1 && G.stage !== 2 && backgroundResolution !== R) { buildBackgrounds(); backgroundResolution = R; }
+  // HD stages own their image layers; avoid unused legacy backdrops at 4K.
+  if (G.stage > 5 && backgroundResolution !== R) { buildBackgrounds(); backgroundResolution = R; }
 }
 const UI_FONT = '"Segoe UI","Helvetica Neue","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",Arial,sans-serif';
 const shadeCache = new Map();
@@ -6588,7 +6919,7 @@ function drawText(str, x, y, color, align, size, scale) {
   return ctx.measureText(str).width;
 }
 const pad6 = n => String(n).padStart(6, '0');
-const STAGE_NAMES = { 1: '雨林要塞', 2: '地下指挥所', 3: '峡谷瀑布', 4: '地下指挥所·警戒区', 5: '极地冰原', 6: '高温能源厂', 7: '机械机库', 8: '异形巢穴', 9: '珊瑚浅海', 10: '沉船墓场', 11: '海底火山', 12: '深海洋流', 13: '黑暗深渊', 14: '海底要塞', 15: '冰封海沟', 16: '远古母体' };
+const STAGE_NAMES = { 1: WUKONG?'云海天宫':'雨林要塞', 2: '地下指挥所', 3: '峡谷瀑布', 4: '地下基地 · 双生投影', 5: '极地冰原', 6: '高温能源厂', 7: '机械机库', 8: '异形巢穴', 9: '珊瑚浅海', 10: '沉船墓场', 11: '海底火山', 12: '深海洋流', 13: '黑暗深渊', 14: '海底要塞', 15: '冰封海沟', 16: '远古母体' };
 const STAGE_NUM = { 1: '第一关', 2: '第二关', 3: '第三关', 4: '第四关', 5: '第五关', 6: '第六关', 7: '第七关', 8: '第八关', 9: '水下第一关', 10: '水下第二关', 11: '水下第三关', 12: '水下第四关', 13: '水下第五关', 14: '水下第六关', 15: '水下第七关', 16: '水下第八关' };
 const LAST_STAGE = 8;
 
@@ -6914,7 +7245,7 @@ function drawCoopPartner(base = false) {
   else drawSoldier(p.x, p.y, pose, o);
   ctx.restore();
   if (p.shieldT > 0 && !p.dead) { const b = pBox(p); if (b) { ctx.strokeStyle = '#3cbcfc'; ctx.lineWidth = 1; ctx.strokeRect(b.x - 3, b.y - 3, b.w + 6, b.h + 6); } }
-  if (p.flashT > 0 && !p.dead && !(isBase()&&(G.base.trans>0||(G.stage===2&&G.base.dead)))) F(p.fx - 2, p.fy - 2, 4, 4, '#fcfcfc');
+  if (p.flashT > 0 && !p.dead && !(isBase()&&(G.base.trans>0||G.base.dead))) F(p.fx - 2, p.fy - 2, 4, 4, '#fcfcfc');
 }
 const PAL_E = { skin: '#e2b48c', hair: '#2b2b2b', band: '#707a84', vest: '#a7ae9e', pants: '#68705f', boots: '#2a2a26', gun: '#5d646c' };
 const PAL_W = { skin: '#ffffff', hair: '#ffffff', band: '#ffffff', vest: '#ffffff', pants: '#ffffff', boots: '#ffffff', gun: '#ffffff' };
@@ -7064,6 +7395,7 @@ function drawWater(cx) {
   ctx.stroke();
 }
 function drawTurret(e) {
+  if(!WUKONG&&drawEquipmentTurret(ctx,stageOneArt.images.equipmentTurret,e,{frozen:G.freezeT>0}))return;
   const x = Math.round(e.x), y = Math.round(e.y), fl = e.flash > 0;
   F(x - 6, y + 8, 12, 8, fl ? '#fcfcfc' : '#7c7c7c'); if (!fl) { F(x - 6, y + 8, 12, 1, '#bcbcbc'); F(x - 6, y + 15, 12, 1, '#000000'); F(x - 4, y + 11, 2, 2, '#000000'); F(x + 2, y + 11, 2, 2, '#000000'); }
   F(x - 8, y - 8, 16, 16, fl ? '#fcfcfc' : '#000000');
@@ -7077,6 +7409,7 @@ function drawTurret(e) {
   F(x - 1, y - 1, 2, 2, (G.t >> 4) % 2 ? '#f83800' : '#a81000');
 }
 function drawBox(e) {
+  if(!WUKONG&&drawEquipmentSupply(ctx,stageOneArt.images.equipmentSupply,e))return;
   const x = Math.round(e.x), y = Math.round(e.y), fl = e.flash > 0;
   F(x - 10, y - 10, 20, 10, fl ? '#fcfcfc' : '#7c7c7c'); F(x - 10, y - 10, 20, 1, '#bcbcbc'); F(x - 10, y - 1, 20, 1, '#000000');
   for (let i = 0; i < 5; i++) F(x - 9 + i * 4, y - 4, 2, 2, i % 2 ? '#ffc94a' : '#1b1b1b');
@@ -7113,6 +7446,7 @@ function drawHeli(p) {
   gun(x + f * 11, y - 5, p.ax, p.ay, PAL_P, 7);
 }
 function drawPod(pd) {
+  if(!WUKONG&&drawSupplyDisc(ctx,stageOneArt.images.supplySaucer,pd.x,pd.y))return;
   drawSupplySaucer(ctx,pd.x,pd.y,G.t/60);
 }
 function pline(x0, y0, x1, y1, c) { C.strokeStyle = nes(c) || c; C.lineWidth = 0.9; C.lineCap = 'round'; C.beginPath(); C.moveTo(x0 + 0.5, y0 + 0.5); C.lineTo(x1 + 0.5, y1 + 0.5); C.stroke(); }
@@ -7207,6 +7541,7 @@ function drawFx() {
   for (const f of G.fx) {
     const k = f.t / f.life;
     if (f.k === 'boom') {
+      if(!WUKONG){drawExplosion(ctx,stageOneArt.images.explosionAtlas,f);continue;}
       const r = f.s * (0.45 + 0.8 * k);
       ctx.globalAlpha = Math.max(0, 1 - k * 0.9);
       if (k < 0.55) { const g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r); g.addColorStop(0, '#ffffff'); g.addColorStop(0.25, '#fff1a8'); g.addColorStop(0.55, '#ffb43a'); g.addColorStop(0.85, '#e8501c'); g.addColorStop(1, 'rgba(160,30,10,0)'); ctx.fillStyle = g; }
@@ -7231,13 +7566,13 @@ function drawMedal(x, y) {
   F(x + 2, y + 6, 3, 1, '#f8b800'); F(x + 1, y + 7, 5, 4, '#f8b800'); F(x + 2, y + 11, 3, 1, '#ac7c00'); F(x + 2, y + 7, 2, 1, '#fce0a8');
 }
 const SLOT_X = 40, SLOT_Y = 20, NADE_CD = 4;
-const nadeCooldown = () => WUKONG && G.stage === 1 ? ULTIMATE.cooldown : NADE_CD;
+const nadeCooldown = () => WUKONG && G.stage === 1 ? 0 : NADE_CD;
 function drawHud() { if (cooperative() && coop.role === 'guest') withPlayer2(drawHudContent); else drawHudContent(); }
 function drawHudContent() {
   const p = G.p, B = G.boss;
   C = ctx; setT();
   const spare = Math.max(0, G.lives - 1);
-  if (SET.inf === 'on') { drawMedal(8, 5); drawText('×∞', 18, 6, '#fcfcfc', 'left', 9); }
+  if (infiniteLives()) { drawMedal(8, 5); drawText('×∞', 18, 6, '#fcfcfc', 'left', 9); }
   else {
     for (let i = 0; i < Math.min(spare, 5); i++) drawMedal(8 + i * 10, 5);
     if (spare > 5) drawText('x' + spare, 60, 8, '#fcfcfc');
@@ -7251,7 +7586,7 @@ function drawHudContent() {
     F(sx, SLOT_Y, 14, 12, c); F(sx + 1, SLOT_Y + 1, 12, 10, '#000000');
     if (k) drawBadge(sx + 1, SLOT_Y + 1, k, 0);
   }
-  { const nx = SLOT_X + INV_MAX * 16 + 9, ny = SLOT_Y + 6, k = Math.max(0, G.nadeCd || 0) / NADE_CD, ready = k <= 0;
+  { const nx = SLOT_X + INV_MAX * 16 + 9, ny = SLOT_Y + 6, k = WUKONG&&G.stage===1?1-Math.min(1,(p.rage||0)/(p.maxRage||100)):Math.max(0, G.nadeCd || 0) / NADE_CD, ready = k <= 0;
     ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(nx, ny, 7, 0, Math.PI * 2); ctx.stroke();
     ctx.strokeStyle = ready ? '#58d854' : '#f8b800'; ctx.beginPath(); ctx.arc(nx, ny, 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - k)); ctx.stroke();
     if(WUKONG && G.stage===1){seg(nx-3.5,ny+3.5,nx+3.5,ny-3.5,1.8,ready?'#f5d378':'#887552');seg(nx-3.5,ny+3.5,nx-2,ny+2,2.3,'#e8b851');seg(nx+2,ny-2,nx+3.5,ny-3.5,2.3,'#e8b851');}else{el(nx, ny + 0.8, 3.6, 4, ready ? '#4a7a36' : '#3a4a34'); rr(nx - 1.4, ny - 4.6, 2.8, 1.8, 0.5, ready ? '#c8ccd2' : '#7a8088'); seg(nx + 1.2, ny - 4, nx + 3.4, ny - 2.4, 0.8, ready ? '#c8ccd2' : '#7a8088');} }
@@ -7325,6 +7660,7 @@ function drawTitle() {
     drawText('魂斗罗2026', 296, 25, '#f8b800', 'center', 15);
     drawText('单人闯关 · 双人联网', 296, 49, '#fcfcfc', 'center', 7);
     drawText('最高分 ' + pad6(HI), 296, 181, '#7c7c7c', 'center', 7);
+    drawTitleToast();
     return;
   }
   const gr = ctx.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#05060f'); gr.addColorStop(1, '#14080a');
@@ -7335,23 +7671,25 @@ function drawTitle() {
   drawLogo(W / 2, 22);
   drawText('魂斗罗2026', W / 2, 92, '#f2f2f2', 'center', 9);
   drawText('最高分 ' + pad6(HI), W / 2, 106, '#9aa0a8', 'center', 8);
-  if (G.toastUntil && performance.now() < G.toastUntil) { rr(W / 2 - 130, 3, 260, 17, 4, 'rgba(0,40,80,0.9)'); drawText(G.toastText, W / 2, 6.5, '#7fe0ff', 'center', 9); }
+  drawTitleToast();
 }
+function drawTitleToast(){if(G.toastUntil&&performance.now()<G.toastUntil){rr(W/2-130,3,260,17,4,'rgba(0,40,80,0.9)');drawText(G.toastText,W/2,6.5,'#7fe0ff','center',9);}}
 function drawIntro() {
   C = ctx; setT();
   F(0, 0, W, H, '#000000');
   drawText('玩家一', 108, 48, '#f83800'); drawText(pad6(G.score), 148, 48, '#fcfcfc');
-  drawText('剩余生命', 108, 62, '#fcfcfc'); drawText(SET.inf === 'on' ? '∞' : String(Math.max(0, G.lives - 1)), 166, SET.inf === 'on' ? 60 : 62, '#fcfcfc', 'left', SET.inf === 'on' ? 11 : 8);
+  drawText('剩余生命', 108, 62, '#fcfcfc'); drawText(infiniteLives() ? '∞' : String(Math.max(0, G.lives - 1)), 166, infiniteLives() ? 60 : 62, '#fcfcfc', 'left', infiniteLives() ? 11 : 8);
   drawText('最高分', 108, 76, '#f83800'); drawText(pad6(HI), 166, 76, '#fcfcfc');
   drawText(G.stage > 8 ? '水下第' + (G.stage - 8) + '关' : '第' + G.stage + '关', W / 2, 104, G.stage > 8 ? '#7fe0ff' : '#fcfcfc', 'center', 18);
   drawText(STAGE_NAMES[G.stage], W / 2, 132, '#f8c23a', 'center', 12);
 }
 function render() {
-  if (G.mode === 'loading') return drawTitle();
+  document.body.classList.toggle('wukong-finale',WUKONG&&G.stage===1&&G.boss.encounter?.stage===3);
+  if (G.mode === 'loading') return wukong?wukong.loadingBackdrop(ctx,G):drawTitle();
   if (resolutionStage !== G.stage) { resolutionStage = G.stage; resize(); }
   C = ctx;
-  $('stage').classList.toggle('stage-one', G.stage === 1 || G.stage === 2);
-  $('stage').classList.toggle('stage-two',G.stage===2);
+  $('stage').classList.toggle('stage-one', G.stage >= 1 && G.stage <= 5);
+  $('stage').classList.toggle('stage-two',isBase());
   if (wukong && (G.mode === 'title' || G.mode === 'lobby' || G.mode === 'select' || (G.mode === 'settings' && G.settingsFrom === 'title'))) return wukong.title(ctx, G);
   if (G.mode === 'title' || G.mode === 'lobby' || G.mode === 'select' || (G.mode === 'settings' && G.settingsFrom === 'title')) return drawTitle();
   if (G.mode === 'cine') {
@@ -7360,11 +7698,24 @@ function render() {
     return;
   }
   if (G.stage === 1 && !['title', 'lobby', 'select', 'cine'].includes(G.mode) && !(G.mode === 'settings' && G.settingsFrom === 'title')) {
-    stageOneArt.render(ctx, G, { solids, water: WATER, players: players(), online: cooperative(), guest: coop?.role === 'guest', settings: SET, highScore: HI });
+    if(WUKONG&&G.boss.encounter?.stage===3)return wukong.finalBattle(ctx,G,{solids,settings:gameplaySettings()});
+    stageOneArt.render(ctx, G, { solids, water: WATER, players: players(), online: cooperative(), guest: coop?.role === 'guest', settings: gameplaySettings(), highScore: HI });
     return;
   }
   if (G.stage === 2) {
-    stageTwoArt.render(ctx,G,{players:players(),online:cooperative(),guest:coop?.role==='guest',settings:SET,highScore:HI});
+    stageTwoArt.render(ctx,G,{players:players(),online:cooperative(),guest:coop?.role==='guest',settings:gameplaySettings(),highScore:HI});
+    return;
+  }
+  if (G.stage === 4) {
+    stageFourArt.render(ctx,G,{players:players(),online:cooperative(),guest:coop?.role==='guest',settings:gameplaySettings(),highScore:HI});
+    return;
+  }
+  if (G.stage === 3) {
+    stageThreeArt.render(ctx,G,{solids,players:players(),online:cooperative(),guest:coop?.role==='guest',settings:gameplaySettings(),highScore:HI});
+    return;
+  }
+  if (G.stage === 5) {
+    stageFiveArt.render(ctx,G,{solids,players:players(),online:cooperative(),guest:coop?.role==='guest',settings:gameplaySettings(),highScore:HI});
     return;
   }
   if (G.mode === 'intro') return drawIntro();
@@ -7381,8 +7732,7 @@ function render() {
   const sx = G.shake > 0 ? Math.round((rnd() - 0.5) * G.shake * 2) : 0, sy = G.shake > 0 ? Math.round((rnd() - 0.5) * G.shake * 2) : 0;
   const cx = Math.round(G.camX * R) / R, cy = Math.round(G.camY * R) / R;
   setT();
-  if (G.stage === 3) drawCanyonBg(cy);
-  else if (G.stage === 5) drawSnowBg(cx);
+  if (G.stage === 5) drawSnowBg(cx);
   else if (G.stage === 6) drawFactoryBg(cx);
   else if (G.stage === 7) drawHangarBg(cx);
   else if (G.stage === 8) drawLairBg(cx);
@@ -7393,7 +7743,6 @@ function render() {
     ox = -Math.round((cx * 0.42 % 768) * R) / R; ctx.drawImage(JUNGLE, ox, 0, 768, H); ctx.drawImage(JUNGLE, ox + 768, 0, 768, H);
   }
   setT(-cx + sx, -cy + sy);
-  if (G.stage === 3) { drawCliffWalls(cy); drawMech(); }
   if (G.stage === 1 && cx + W > BX - 20) drawBoss();
   if (G.freezeT > 0 && G.boss.active && !G.boss.dead) for (const pt of G.boss.parts) if (pt.hp > 0) ice(pt);
   if (G.stage === 5) { drawSnowGround(cx); drawTank(); } else if (G.stage === 6) { drawFactoryGround(cx); drawJets(); drawGolem(); } else if (G.stage === 7) { drawHangarGround(cx); } else if (G.stage === 8) { drawLairGround(cx); drawHive(); drawLairHazards(); } else if (G.uw) { drawSeaFloor(cx); drawPockets(); if (G.stage === 11) drawCrab(); else if (G.stage === 10) drawGhost(); else drawShark(); } else drawGround(cx);
@@ -7491,14 +7840,14 @@ function flashOverlay() { if (!(G.flashT > 0)) return; ctx.save(); ctx.globalAlp
 
 // ================= cinematics: the opening before stage 1 and the ending after stage 8 =================
 // Both are drawn procedurally, timed in seconds, and can be skipped with Enter / fire / jump / a tap.
-const CINE_LEN = { open: OPENING_DURATION, end: 44, uwopen: 26, uwend: 41 };
+const CINE_LEN = { open: WUKONG ? WUKONG_OPENING_DURATION : OPENING_DURATION, end: 44, uwopen: 26, uwend: 41 };
 const CINE_TYPE = 16; // characters per second for the typewriter text
-const OPEN_PAGES = OPENING_PAGES;
+const OPEN_PAGES = WUKONG ? WUKONG_OPENING_PAGES : OPENING_PAGES;
 const END_PAGES = [
   { from: 11.6, to: 16.0, lines: ['母巢被彻底摧毁，黑礁群岛沉入了大海。', '赤焰小队完成任务，迎着朝阳踏上归途。'] },
   { from: 16.2, to: 20.4, lines: ['然而在宇宙深处，', '是否还有别的陨星，正朝着地球坠落……？'] },
 ];
-function startOpening() { initAudio(); goFull(); reset(1); G.cine = { kind: 'open', t: 0, typed: 0, skip: false, ev: {} }; setMode('cine'); Music.start(false, -5, 108); }
+function startOpening() { initAudio(); goFull(); if(WUKONG)Music.stop(); reset(1); G.cine = { kind: 'open', t: 0, typed: 0, skip: false, ev: {} }; setMode('cine'); Music.start(false, -5, 108); }
 const UWO_PAGES = [
   { from: 0.8, to: 4.9, lines: ['黑礁群岛沉没三个月后，', '深海声呐捕捉到一阵规律的心跳声。'] },
   { from: 5.1, to: 9.2, lines: ['声源来自海沟最深处——', '陨星真正的核心「远古母体」还活着。'] },
@@ -7515,8 +7864,9 @@ function startUWOpening(carry) {
 function startUWEnding() { G.cine = { kind: 'uwend', t: 0, typed: 0, skip: false, ev: {} }; setMode('cine'); Music.start(false, 2, 112); }
 function startEnding() { G.cine = { kind: 'end', t: 0, typed: 0, skip: false, ev: {} }; setMode('cine'); Music.start(false, 0, 112); }
 function endCine() {
-  const k = G.cine.kind; G.cine = null; Music.stop();
-  if (k === 'open') startStage(1); else if (k === 'uwopen') startStage(9, G.uwCarry); else showClear();
+  const k = G.cine.kind,continueMusic=WUKONG&&k==='open'; G.cine = null;
+  if(!continueMusic)Music.stop();
+  if (k === 'open') startStage(1,undefined,continueMusic); else if (k === 'uwopen') startStage(9, G.uwCarry); else showClear();
 }
 function lineStarts(pg) { const st = []; let t0 = pg.from + 0.3; for (const l of pg.lines) { st.push(t0); t0 += l.length / CINE_TYPE + 0.25; } return st; }
 function typedCount(pages, t) {
@@ -7529,6 +7879,16 @@ function updateCine() {
   const C = G.cine, pages = { open: OPEN_PAGES, end: END_PAGES, uwopen: UWO_PAGES, uwend: UWE_PAGES }[C.kind], n = typedCount(pages, C.t);
   if (n > C.typed) { if ((n >> 1) !== (C.typed >> 1)) tone(1250, 0.02, 'square', 0.018, 900); C.typed = n; }
   if (C.kind === 'open') {
+    if(WUKONG){
+      cineAt(C,.8,()=>{tone(62,1.2,'sine',.09,42);noise(.65,.035,180);});
+      cineAt(C,2.2,()=>{sfx.big();noise(.4,.14,600);});
+      cineAt(C,2.38,()=>sfx.jump());
+      cineAt(C,4.45,()=>{tone(95,.16,'triangle',.07,50);noise(.12,.05,350);});
+      cineAt(C,6.2,()=>sfx.mount());
+      cineAt(C,14.2,()=>{tone(95,.3,'triangle',.08,55);noise(.12,.07,350);});
+      cineAt(C,16.6,()=>{sfx.mount();tone(220,.18,'triangle',.06,110);});
+      return;
+    }
     cineAt(C, 4.4, () => { sfx.big(); });
     cineAt(C, 21.3, () => { sfx.jump(); });
     cineAt(C, 22.25, () => { sfx.hit(); });
@@ -7867,10 +8227,14 @@ const hudCache = {};
 function setText(id, v) { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } }
 function updateHud() { if (cooperative() && coop.role === 'guest') withPlayer2(updateHudContent); else updateHudContent(); }
 function updateHudContent() {
-  const p = G.p, gcd = Math.max(0, p.spCd), ready = gcd <= 0 && G.inv.length > 0;
-  setText('bGren', !G.inv.length ? '道具' : gcd > 0 ? gcd.toFixed(1) : WUKONG && G.inv[G.sel] === 'h' ? '筋斗云' : WUKONG && G.inv[G.sel] === 'g' ? '大招' : SP_SHORT[G.inv[G.sel]]);
+  const p = G.p,form=WUKONG&&G.stage===1?transformation(p):null,gcd = Math.max(0, p.spCd,form?.switchCooldown||0), ready = gcd <= 0 && (G.inv.length > 0||!!form);
+  setText('bGren', form?'换形 · '+TRANSFORM_FORMS[form.form].name:!G.inv.length ? '道具' : gcd > 0 ? gcd.toFixed(1) : WUKONG && G.inv[G.sel] === 'h' ? '筋斗云' : WUKONG && G.inv[G.sel] === 'g' ? '大招' : SP_SHORT[G.inv[G.sel]]);
+  if(WUKONG)setText('bFire',form?TRANSFORM_FORMS[form.form].skill:'棍击 / 蓄力');
   bG.classList.toggle('dim', !ready);
-  const ncd = Math.max(0, G.nadeCd || 0); setText('bNade', ncd > 0 ? ncd.toFixed(1) : WUKONG ? '大招' : '手雷'); bN.classList.toggle('dim', ncd > 0);
+  const rageMode=WUKONG&&G.stage===1,ncd=Math.max(0,G.nadeCd||0),full=rageMode&&rageReady(p)&&!p.dead;
+  setText('bNade',rageMode?(full?'大招':'怒气 '+Math.floor(p.rage||0)+'%'):ncd>0?ncd.toFixed(1):'手雷');
+  bN.classList.toggle('dim',rageMode?!full:ncd>0);bN.classList.toggle('rage-ready',full&&G.mode==='play');
+  if(rageMode)bN.setAttribute('aria-label',full?'怒气已满，点击随机释放大招':'怒气 '+Math.floor(p.rage||0)+'%，受击积攒');
 }
 // special-item slots are drawn on the canvas; a tap or click on one selects it
 function slotHit(clientX, clientY) {
@@ -7892,6 +8256,32 @@ function focusMenu(d) {
   i = i < 0 ? 0 : (i + d + bs.length) % bs.length;
   bs[i].focus({ preventScroll: true }); sfx.hit();
 }
+function handleGamepadMenu(I,root) {
+  const gp=gamepads.last;
+  const controls=[...root.querySelectorAll('button:not(:disabled), select:not(:disabled), input:not(:disabled):not([type="radio"]), input[type="radio"]:checked, [tabindex="0"]')].filter(el=>el.getClientRects().length);
+  if(!controls.length)return;
+  let focused=document.activeElement;
+  const vertical=I.upEdge&&gp.up?-1:I.downEdge&&gp.down?1:0;
+  if(vertical){
+    const index=controls.indexOf(focused);focused=controls[index<0?0:(index+vertical+controls.length)%controls.length];
+    focused.focus({preventScroll:true});focused.scrollIntoView({block:'nearest'});
+  }
+  const horizontal=I.leftEdge&&gp.left?-1:I.rightEdge&&gp.right?1:0;
+  if(horizontal&&controls.includes(focused)){
+    if(focused.tagName==='SELECT'){
+      const options=[...focused.options].filter(option=>!option.disabled),index=options.indexOf(focused.selectedOptions[0]);
+      const option=options[(index+horizontal+options.length)%options.length];
+      if(option){focused.value=option.value;focused.dispatchEvent(new Event('change',{bubbles:true}));}
+    }else if(focused.matches('input[type="radio"]')){
+      const radios=[...focused.closest('fieldset').querySelectorAll('input:not(:disabled)')],index=radios.indexOf(focused);
+      const next=radios[(index+horizontal+radios.length)%radios.length];next.click();next.focus({preventScroll:true});
+    }else if(focused.closest('#record-player'))turnRecord(horizontal);
+    else if(focused.closest('[role="tablist"]')){
+      const tab=focused.id==='tabSet'?$('tabHelp'):$('tabSet');tab.click();tab.focus({preventScroll:true});
+    }
+  }
+  if((I.jumpEdge&&gp.jump||I.fireEdge&&gp.fire||I.startEdge&&gp.start)&&controls.includes(focused))focused.click();
+}
 document.addEventListener('pointerover', e => { const b = e.target.closest && e.target.closest('.menu .btn'); if (b) b.focus({ preventScroll: true }); });
 const screens = ['scrTitle', 'scrCoop', 'scrSelect', 'scrPause', 'scrOver', 'scrClear', 'scrSettings', 'scrLoading'];
 function showScreen(id) {
@@ -7901,7 +8291,12 @@ function showScreen(id) {
   if (first) first.focus({ preventScroll: true });
 }
 function setMode(m) {
+  lifeCheat.resetInput();
+  if(m!=='play')wukongBattleAudio?.stopAll();
+  if(m!=='play')wukongHeroAudio?.stopAll();
+  if(WUKONG&&G.stage===1&&m!=='play')for(const actor of players())cancelStaffCharge(actor,true);
   G.mode = m; prev.start = true; prev.jump = true; prev.fire = true; prev.gren = true; prev.cyc = true; prev.esc = true; prev.up = true; prev.down = true;
+  prev.nade=true;prev.left=true;prev.right=true;
   tl.classList.toggle('on', m === 'play');
   if (m !== 'play') releaseTouch();
   showScreen({ title: 'scrTitle', lobby: 'scrCoop', select: 'scrSelect', pause: 'scrPause', over: 'scrOver', clear: 'scrClear', settings: 'scrSettings', loading: 'scrLoading' }[m] || null);
@@ -7916,42 +8311,59 @@ function updateLoadingUI(state) {
   const percent = Math.floor(state.loaded / Math.max(1,state.total) * 100);
   $('loadingPercent').textContent = percent + '%'; $('loadingFill').style.width = percent + '%';
   $('loadingProgress').setAttribute('aria-valuenow', String(percent));
-  $('loadingDetail').textContent = `${state.loaded} / ${state.total} 项已就绪 · 完成后自动开始`;
+  $('loadingDetail').textContent = `${state.loaded} / ${state.total} 项已就绪 · ${state.failed.length ? state.failed.length + ' 项失败，正在完成其余资源' : '完成后自动开始'}`;
 }
 async function startAfterLoading(action, stage=1, retry=false) {
   if (pendingStart && !retry) return false;
   const serial = ++loadingSerial, previousMode = pendingStart?.previousMode || G.mode;
-  const defaultTrack = startupMusicTrack(stage);
-  if (!retry) gameResources = new ResourcePreloader([...gameVisualResources,...musicResourceJobs(referenceMusic,[defaultTrack])],{completed:gameResources.done});
+  const startupTracks=startupMusicKeys(stage);
+  if (!retry) gameResources = new ResourcePreloader(stageJobs(stage),{cache:resourceCache});
   pendingStart = {action,stage,previousMode}; initAudio(); goFull(); setMode('loading');
   $('scrLoading').setAttribute('aria-busy','true'); $('loadingRetry').hidden = true;
-  $('loadingStatus').textContent = '正在准备画面与音乐'; $('loadingStatus').focus({preventScroll:true});
+  $('loadingStatus').textContent = WUKONG&&stage===1?'正在准备第一关 · 云海天宫':`正在准备第 ${stage} 关画面与音乐`; $('loadingStatus').focus({preventScroll:true});
   try {
     await gameResources.load(state => { if (serial === loadingSerial) updateLoadingUI(state); });
     if (serial !== loadingSerial) return false;
-    $('loadingStatus').textContent = '正在准备声音';
-    if (AC) await referenceMusic.load(defaultTrack,AC);
+    $('loadingStatus').textContent = WUKONG?'正在准备配乐与招式音效':'正在准备声音';
+    if (AC) await Promise.all(startupTracks.map(key=>referenceMusic.load(key,AC)));
     if (serial !== loadingSerial) return false;
     pendingStart = null; $('scrLoading').setAttribute('aria-busy','false');
     setMode(previousMode); await action(); return true;
-  } catch {
+  } catch (error) {
     if (serial !== loadingSerial) return false;
     $('scrLoading').setAttribute('aria-busy','false');
     $('loadingStatus').textContent = '部分资源未能加载';
-    $('loadingDetail').textContent = '已保留加载成功的资源，重试即可继续';
+    const failed = gameResources.inspect().failed;
+    const names = failed.slice(0,3).map(id => id.split('/').pop().replace(/^music:/,''));
+    $('loadingDetail').textContent = failed.length
+      ? `${failed.length} 项失败：${names.join('、')}${failed.length > 3 ? ' 等' : ''}。已保留成功资源，重试可继续。`
+      : `声音准备失败：${error.message || '无法解码音频'}。请重试加载。`;
     $('loadingRetry').hidden = false; $('loadingRetry').focus({preventScroll:true});
+    if (['localhost','127.0.0.1','[::1]'].includes(location.hostname)) {
+      try {
+        await fetch('/games/contra2026/',{method:'HEAD',cache:'no-store',signal:AbortSignal.timeout(2500)});
+      } catch {
+        if (serial !== loadingSerial) return false;
+        $('loadingStatus').textContent = '本地游戏服务已断开';
+        $('loadingDetail').textContent = '请启动项目后点击“重试加载”。已成功加载的资源会保留。';
+      }
+    }
     return false;
   }
 }
-function cancelLoading() { ++loadingSerial; pendingStart = null; coopBusy(false); toTitle(); }
+function cancelLoading() { ++loadingSerial; pendingStart = null; remoteWorld = null; coopBusy(false); toTitle(); }
 $('loadingRetry').onclick = () => pendingStart && startAfterLoading(pendingStart.action,pendingStart.stage,true);
 $('loadingCancel').onclick = cancelLoading;
-function startStage(n, carry) {
-  if (!isStageOpen(n)) { G.toastText=STAGE_RELEASE_MESSAGE;G.toastUntil=performance.now()+3000;return false; }
+function startStage(n, carry, continueMusic=false) {
+  if (!canPlayStage(n)) { G.toastText=STAGE_RELEASE_MESSAGE;G.toastUntil=performance.now()+3000;return false; }
+  if(!WUKONG&&!stageResourcesReady(n))return startAfterLoading(()=>startStage(n,carry,continueMusic),n);
+  if(!WUKONG)gameResources=new ResourcePreloader(stageJobs(n),{cache:resourceCache});
+  if(WUKONG&&n===1&&!continueMusic)Music.stop();
   initAudio(); reset(n, carry); G.introT = 2.4; setMode('intro'); Music.start(false, STAGE_MUSIC_SHIFT[n]); goFull();
+  flushRemoteWorld();
 }
 function goFull() {
-  if (document.body.classList.contains('touchmode')) {
+  if (WUKONG && document.body.classList.contains('touchmode')) {
     try {
       const el = document.documentElement;
       const fs = el.requestFullscreen ? el.requestFullscreen() : null;
@@ -7970,9 +8382,9 @@ function gameOver() {
   overTimer = setInterval(() => { n--; G.continueCount = Math.max(n, 0); $('count').textContent = G.continueCount; if (n < 0) { clearInterval(overTimer); toTitle(); } }, 1000);
 }
 function continueGame() { clearInterval(overTimer); startStage(G.stage || 1); }
-function toTitle() { if (coop?.room) coop.leave(); if (soloSettings) { Object.assign(SET, soloSettings); soloSettings = null; } $('coopBar').hidden = true; for (const id of ['btnRestart', 'btnAgain', 'btnNext', 'btnContinue', 'btnSettings']) $(id).disabled = false; clearInterval(overTimer); Music.stop(); reset(); setMode('title'); }
+function toTitle() { ++loadingSerial;pendingStart=null;remoteWorld=null;clearThirtyLives();if (coop?.room) coop.leave(); if (soloSettings) { Object.assign(SET, soloSettings); soloSettings = null; } $('coopBar').hidden = true; for (const id of ['btnRestart', 'btnAgain', 'btnNext', 'btnContinue', 'btnSettings']) $(id).disabled = false; clearInterval(overTimer); Music.stop(); reset(); setMode('title'); }
 function stageClear() {
-  if (G.stage === LAST_OPEN_STAGE) { showClear();return; }
+  if (G.stage === lastPlayableStage()) { showClear();return; }
   if (G.stage === 16 && G.mode === 'play') { startUWEnding(); return; } // the last underwater boss leads into its own ending
   if (G.stage === LAST_STAGE && G.mode === 'play') { startEnding(); return; } // the last boss leads into the ending
   showClear();
@@ -7987,8 +8399,8 @@ function showClear() {
   $('stHi').textContent = String(HI).padStart(6, '0');
 }
 function syncClearUI() {
-  const next=nextOpenStage(G.stage),finished=G.stage===LAST_OPEN_STAGE;
-  $('clearTitle').textContent=finished?'前两关通关':'关卡完成';
+  const next=nextPlayableStage(G.stage),finished=G.stage===lastPlayableStage();
+  $('clearTitle').textContent=finished?(lastPlayableStage()===5?'前五关通关':'前四关通关'):'关卡完成';
   $('clearSub').textContent=STAGE_NUM[G.stage]+' · '+STAGE_NAMES[G.stage]+(finished?(cooperative()?' · 双人通关 · 后续关卡制作中':' · 试玩完成 · 后续关卡制作中'):'');
   $('btnNext').hidden=!next;$('btnNext').textContent=next?'进入'+STAGE_NUM[next]:'';
 }
@@ -7998,12 +8410,12 @@ $('btnRestart').onclick = () => startStage(G.stage || 1);
 $('btnContinue').onclick = continueGame;
 $('btnQuit').onclick = toTitle;
 $('btnAgain').onclick = () => startStage(G.stage || 1);
-$('btnNext').onclick = () => { const next=nextOpenStage(G.stage);if(next)startStage(next,true); };
+$('btnNext').onclick = () => { const next=nextPlayableStage(G.stage);if(next)startStage(next,true); };
 $('btnSelect').onclick = () => setMode('select');
 $('btnSel1').onclick = startGame;
 $('btnSel2').onclick = () => startAfterLoading(() => startStage(2), 2);
-$('btnSel3').onclick = () => startStage(3);
-$('btnSel4').onclick = () => startStage(4);
+$('btnSel3').onclick = () => startAfterLoading(() => startStage(3), 3);
+$('btnSel4').onclick = () => startAfterLoading(() => startStage(4), 4);
 $('btnSel5').onclick = () => startStage(5);
 $('btnSel6').onclick = () => startStage(6);
 $('btnSel7').onclick = () => startStage(7);
@@ -8016,41 +8428,58 @@ $('btnSelW5').onclick = () => startStage(13);
 $('btnSelW6').onclick = () => startStage(14);
 $('btnSelW7').onclick = () => startStage(15);
 $('btnSelW8').onclick = () => startStage(16);
-// 水下八关 unlock: clear stage 8, type ↓ ↓ ↑ ↑ → → ← ← L on the title screen, or tap the title logo 8 times
+// Closed stages remain locked; title cheats affect lives only.
 let UW_OPEN = false; try { UW_OPEN = localStorage.getItem('chiyan-uw') === '1'; } catch (e) {}
 function syncUnlock() {
-  for(let stage=3;stage<=16;stage++){const button=$(stage<=8?'btnSel'+stage:'btnSelW'+(stage-8));button.hidden=true;button.disabled=true;}
+  for(let stage=1;stage<=16;stage++){const button=$(stage<=8?'btnSel'+stage:'btnSelW'+(stage-8));button.hidden=button.disabled=!canPlayStage(stage);}
 }
 function unlockUW(msg) {
   syncUnlock();if(msg){G.toastText=STAGE_RELEASE_MESSAGE;G.toastUntil=performance.now()+3000;}
 }
 syncUnlock();
-let codeBuf = '';
+if(STAGE_FIVE_PREVIEW){
+  $('btnSel5').textContent='第五关 · 极地冰原 · 本地试玩';
+  $('scrTitle').querySelector('h1')?.setAttribute('aria-label','魂斗罗2026 · 第五关本地试玩');
+}
+function activateThirtyLives(){
+  if(WUKONG||G.mode!=='title')return false;
+  const changed=lifeCheat.enable();G.toastText='秘籍成功 · 30 条命已就绪';G.toastUntil=performance.now()+3500;
+  $('lifeCheatStatus').textContent='30 条命已就绪，选择开始游戏后生效';$('btnStart').textContent='单人闯关 · 30 条命';$('btnStart').focus({preventScroll:true});
+  initAudio();if(changed)sfx.pick();return true;
+}
+function clearThirtyLives(){
+  lifeCheat.clear();G.thirtyLives=false;if(WUKONG)return;
+  $('lifeCheatStatus').textContent='';$('btnStart').textContent='单人闯关';G.toastUntil=0;
+}
 document.addEventListener('keydown', e => {
-  if (G.mode !== 'title') return;
-  const ch = { ArrowUp: 'U', KeyW: 'U', ArrowDown: 'D', KeyS: 'D', ArrowLeft: 'L', KeyA: 'L', ArrowRight: 'R', KeyD: 'R', KeyL: 'X' }[e.code];
-  if (!ch) return;
-  codeBuf = (codeBuf + ch).slice(-9);
-  if (codeBuf === 'DDUURRLLX') { codeBuf = ''; initAudio(); unlockUW('秘籍成功！传说中的水下八关已解锁'); }
+  if(WUKONG||G.mode!=='title')return;
+  if(lifeCheat.key(e.code,performance.now(),{repeat:e.repeat,modified:e.ctrlKey||e.altKey||e.metaKey}))activateThirtyLives();
 });
-let logoTaps = [];
+let logoPointer=null;
 document.addEventListener('pointerdown', e => {
-  if (G.mode !== 'title') return;
+  if(WUKONG||G.mode!=='title'||e.pointerType!=='touch'||e.isPrimary===false)return;
   const r = cv.getBoundingClientRect(), y = (e.clientY - r.top) / r.height * H, x = (e.clientX - r.left) / r.width * W;
-  if (y < 14 || y > 72 || x < 90 || x > 294) return;
-  const now = performance.now(); logoTaps = logoTaps.filter(t2 => now - t2 < 4000); logoTaps.push(now);
-  if (logoTaps.length >= 8) { logoTaps = []; initAudio(); unlockUW('秘籍成功！传说中的水下八关已解锁'); }
+  if(!inTitleLogo(x,y))return;
+  logoPointer={id:e.pointerId,x:e.clientX,y:e.clientY,time:performance.now()};if(e.cancelable)e.preventDefault();
 });
+document.addEventListener('pointerup',e=>{
+  const pointer=logoPointer;if(!pointer||pointer.id!==e.pointerId)return;logoPointer=null;
+  if(WUKONG||G.mode!=='title'||e.pointerType!=='touch')return;
+  if(performance.now()-pointer.time>450||Math.hypot(e.clientX-pointer.x,e.clientY-pointer.y)>12){lifeCheat.resetInput();return;}
+  if(e.cancelable)e.preventDefault();if(lifeCheat.tap(performance.now()))activateThirtyLives();
+});
+document.addEventListener('pointercancel',()=>{logoPointer=null;lifeCheat.resetInput();});
 $('btnSelBack').onclick = () => setMode('title');
 let musicSettingsStage = 1;
 const lastManualMusic = {};
 const recordShortNames = { original: '原版', orchestral: '大交响', rock: '摇滚', epic: '史诗', industrial: '工业金属', cyberpunk: '赛博朋克', chiptune: '电子乐', off: '关闭' };
 const musicStageOptions = stages => stages.map(stage => `<option value="${stage}">${STAGE_NUM[stage]} · ${STAGE_NAMES[stage]}</option>`).join('');
-$('set-music-stage').innerHTML = musicStageOptions(OPEN_STAGES);
+if(WUKONG)$('set-music-stage').innerHTML = musicStageOptions(OPEN_STAGES);
 function syncStageMusicUI(animate = false) {
+  if(!WUKONG)return;
   $('set-music-stage').value = String(musicSettingsStage);
-  const choice = SET.stageMusic[musicSettingsStage], record = musicRecord(musicSettingsStage, choice);
-  const options = stageMusicOptions(musicSettingsStage).filter(option => option.value !== 'random');
+  const choice = SET.stageMusic[musicSettingsStage], record = gameMusicRecord(musicSettingsStage, choice);
+  const options = gameMusicOptions(musicSettingsStage).filter(option => option.value !== 'random');
   const art = $('record-art'); art.src = record.art; art.alt = record.title + ' · 唱片图';
   if (animate) { art.classList.remove('record-changing'); void art.offsetWidth; art.classList.add('record-changing'); }
   $('record-player').style.setProperty('--record-accent', record.color);
@@ -8058,27 +8487,32 @@ function syncStageMusicUI(animate = false) {
   $('record-title').textContent = record.title;
   const listening = stageMusicSession.inspect();
   $('record-description').textContent = choice === 'random' && listening.stage === musicSettingsStage && listening.preference === 'random' && listening.choice
-    ? '本次播放：' + musicRecord(musicSettingsStage, listening.choice).title + '；下次入关重新抽选。' : record.description;
+    ? '本次播放：' + gameMusicRecord(musicSettingsStage, listening.choice).title + '；下次入关重新抽选。' : record.description;
   $('record-count').textContent = choice === 'random' ? 'RANDOM' : String(options.findIndex(option => option.value === choice) + 1).padStart(2, '0') + ' / ' + String(options.length).padStart(2, '0');
   const shelf = $('record-shelf'), scroll = shelf.scrollLeft;
-  shelf.innerHTML = options.map(option => `<button class="record-choice" type="button" data-music="${option.value}" aria-label="${option.label}" aria-pressed="${option.value === choice}"><img src="${musicRecord(musicSettingsStage, option.value).art}" alt="" width="40" height="40" loading="lazy" draggable="false"><span>${recordShortNames[option.value]}</span></button>`).join('');
+  shelf.innerHTML = options.map(option => `<button class="record-choice" type="button" data-music="${option.value}" aria-label="${option.label}" aria-pressed="${option.value === choice}"><img src="${gameMusicRecord(musicSettingsStage, option.value).art}" alt="" width="40" height="40" loading="lazy" draggable="false"><span>${WUKONG&&musicSettingsStage===1&&option.value==='original'?'西游记':recordShortNames[option.value]}</span></button>`).join('');
   shelf.scrollLeft = scroll;
   $('set-music-random').setAttribute('aria-pressed', String(choice === 'random'));
+  $('set-music-random').hidden=WUKONG&&musicSettingsStage===1;
+  $('shuffle-pool-note').hidden=WUKONG&&musicSettingsStage===1;
   $('shuffle-pool-note').textContent = `从本关 ${stageMusicPool(musicSettingsStage).length} 首音乐中抽选`;
 }
 function chooseStageMusic(value, focusRecord = false) {
-  if (!stageMusicOptions(musicSettingsStage).some(option => option.value === value)) return;
+  if(!WUKONG)return;
+  if (!gameMusicOptions(musicSettingsStage).some(option => option.value === value)) return;
   if (value !== 'random') lastManualMusic[musicSettingsStage] = value;
   if (SET.stageMusic[musicSettingsStage] !== value) stageMusicSession.invalidate(musicSettingsStage);
   SET.stageMusic[musicSettingsStage] = value; saveSettings(); Music.sync(); syncStageMusicUI(true);
   if (focusRecord) { const button = $('record-shelf').querySelector(`[data-music="${value}"]`); button?.focus({ preventScroll: true }); button?.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
 }
 function turnRecord(direction, edge) {
-  const options = stageMusicOptions(musicSettingsStage).filter(option => option.value !== 'random');
+  if(!WUKONG)return;
+  const options = gameMusicOptions(musicSettingsStage).filter(option => option.value !== 'random');
   const selected = SET.stageMusic[musicSettingsStage], index = options.findIndex(option => option.value === selected);
   const next = edge === 'first' ? 0 : edge === 'last' ? options.length - 1 : index < 0 ? (direction > 0 ? 0 : options.length - 1) : (index + direction + options.length) % options.length;
   chooseStageMusic(options[next].value);
 }
+if(WUKONG){
 $('record-art').addEventListener('animationend', () => $('record-art').classList.remove('record-changing'));
 $('record-prev').onclick = () => turnRecord(-1);
 $('record-next').onclick = () => turnRecord(1);
@@ -8105,9 +8539,19 @@ $('set-music-random').onclick = () => {
   if (current !== 'random') lastManualMusic[musicSettingsStage] = current;
   chooseStageMusic(current === 'random' ? lastManualMusic[musicSettingsStage] || stageMusicPool(musicSettingsStage)[0].value : 'random');
 };
+}
+function syncAudioMixUI() {
+  for(const [key,name]of [['music','musicVolume'],['sfx','sfxVolume']]){
+    $(''+key+'-volume-control').hidden=!WUKONG;
+    const slider=$('set-'+key+'-volume'),output=$(key+'-volume-value');
+    slider.value=String(SET[name]);slider.setAttribute('aria-valuetext',SET[name]+'%');output.value=SET[name]+'%';output.textContent=SET[name]+'%';
+  }
+}
 function syncSettingsUI() {
   for (const k in SET) { if (typeof SET[k] === 'object') continue; const el = $(`set-${k}-${SET[k]}`); if (el) el.checked = true; }
-  syncStageMusicUI();
+  for(const value of ['on','off']){const el=$('set-inf-'+value);el.disabled=!!G.thirtyLives;el.checked=value===(G.thirtyLives?'off':SET.inf);}
+  $('life-rule-note').textContent=G.thirtyLives?'30 条命模式生效：本局按有限生命扣减，回到标题后恢复原设置':'关闭后按原作规则：命用完要续关，从本关开头重来';
+  syncStageMusicUI();syncAudioMixUI();
   $('stage').classList.toggle('scan', SET.scan === 'on');
   $('touch').style.setProperty('--pad', { s: 0.82, m: 1, l: 1.2 }[SET.pad] || 1);
 }
@@ -8120,15 +8564,21 @@ function openSettings(help) {
   $(help ? 'tabHelp' : 'tabSet').focus({ preventScroll: true });
 }
 function closeSettings() { setMode(G.settingsFrom === 'title' ? 'title' : 'pause'); }
+$('scrSettings').addEventListener('input',e=>{
+  const t=e.target;if(!WUKONG||!['musicVolume','sfxVolume'].includes(t.name))return;
+  Object.assign(SET,normalizeAudioMix({...SET,[t.name]:t.value}));saveSettings();applyAudio();syncAudioMixUI();
+});
 $('scrSettings').addEventListener('change', e => {
   const t = e.target;
+  if(['musicVolume','sfxVolume'].includes(t.name))return;
+  if(t.name==='inf'&&G.thirtyLives){syncSettingsUI();return;}
   if (t.id === 'set-music-stage') { if(isStageOpen(Number(t.value)))musicSettingsStage=Number(t.value);syncStageMusicUI();return; }
   if (!t.name || !(t.name in SET) || typeof SET[t.name] === 'object') return;
   SET[t.name] = t.value; saveSettings(); applyAudio(); syncSettingsUI();
 });
 $('scrSettings').addEventListener('keydown', event => {
   if (event.key !== 'Tab') return;
-  const controls = [...$('scrSettings').querySelectorAll('button:not(:disabled), select, input:checked, [tabindex="0"]')].filter(element => element.getClientRects().length);
+  const controls = [...$('scrSettings').querySelectorAll('button:not(:disabled), select, input:checked, input[type="range"], [tabindex="0"]')].filter(element => element.getClientRects().length);
   const first = controls[0], last = controls[controls.length - 1];
   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -8139,6 +8589,7 @@ $('btnBack').onclick = closeSettings;
 $('btnSettings').onclick = () => openSettings(false);
 $('btnSettings2').onclick = () => openSettings(false);
 syncSettingsUI();
+pollPad();
 $('btnHome').onclick = () => { if (AC) AC.resume().catch(() => {}); toTitle(); };
 $('btnHome2').onclick = toTitle;
 $('btnPause').onclick = () => (G.mode === 'play' ? pause() : G.mode === 'pause' ? resume() : null);
@@ -8156,7 +8607,7 @@ function resize() {
   const dpr = window.devicePixelRatio || 1;
   const fit = Math.max(0.5, Math.min(aw / W, ah / H));
   const s = fit;
-  setRes(Math.max(2, Math.min(G.stage === 1 || G.stage === 2 ? 10 : 4, Math.ceil(s * dpr))));
+  setRes(Math.max(2, Math.min(G.stage >= 1 && G.stage <= 5 ? 10 : 4, Math.ceil(s * dpr))));
   const st = $('stage');
   st.style.width = Math.floor(W * s) + 'px'; st.style.height = Math.floor(H * s) + 'px'; st.style.setProperty('--s', s.toFixed(3));
 }
@@ -8195,7 +8646,15 @@ coop = new CoopClient({
     try {
       const [state, platforms, bridges, settings] = unpackWorld(world);
       if (!state?.p2 || !Array.isArray(platforms) || !Array.isArray(bridges) || !isStageOpen(state.stage)) throw Error('同步数据无效');
-      const oldMode = G.mode, oldShot = G.p2?.flashT || 0, oldDead = G.p2?.dead, oldReferenceTrack=stageMusicSession.forScene(G,SET.stageMusic);
+      // The host may still be preparing the next stage. Keep the last complete
+      // scene until its snapshot arrives, then prepare that stage locally.
+      if(!WUKONG&&state.mode==='loading')return;
+      if(!WUKONG&&(pendingStart||!stageResourcesReady(state.stage))){
+        remoteWorld=world;
+        if(!pendingStart)void startAfterLoading(flushRemoteWorld,state.stage);
+        return;
+      }
+      const oldMode = G.mode, oldShot = G.p2?.flashT || 0, oldDead = G.p2?.dead, oldReferenceTrack=sceneMusicTrack(G);
       if (state.stage !== G.stage) reset(state.stage);
       else if (state.mode === 'intro' && oldMode !== 'intro' && !remoteWaiting) stageMusicSession.begin(state.stage);
       for (const key of Object.keys(G)) delete G[key];
@@ -8206,7 +8665,7 @@ coop = new CoopClient({
         if (G.mode === 'play') Music.start(false, STAGE_MUSIC_SHIFT[G.stage]);
         else if (G.mode === 'pause') Music.pause();
       }
-      else if(G.stage===2&&oldReferenceTrack!==stageMusicSession.forScene(G,SET.stageMusic))Music.sync();
+      else if((G.stage===2||G.stage===3||G.stage===4)&&oldReferenceTrack!==sceneMusicTrack(G))Music.sync();
       if (G.p2.flashT > oldShot) sfx.shoot();
       if (G.p2.dead && !oldDead) sfx.die();
       if (G.mode === 'clear') {
@@ -8233,11 +8692,13 @@ $('coopCreate').onclick = async () => {
   },stage);
 };
 $('coopJoinForm').onsubmit = async event => {
-  event.preventDefault(); const code=$('coopCode').value,stage=Number($('coopStage').value);
-  await startAfterLoading(async () => {
-    coopBusy(true); coopMessage('加入中…');
+  event.preventDefault(); const code=$('coopCode').value;
+  // Joining reveals the real room stage; do not download the selector's guess.
+  const join=async()=>{
+    initAudio();coopBusy(true);coopMessage('加入中…');
     try { await coop.join(code); } catch (e) { coopBusy(false); coopMessage(e.message); }
-  },stage);
+  };
+  if(WUKONG)await startAfterLoading(join,Number($('coopStage').value));else await join();
 };
 $('coopStart').onclick = () => coop.start(Number($('coopStage').value));
 $('coopCopy').onclick = async () => {
@@ -8247,22 +8708,34 @@ $('coopCopy').onclick = async () => {
   catch { coopMessage('邀请链接：' + url.href); }
 };
 $('coopBack').onclick = $('coopLeave').onclick = () => { coop.leave(); toTitle(); };
-if (wukong) wukong.mount(document, SET);
+if (wukong) {
+  wukong.mount(document, SET);
+  void wukong.loadTitle().catch(() => {});
+}
 const invitedRoom = new URLSearchParams(location.search).get('room');
 if (invitedRoom && /^[A-Z2-9]{6}$/i.test(invitedRoom)) { $('coopCode').value = invitedRoom.toUpperCase(); showCoop(); coopMessage('点击加入房间，以 玩家二 身份与朋友一起闯关。'); }
 window.Contra2026 = Object.freeze({ inspect: () => ({
-  resources: gameResources.inspect(),
+  resources: {...gameResources.inspect(),stage:pendingStart?.stage||G.stage,cached:resourceCache.size},
   musicDownloads: backgroundMusic?.inspect() || null,
+  gamepad:gamepads.inspect(),
+  lives:{remaining:G.lives,infinite:infiniteLives(),thirty:!!G.thirtyLives,armed:lifeCheat.enabled},
   mode: G.mode, stage: G.stage, role: coop.role, room: coop.room, connected: coop.connected,
   theme: wukong ? 'wukong-skin' : null,
   combat: WUKONG && G.stage === 1 ? 'staff' : 'shooting',
-  playing: cooperative(), tick: G.t, snapshotBytes: coop.snapshotBytes || 0, art: G.stage === 1 ? stageOneArt.inspect() : G.stage===2?stageTwoArt.inspect():null, camera: { x: G.camX, y: G.camY },
-  audio: { ...referenceMusic.inspect(), context: AC?.state || 'locked', muted, music: SET.music, selection: SET.stageMusic[G.stage], resolved: stageMusicSession.inspect(), synth: Music.on, sfx: SET.sfx, gain: musGain?.gain.value ?? 0 },
+  boss: WUKONG&&G.stage===1?{kind:'巨灵神',active:G.boss.active,dead:G.boss.dead,hp:G.boss.parts[2].hp,max:G.boss.parts[2].max,phase:G.boss.encounter?.stage||1,phaseTime:G.boss.encounter?.time||0,growing:(G.boss.encounter?.growth||0)>0,scars:(G.boss.encounter?.scars||[]).map(s=>({...s})),attack:G.boss.giant?.attack?{kind:G.boss.giant.attack.kind,time:G.boss.giant.attack.t,safeSide:G.boss.giant.attack.safeSide,aimX:G.boss.giant.attack.aimX,locked:G.boss.giant.attack.locked}:null}:null,
+  playing: cooperative(), tick: G.t, snapshotBytes: coop.snapshotBytes || 0, art: G.stage === 1 ? stageOneArt.inspect() : G.stage===2?stageTwoArt.inspect():G.stage===3?stageThreeArt.inspect():G.stage===4?stageFourArt.inspect():G.stage===5?stageFiveArt.inspect():null, camera: { x: G.camX, y: G.camY },
+  audio: { ...referenceMusic.inspect(), context: AC?.state || 'locked', muted, music: SET.music, musicVolume:SET.musicVolume,sfxVolume:SET.sfxVolume,sfxGain:sfxGain?.gain.value??0,selection: WUKONG?SET.stageMusic[G.stage]:'fixed', resolved: WUKONG?stageMusicSession.inspect():{track:fixedMusicTrack(G)}, synth: Music.on, sfx: SET.sfx, gain: musGain?.gain.value ?? 0,...(WUKONG?{enemyVoices:wukongBattleAudio.inspect(),heroActions:wukongHeroAudio.inspect()}:{}) },
   exit: G.stage===1?{open:!!G.boss.exitOpen,actors:players().map(p=>({id:p.pid,entering:!!p.enteringExit,entered:!!p.exitEntered}))}:null,
-  base: G.stage===2?{room:G.base.room,cleared:G.base.cleared,transition:G.base.trans,dead:G.base.dead,phase:G.base.bossPhase,exitReady:G.base.exitReady,devices:bossDevicesRemaining(G.base),targets:G.base.targets.map(t=>({kind:t.k,hp:t.hp,max:t.max,x:t.x,y:t.y})),bubbles:G.eb.filter(b=>b.bubble).length,lifts:players().map(p=>({id:p.pid,side:p.liftSide||0,done:!!p.liftDone}))}:null,
+  snowfield:G.stage===5?{progress:G.fortress.active?'fortress':G.tank.dead?'approach':G.tank.active?'tank':'snowfield',fortress:{active:G.fortress.active,dead:G.fortress.dead,x:G.fortress.x,y:G.fortress.y,entryT:G.fortress.entryT,phase:G.fortress.phase,parts:G.fortress.parts.map(p=>({kind:p.k,hp:p.hp,max:p.max}))},weather:{...G.s5,snowfall:'heavy'},defenders:G.en.filter(e=>!e.dead&&(e.t==='artillery'||e.t==='grenadier')).map(e=>({kind:e.t,x:e.x,y:e.y,phase:e.phase,peek:e.peek||0})),ordnance:G.eb.filter(b=>!b.dead&&b.snowOrdnance).map(b=>({kind:b.snowOrdnance,x:b.x,y:b.y,fuse:b.fuse,bounces:b.bounces||0})),tank:{active:G.tank.active,dead:G.tank.dead,mode:G.tank.mode,phase2:G.tank.phase2,parts:G.tank.parts.map(p=>({kind:p.k,hp:p.hp,max:p.max}))}}:null,
+  waterfall:G.stage===3?{boss:{active:G.mech.active,dead:G.mech.dead,open:G.mech.open,exitOpen:G.mech.exitOpen,parts:G.mech.parts.map(p=>({kind:p.k,hp:p.hp,max:p.max}))},flames:flameJetBoxes(G.time).length,movingRocks:solids.filter(s=>s.drift).map(s=>({x:s.x,y:s.y}))}:null,
+  base: isBase()?{room:G.base.room,cleared:G.base.cleared,transition:G.base.trans,dead:G.base.dead,phase:G.base.bossPhase,exitReady:G.base.exitReady,devices:bossDevicesRemaining(G.base),targets:G.base.targets.map(t=>({kind:t.k,hp:t.hp,max:t.max,x:t.x,y:t.y})),bubbles:G.eb.filter(b=>b.bubble).length,rings:G.eb.filter(b=>b.ring).length,split:!!G.base.projectionSplit,lifts:players().map(p=>({id:p.pid,side:p.liftSide||0,done:!!p.liftDone}))}:null,
   players: players().map(p => ({ id: p.pid, x: p.x, y: p.y, weapon: p.weapon, dead: p.dead, invincible: p.invT,
-    ...(WUKONG ? { ride: p.ride, rideTime: p.rideT, staff: p.staff ? { kind: p.staff.kind, combo: p.staff.combo, time: p.staff.t, duration: p.staff.duration } : null } : {}) })),
-  ...(WUKONG ? { ultimateCooldown: Math.max(0,G.nadeCd||0) } : {}),
+    ...(WUKONG ? { hp:p.hp,maxHp:p.maxHp,rage:p.rage,maxRage:p.maxRage,rageReady:rageReady(p),transformation:transformation(p)?{form:transformation(p).form,remaining:transformation(p).remaining,guard:transformation(p).guard,attacking:!!transformation(p).attack}:null,hurt:p.hurt?{time:p.hurt.t,heavy:p.hurt.heavy}:null,ride:p.ride,rideTime:p.rideT,rapid:p.rapid,
+      charge:p.staffCharge?{time:p.staffCharge.t,active:p.staffCharge.active,ready:p.staffCharge.ready,full:p.staffCharge.full}:null,
+      staffWaves:(p.staffWaves||[]).filter(b=>!b.dead).map(b=>({x:b.x,y:b.y,strength:b.strength,radius:b.radius,damage:b.damage})),
+      staffThrows:(p.staffThrows||[]).filter(b=>!b.dead).map(b=>({x:b.x,y:b.y,phase:b.phase})),
+      staff:p.staff?{kind:p.staff.kind,variant:p.staff.variant,command:p.staff.command||null,combo:p.staff.combo,time:p.staff.t,duration:p.staff.duration,...(p.staff.kind==='ultimate'?{ultimate:p.staff.ultimate,name:ultimateSpec(p.staff).name}:{})}:null } : {}) })),
+  ...(WUKONG ? { ultimateCooldown: Math.max(0,G.nadeCd||0), guards:G.en.filter(e=>!e.dead&&['run','snp','fly'].includes(e.t)).map(e=>({type:e.t,x:e.x,y:e.y,hp:e.hp,maxHp:e.maxHp,melee:e.melee?{kind:e.melee.kind,time:e.melee.t,phase:e.melee.t<GUARD_MELEE.windup?'windup':e.melee.t<GUARD_MELEE.windup+GUARD_MELEE.strike?'strike':'recover'}:null})) } : {}),
   shots: G.pb.map(b => ({ owner: b.owner || 1, x: b.x, y: b.y })), score: G.score
 }) });
 
@@ -8271,6 +8744,10 @@ let last = performance.now(), acc = 0;
 function frame(now) {
   acc += Math.min(0.1, (now - last) / 1000); last = now;
   while (acc >= DT) { step(); acc -= DT; }
+  if(WUKONG&&G.stage===1&&G.mode==='play'){
+    wukongBattleAudio.observe(G.fx,{clock:G.time,camera:G.camX});
+    wukongHeroAudio.observe(G.fx,{clock:G.time,camera:G.camX,actors:players()});
+  }
   render(); updateHud();
   if (cooperative()) {
     if (coop.role === 'host' && now - snapshotClock >= 50) {

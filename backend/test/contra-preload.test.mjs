@@ -4,8 +4,27 @@ import { ResourcePreloader, gameResourceJobs, musicResourceJobs } from '../../ga
 import { StageOneArt } from '../../games/contra2026/js/stage-one-art.mjs';
 import { StageTwoArt } from '../../games/contra2026/js/stage-two-art.mjs';
 import { ReferenceMusic } from '../../games/contra2026/js/reference-music.mjs';
+import { WukongSkin } from '../../games/wukong/js/wukong-game.mjs';
 
 const deferred = () => { let resolve, reject; const promise = new Promise((yes,no) => {resolve=yes;reject=no;}); return {promise,resolve,reject}; };
+
+test('悟空标题先准备天宫、基础人物与待机序列，关卡其余资源延后下载并复用标题贴图',async()=>{
+  const requests=[];
+  const imageFactory=()=>({naturalWidth:0,set src(url){if(url){requests.push(url);queueMicrotask(()=>{this.naturalWidth=1774;this.onload();});}}});
+  const art=new WukongSkin({createCanvas:()=>({getContext:()=>({drawImage(){},getImageData(){return null;}})}),imageFactory,autoLoad:false});
+  assert.deepEqual(requests,[]);assert.equal(art.ready,false);
+  await art.loadTitle();
+  assert.deepEqual(requests,[art.assets.heaven,art.assets.skinActors,art.assets.heroWholeMovement,art.assets.ruyiStaff]);
+  assert.equal(art.loaded.has('heaven'),true);assert.equal(art.hdActors.ready('blue'),true);
+  assert.equal(art.loaded.has('skinActors'),true);assert.equal(art.ready,false);
+  const loader=new ResourcePreloader(gameResourceJobs({arts:[art],imageFactory,cover:'cover.webp',records:[],tracks:{},music:{}}));
+  await loader.load();assert.equal(art.ready,true);assert.equal(loader.ready,true);
+  assert.ok(requests.includes('/games/wukong/assets/actors.webp'));
+  assert.equal(requests.filter(url=>url===art.assets.heaven).length,1);
+  assert.equal(requests.filter(url=>url===art.assets.skinActors).length,1);
+  assert.equal(requests.filter(url=>url===art.assets.heroWholeMovement).length,1);
+  const count=requests.length;await loader.load();assert.equal(requests.length,count);
+});
 
 test('切换关卡复用已完成画面，只等待新关默认音乐，旧音轨不计入新进度',async()=>{
   const calls=[];
@@ -50,9 +69,10 @@ test('标题阶段不请求关卡资源，启动加载后才下载两关画面�
   assert.deepEqual(requested,[]);assert.deepEqual(songs,[]);
   assert.equal(loader.inspect().status,'idle');assert.equal(first.ready,false);assert.equal(second.ready,false);
   const loading=loader.load();await new Promise(setImmediate);
-  assert.ok(requested.some(url=>url.includes('/stage1/')));assert.ok(requested.some(url=>url.includes('/stage2/')));
+  assert.ok(requested.some(url=>url.includes('/stage1/')));assert.ok(requested.filter(url=>url.includes('/stage')).length<=4,'image requests stay within the eager concurrency limit');
   assert.ok(requested.includes('disc.svg'));assert.deepEqual(songs,['stage1','stage2']);assert.equal(loader.ready,false);
   decoded.resolve();await loading;
+  assert.ok(requested.some(url=>url.includes('/stage2/')));
   assert.equal(first.ready,true);assert.equal(second.ready,true);assert.equal(loader.ready,true);
   const count=requested.length;await loader.load();assert.equal(requested.length,count);
 });

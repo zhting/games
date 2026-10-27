@@ -1,0 +1,92 @@
+{
+  "generatedWith": "built-in imagegen",
+  "prompts": "fortress-detail-v2-prompts.json",
+  "assets": [
+    {
+      "file": "assets/stage1/fortress-detail-v2.webp",
+      "url": "/games/contra2026/assets/stage1/fortress-detail-v2.webp",
+      "source": "design/source-art/stage1/fortress-detail-v2.png",
+      "dimensions": [
+        1232,
+        1277
+      ],
+      "frames": {
+        "facade": [
+          29,
+          10,
+          1201,
+          1254
+        ]
+      },
+      "bytes": 460474,
+      "sha256": "b13bb58394c9e1e5cde221612d4c150e05ef1bfbfa31c0a53442ed7a5fe2fd83",
+      "alphaPreserved": true,
+      "sourceBounds": [
+        22,
+        12,
+        1245,
+        1245
+      ]
+    },
+    {
+      "file": "assets/stage1/fortress-damage-detail-v2.webp",
+      "url": "/games/contra2026/assets/stage1/fortress-damage-detail-v2.webp",
+      "source": "design/source-art/stage1/fortress-damage-detail-v2.png",
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "frames": {
+        "gunA": [
+          36,
+          311,
+          483,
+          416
+        ],
+        "gunB": [
+          555,
+          311,
+          491,
+          415
+        ],
+        "core": [
+          1109,
+          202,
+          383,
+          620
+        ]
+      },
+      "bytes": 274404,
+      "sha256": "bf703b6f859776282a5cf56ac4aee21b748b252a6b3171f9916494ffdd7b5221",
+      "alphaPreserved": true,
+      "sourceBounds": {
+        "gunA": [
+          25,
+          285,
+          517,
+          471
+        ],
+        "gunB": [
+          565,
+          287,
+          507,
+          472
+        ],
+        "core": [
+          1103,
+          170,
+          409,
+          684
+        ]
+      }
+    }
+  ],
+  "totalBytes": 734878,
+  "worldFacade": {
+    "x": 3191,
+    "y": 28,
+    "w": 147,
+    "h": 148
+  },
+  "geometry": "Original facade bounds, damage crops, targets, wall boundary and exit remain unchanged."
+}

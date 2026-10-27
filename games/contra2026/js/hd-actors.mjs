@@ -40,7 +40,7 @@ export class HDActorArt {
     }
     g.drawImage(image,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
     if(meta.clip)g.restore();
-    const result={canvas,w,h,x:(sx-meta.anchor[0])*scale,y:(sy-meta.anchor[1])*scaleY,waist:(meta.waist-meta.anchor[1])*scaleY,angle:meta.angle||0};
+    const result={canvas,w,h,x:(sx-meta.anchor[0])*scale,y:(sy-meta.anchor[1])*scaleY,waist:(meta.waist-meta.anchor[1])*scaleY,angle:meta.angle||0,thickness:meta.thickness||1};
     this.cache.set(key,result);return result;
   }
   movingFrame(role,p,pose,density){
@@ -63,7 +63,7 @@ export class HDActorArt {
     ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';
     ink.setTransform(density,0,0,density,-frame.x*density,-frame.y*density);
     const paint=(f,dy=0)=>ink.drawImage(f.canvas,f.x,f.y+dy,f.w,f.h);
-    const segment=(f,start,end)=>{ink.save();ink.translate(start.x,start.y);ink.rotate(Math.atan2(end.y-start.y,end.x-start.x)-Math.PI/2-f.angle);paint(f);ink.restore();};
+    const segment=(f,start,end)=>{ink.save();ink.translate(start.x,start.y);ink.rotate(Math.atan2(end.y-start.y,end.x-start.x)-Math.PI/2);if(f.thickness&&f.thickness!==1)ink.scale(f.thickness,1);ink.rotate(-f.angle);paint(f);ink.restore();};
     for(const [i,leg]of gait.legs.entries()){
       const [shin,thigh,boot]=legs[i];
       segment(shin,leg.knee,leg.ankle);segment(thigh,leg.hip,leg.knee);

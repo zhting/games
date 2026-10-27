@@ -1,5 +1,8 @@
+import { versionedAssetUrl } from './asset-url.mjs?v=multi-stage-polish-1';
+import { RIVER_FISH_ASSET, riverFishJumps, drawRiverFish } from './river-fish.mjs?v=breach-fish-2';
 import { ATLASES } from './stage-one-atlas.mjs?v=wreck-1';
 import { drawSupplySaucer } from './supply-saucer.mjs?v=pointed-drop-1';
+import { COMBAT_ASSETS, drawExplosion, drawSupplyDisc, drawEquipmentTurret, drawEquipmentSupply } from './combat-art.mjs?v=combat-polish-1';
 import { itemLabel, WEAPON_LABELS } from './zh-cn.mjs';
 import { rockCells, rotorAngle, meteorPosition, openingDrop, coastHeight } from './stage-one-scenery.mjs?v=coast-1';
 import { HDActorArt, HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG } from './hd-actors.mjs?v=webp-1';
@@ -21,11 +24,13 @@ export const STAGE_ONE_ASSETS = Object.freeze({
   snow: '/games/contra2026/assets/stage1/night-snow-mountains.webp',
   lowJungle: '/games/contra2026/assets/stage1/night-jungle-strip.webp',
   facilities: '/games/contra2026/assets/stage1/classic-facilities.webp',
-  turretBase: '/games/contra2026/assets/stage1/classic-turret-base.webp',
+  ...COMBAT_ASSETS,
   rock: '/games/contra2026/assets/stage1/rock-arcade.webp',
-  damage: '/games/contra2026/assets/stage1/fortress-damage.webp',
+  damage: '/games/contra2026/assets/stage1/fortress-damage-detail-v2.webp',
   environment: '/games/contra2026/assets/stage1/environment.webp',
-  fortress: '/games/contra2026/assets/stage1/fortress-hd.webp',
+  fortress: '/games/contra2026/assets/stage1/fortress-detail-v2.webp',
+  fortressBreach: '/games/contra2026/assets/stage1/fortress-breach-v3.webp',
+  riverFish: RIVER_FISH_ASSET,
   ...Object.fromEntries([...Object.values(HD_ACTORS),...Object.values(HD_RUNS),...Object.values(HD_DEATH),...Object.values(HD_RUN_RIG)].map(sheet=>[sheet.key,sheet.url]))
 });
 export const FORTRESS_HD_BOUNDS=Object.freeze([29,10,1201,1254]);
@@ -43,6 +48,8 @@ export const FORTRESS_TARGETS=Object.freeze([
     w:w/1201*FORTRESS_ART.w,h:h/1254*FORTRESS_ART.h,...(k==='core'?{hitBox:FORTRESS_DAMAGE_REGIONS.core}:{})}))
 ]);
 const coreBreach=FORTRESS_DAMAGE_REGIONS.core;
+// Artwork follows the former reactor housing; the entry trigger stays unchanged.
+export const FORTRESS_BREACH_ART=Object.freeze({x:coreBreach.x-7,y:coreBreach.y-9,w:coreBreach.w+14,h:coreBreach.h+18});
 export const FORTRESS_EXIT=Object.freeze({x:coreBreach.x+5,y:coreBreach.y+7,w:FORTRESS_ART.levelEnd-8-(coreBreach.x+5),h:coreBreach.h-12,
   trigger:Object.freeze({x:coreBreach.x+6,y:coreBreach.y+9,w:coreBreach.w-12,h:coreBreach.h-16})});
 
@@ -89,8 +96,13 @@ export class StageOneArt {
       this.cache.clear(); this.terrainCache.clear(); this.hdActors.clear(); resolve(image);
     };
     image.onload = () => { if (image.decode) image.decode().then(ready, failed); else ready(); };
-    image.onerror = failed; image.src = this.assets[key];
+    image.onerror = failed; image.src = versionedAssetUrl(this.assets[key]);
     return promise;
+  }
+  adoptImage(key,image){
+    this.images[key]=image;this.loaded.add(key);this.failed=this.failed.filter(name=>name!==key);
+    this.cache.clear();this.terrainCache.clear();this.hdActors.clear();
+    return image;
   }
   get ready() { return Object.keys(this.assets).every(key => this.loaded.has(key)); }
   inspect() { return { ready: this.ready, loaded: [...this.loaded], failed: [...this.failed], frameCount: this.cache.size, resolution: [this.surface.width, this.surface.height] }; }
@@ -558,14 +570,16 @@ export class StageOneArt {
   }
   enemy(e) {
     if (e.t === 'tur') {
-      if (!this.sprite('turret', e.x - 12, e.y - 8, 24, 24)) this.rect(e.x - 8, e.y - 8, 16, 24, '#7c7c7c');
-      const angle = e.idx * Math.PI / 6;
-      drawTurretBarrel(this.g,e.x,e.y+3.5,angle);
+      const image=(this.baseArt||this).images?.equipmentTurret;
+      if(!drawEquipmentTurret(this.g,image,e,{frozen:this.state.freezeT>0})){
+        if (!this.sprite('turret', e.x - 12, e.y - 8, 24, 24)) this.rect(e.x - 8, e.y - 8, 16, 24, '#7c7c7c');
+        drawTurretBarrel(this.g,e.x,e.y+3.5,e.idx*Math.PI/6);
+      }
     } else if (e.t === 'box') {
-      const classic=this.loaded.has('facilities'),height=classic?24:e.open?24:12;
-      if (!this.sprite(classic&&!e.open?'sensor':'crate', e.x - 10, e.y - height, 20, height)) this.rect(e.x - 10, e.y - height, 20, height, '#7c7c7c');
-      if(classic&&e.open)drawRifleSymbol(this.g,e.x,e.y-11);
-      if (!classic&&!e.open) this.rect(e.x - 2, e.y - 7, 4, 3, '#501010');
+      if(!drawEquipmentSupply(this.g,(this.baseArt||this).images?.equipmentSupply,e)){
+        const height=e.open?24:12;
+        if (!this.sprite('crate',e.x-10,e.y-height,20,height)) this.rect(e.x-10,e.y-height,20,height,'#7c7c7c');
+      }
       if (e.flash > 0) this.muzzle(e.x, e.y - 12);
     } else this.actor({ ...e, vx: e.t === 'run' && !e.attack ? e.vx : 0, onGround: !!e.on,
       face: e.t === 'run' ? e.attack ? e.fireFace : Math.sign(e.vx) || -1 : e.face || -1, ay: e.ay || 0 }, 'enemy', true);
@@ -578,7 +592,10 @@ export class StageOneArt {
     }
   }
   capsule(x, y, kind, flying = true) {
-    if(flying){drawSupplySaucer(this.g,x,y,(this.state?.t||0)/60);return;}
+    if(flying){
+      if(!drawSupplyDisc(this.g,(this.baseArt||this).images?.supplySaucer,x,y))drawSupplySaucer(this.g,x,y,(this.state?.t||0)/60);
+      return;
+    }
     drawWingBadge(this.g,x,y);
     this.text(String(kind).toUpperCase(), x, y - 4.1, '#df594a', .95, 'center');
   }
@@ -621,39 +638,15 @@ export class StageOneArt {
     g.restore();
   }
   exitPath(){
-    const g=this.g,r=FORTRESS_EXIT;
-    g.beginPath();[[.1,0],[.73,.01],[.95,.07],[1,.18],[1,.91],[.92,1],[.12,.98],[0,.86],[.025,.58],[0,.3],[.03,.1]]
+    const g=this.g,r=FORTRESS_BREACH_ART;
+    // Trace the inside of the torn armor, so walking actors disappear behind it.
+    g.beginPath();[[.46,.17],[.62,.16],[.73,.21],[.77,.29],[.83,.34],[.82,.43],[.89,.49],[.85,.61],[.87,.69],[.79,.77],[.72,.82],[.45,.82],[.38,.76],[.3,.72],[.28,.62],[.24,.55],[.24,.39],[.28,.29],[.35,.22]]
       .forEach(([x,y],i)=>i?g.lineTo(r.x+x*r.w,r.y+y*r.h):g.moveTo(r.x+x*r.w,r.y+y*r.h));g.closePath();
   }
   exitHole(boss){
-    const g=this.g,r=FORTRESS_EXIT;
-    g.save();this.exitPath();g.clip();
-    const dark=g.createLinearGradient(r.x,r.y,r.x+r.w,r.y);
-    dark.addColorStop(0,'#15232c');dark.addColorStop(.45,'#08131b');dark.addColorStop(1,'#010306');
-    g.fillStyle=dark;g.fillRect(r.x,r.y,r.w,r.h);
-    const cx=r.x+r.w*.56,cy=r.y+r.h*.5;
-    this.rect(r.x,r.y,r.w,3,'#263844');
-    this.line(r.x+2,r.y+3,r.x+r.w,r.y+3,'#49606b',.7);
-    this.rect(r.x,r.y+r.h-4,r.w,4,'#23323a');
-    this.line(r.x+1,r.y+r.h-4,r.x+r.w,r.y+r.h-4,'#62747b',.8);
-    this.line(r.x+1,r.y+r.h-1.7,r.x+r.w,r.y+r.h-1.7,'#111d25',.7);
-    for(let i=0;i<4;i++){
-      const x=r.x+8+i*10,fade=1-i*.18;
-      g.save();g.globalAlpha*=fade;
-      this.line(x,r.y+3,x+3,r.y+6,'#354a56',.8);
-      this.line(x,r.y+r.h-4,x+3,r.y+r.h-6,'#405563',.8);
-      this.rect(x,r.y+1,2,.5,'#829195');g.restore();
-    }
-    const recess=g.createLinearGradient(r.x+r.w*.6,0,r.x+r.w,0);
-    recess.addColorStop(0,'rgba(1,3,6,0)');recess.addColorStop(1,'rgba(1,3,6,.96)');
-    g.fillStyle=recess;g.fillRect(r.x+r.w*.6,r.y,r.w*.4,r.h);
-    g.restore();
-    this.exitPath();g.strokeStyle='#17232b';g.lineWidth=2.7;g.stroke();
-    this.exitPath();g.strokeStyle='#7a8789';g.lineWidth=.85;g.stroke();
-    for(const[x,y,a]of [[.09,.13,-.4],[.89,.2,.7],[.15,.84,.5],[.83,.95,-.2]]){
-      g.save();g.translate(r.x+x*r.w,r.y+y*r.h);g.rotate(a);this.rect(-1,-.3,2,.65,'#a3a9a2');g.restore();
-    }
-    if(!boss.exitOpen){g.save();g.globalAlpha=.2;this.light(cx,cy,8,'rgba(255,142,50,.35)');g.restore();}
+    const g=this.g,r=FORTRESS_BREACH_ART;
+    if(this.loaded.has('fortressBreach'))g.drawImage(this.images.fortressBreach,r.x,r.y,r.w,r.h);
+    else{this.exitPath();g.fillStyle='#071018';g.fill();}
   }
   fortress(boss) {
     const b = FORTRESS_ART, g = this.g;
@@ -663,7 +656,7 @@ export class StageOneArt {
     for (const part of boss.parts) {
       if (part.hp <= 0) {
         const r=FORTRESS_DAMAGE_REGIONS[part.k],wreck=this.frame('damage',part.k,r.w,r.h);
-        if(wreck){g.save();if(part.k==='core')g.filter='saturate(.55) brightness(.78)';g.drawImage(wreck,r.x,r.y,r.w,r.h);g.restore();}
+        if(wreck&&!(part.k==='core'&&boss.dead&&this.loaded.has('fortressBreach'))){g.save();if(part.k==='core')g.filter='saturate(.55) brightness(.78)';g.drawImage(wreck,r.x,r.y,r.w,r.h);g.restore();}
         this.wreckEffects(part);
       } else if (part.flash > 0) {
         const key='part-flash:'+part.k;let mask=this.cache.get(key);
@@ -719,8 +712,12 @@ export class StageOneArt {
       if (fx.dead) continue;
       const progress = fx.t / fx.life;
       if (fx.k === 'boom') {
-        const size = Math.max(7, Math.round((fx.s || 8) * (2.2 - progress)));
-        if (!this.sprite('explosion', fx.x - size / 2, fx.y - size / 2, size, size)) this.muzzle(fx.x, fx.y);
+        const image=(this.baseArt||this).images?.explosionAtlas;
+        if(image)drawExplosion(this.g,image,fx);
+        else {
+          const size=Math.max(7,Math.round((fx.s||8)*(2.2-progress)));
+          if(!this.sprite('explosion',fx.x-size/2,fx.y-size/2,size,size))this.muzzle(fx.x,fx.y);
+        }
       } else if (fx.k === 'smoke' || fx.k === 'puff') {
         const size = 5 + Math.floor(progress * 7); this.g.globalAlpha = Math.max(0, 1 - progress);
         this.sprite('smoke', fx.x - size / 2, fx.y - size, size, size); this.g.globalAlpha = 1;
@@ -751,6 +748,7 @@ export class StageOneArt {
     g.lineWidth = .65; g.strokeStyle = 'rgba(0,9,7,.85)';
     g.strokeText(String(value), x, y); g.fillStyle = color; g.fillText(String(value), x, y); g.restore();
   }
+  itemLabel(kind){return itemLabel(kind);}
   playerHud(G, actor, { x, blue, role=blue?'blue':'red', inventory, selection, cooldown, infinite, local }) {
     const g = this.g, accent = role==='blue' ? '#79c6df' : '#ee895f', muted = '#9fb4a5';
     this.rect(x, 5, 1.2, 7, local ? accent : '#516f68');
@@ -766,7 +764,7 @@ export class StageOneArt {
       const sx = x + 39 + i * 18, item = inventory?.[i], selected = i === selection;
       if (item) {
         this.rect(sx, 15.5, 17, 9, selected ? 'rgba(182,143,71,.16)' : 'rgba(22,48,35,.4)');
-        this.hudText(itemLabel(item), sx + 8.5, 17, selected ? '#e5be77' : muted, 5.3, 'center', 16);
+        this.hudText(this.itemLabel(item), sx + 8.5, 17, selected ? '#e5be77' : muted, 5.3, 'center', 16);
         this.rect(sx + 1, 24, 15, selected ? .8 : .4, selected ? '#c99c53' : '#4b6659');
       } else this.rect(sx + 6, 21, 5, .6, 'rgba(147,171,150,.35)');
     }
@@ -892,7 +890,7 @@ export class StageOneArt {
     for (const e of G.en) if (!e.dead && e.x > camera - 40 && e.x < camera + 424) this.enemy(e);
     // Once shot, a carrier is already an item; landing never switches its appearance.
     for (const it of G.items) if (!it.dead) this.capsule(it.x, it.y - 5, it.kind, false);
-    for (const pod of G.pods) if (!pod.dead) this.capsule(pod.x, pod.y, pod.kind);
+    for (const pod of G.pods) if (!pod.dead) this.capsule(pod.x, pod.y, pod.kind, true, pod);
     for (const [i, p] of options.players.entries()) this.actor(p, StageOneArt.playerRole(options.online,i));
     this.bullets(G.pb); this.grenades(G.gr, G.t);
     // Foreground water shares the background's full coast and world-space phase.
@@ -901,6 +899,10 @@ export class StageOneArt {
     // Restore the submerged cliff and its foam after the water covers the actors.
     // Both sides of a bank now use the same contour instead of a rectangular join.
     this.drawSubmergedGround(options.solids,camera,options.water.surf);
+    if(G.stage===1&&this.loaded.has('riverFish')){
+      const water={x0:0,x1:FORTRESS_ART.levelEnd,surf:options.water.surf};
+      for(const event of riverFishJumps(G.time,camera,options.solids,water))drawRiverFish(g,this.images.riverFish,event);
+    }
     for(const p of options.players)this.wadingWake(p,options.water.surf);
     drawStageOneRain(g,camera,G.t/60,rain,options,true);
     drawWindblownLeaves(g,camera,G.t/60,rain,options,true);

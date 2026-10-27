@@ -4,6 +4,9 @@ export const REFERENCE_TRACKS=Object.freeze({
   stage1:Object.freeze({url:'/games/contra2026/assets/audio/reference-stage1.ogg',loop:true}),
   stage2:Object.freeze({url:'/games/contra2026/assets/audio/reference-stage2.ogg',loop:true}),
   stage2boss:Object.freeze({url:'/games/contra2026/assets/audio/reference-stage2-boss.ogg',loop:true}),
+  stage3:Object.freeze({url:'/games/contra2026/assets/audio/reference-stage3.ogg',loop:true}),
+  stage4:Object.freeze({url:'/games/contra2026/assets/audio/reference-stage4.ogg',loop:true}),
+  stage4boss:Object.freeze({url:'/games/contra2026/assets/audio/reference-stage4-boss.ogg',loop:true}),
   stage1orchestral:Object.freeze({url:'/games/contra2026/assets/audio/stage1-yue2-orchestral.ogg',loop:true}),
   stage1rock:Object.freeze({url:'/games/contra2026/assets/audio/stage1-rock.ogg',loop:true}),
   stage1epic:Object.freeze({url:'/games/contra2026/assets/audio/stage1-epic.ogg',loop:true}),
@@ -12,7 +15,7 @@ export const REFERENCE_TRACKS=Object.freeze({
 });
 
 export function stageMusicOptions(stage){
-  const original=stage===1?'原视频音乐':stage===2?'原视频音乐（含中枢）':'原有电子乐';
+  const original=stage===1?'原视频音乐':stage===2?'原视频音乐（含中枢）':stage===3?'原视频音乐 · 瀑布':stage===4?'原视频音乐（含双生投影）':'原有电子乐';
   return [
     {value:'original',label:original},
     ...(stage===1?[
@@ -69,6 +72,11 @@ export function normalizeStageMusic(saved){
 export function referenceTrackForScene(state){
   if(['title','select','lobby'].includes(state.mode))return 'title';
   if(state.mode==='settings'&&state.settingsFrom==='title')return 'title';
+  if(state.stage===3)return ['intro','play'].includes(state.mode)&&!state.mech?.dead?'stage3':null;
+  if(state.stage===4){
+    if(!['intro','play'].includes(state.mode)||state.base?.dead)return null;
+    return state.base?.def?.boss?'stage4boss':'stage4';
+  }
   if(state.stage===2){
     if(!['intro','play'].includes(state.mode)||state.base?.dead)return null;
     return state.base?.def?.boss?'stage2boss':'stage2';
@@ -98,10 +106,16 @@ export function musicForScene(state,choices){
   return reference||'synth';
 }
 
+function trackOffset(track,offset,duration){
+  const end=Math.min(track.loopEnd??duration,duration),start=Math.max(0,Math.min(track.loopStart??0,end));
+  if(track.loop&&offset>=end&&end>start)return start+(offset-start)%(end-start);
+  return Math.max(0,Math.min(offset,end));
+}
+
 /** AudioBuffer loops avoid the decoder restart gaps of repeated HTMLAudio playback. */
 export class ReferenceMusic {
-  constructor({getContext,getOutput,fetchAudio=(...args)=>globalThis.fetch(...args)}){
-    this.getContext=getContext;this.getOutput=getOutput;this.fetchAudio=fetchAudio;
+  constructor({getContext,getOutput,fetchAudio=(...args)=>globalThis.fetch(...args),tracks=REFERENCE_TRACKS}){
+    this.getContext=getContext;this.getOutput=getOutput;this.fetchAudio=fetchAudio;this.tracks=tracks;
     this.buffers=new Map();this.encoded=new Map();this.track=null;this.source=null;this.offset=0;this.startedAt=0;
     this.paused=false;this.ended=false;this.version=0;this.error=null;
   }
@@ -109,7 +123,7 @@ export class ReferenceMusic {
     if(retry)this.encoded.delete(key);
     if(!this.encoded.has(key)){
       const pending=(async()=>{
-        const response=await this.fetchAudio(REFERENCE_TRACKS[key].url,{signal:AbortSignal.timeout(285000)});
+        const response=await this.fetchAudio(this.tracks[key].url,{signal:AbortSignal.timeout(285000)});
         if(!response.ok)throw Error('音频加载失败：'+response.status);
         return response.arrayBuffer();
       })();
@@ -133,20 +147,21 @@ export class ReferenceMusic {
     if(this.source){const source=this.source;this.source=null;source.onended=null;
       try{source.stop();}catch{}try{source.disconnect();}catch{}}
   }
-  async play(key){
+  async play(key,{offset}={}){
     const context=this.getContext(),output=this.getOutput();
-    if(!context||!output||!REFERENCE_TRACKS[key])return false;
+    if(!context||!output||!this.tracks[key])return false;
     if(this.track===key&&this.ended){this.paused=false;return true;}
     if(this.track===key&&!this.paused&&(this.source||this.ended||this.loading))return true;
     const changed=this.track!==key;
-    if(changed){this.detach();this.offset=0;this.ended=false;}
+    if(changed){this.detach();this.offset=offset??this.tracks[key].startOffset??0;this.ended=false;}
     this.track=key;this.paused=false;this.error=null;this.loading=true;
     const version=++this.version;
     try{
       const buffer=await this.load(key,context);
       if(version!==this.version||this.track!==key||this.paused)return false;
-      const source=context.createBufferSource();source.buffer=buffer;source.loop=REFERENCE_TRACKS[key].loop;
-      source.connect(output);this.offset=source.loop?this.offset%buffer.duration:Math.min(this.offset,buffer.duration);
+      const source=context.createBufferSource();source.buffer=buffer;source.loop=this.tracks[key].loop;
+      source.loopStart=this.tracks[key].loopStart??0;source.loopEnd=Math.min(this.tracks[key].loopEnd??buffer.duration,buffer.duration);
+      source.connect(output);this.offset=trackOffset(this.tracks[key],this.offset,buffer.duration);
       this.startedAt=context.currentTime;this.source=source;this.duration=buffer.duration;this.loading=false;
       source.onended=()=>{if(this.source===source){this.source=null;this.ended=true;source.disconnect();}};
       source.start(0,this.offset);return true;
@@ -157,7 +172,7 @@ export class ReferenceMusic {
   }
   pause(){
     if(this.source){const elapsed=this.getContext().currentTime-this.startedAt;
-      this.offset=REFERENCE_TRACKS[this.track].loop?(this.offset+elapsed)%this.duration:Math.min(this.offset+elapsed,this.duration);}
+      this.offset=trackOffset(this.tracks[this.track],this.offset+elapsed,this.duration);}
     this.detach();this.paused=true;this.loading=false;++this.version;
   }
   stop(){this.pause();this.track=null;this.offset=0;this.ended=false;this.error=null;}

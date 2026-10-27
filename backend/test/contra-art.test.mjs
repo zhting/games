@@ -6,6 +6,7 @@ import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, STAGE_ONE_ASSETS } from '.
 import { isRunning } from '../../games/contra2026/js/stage-one-motion.mjs';
 import { HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG, HDActorArt, actorPose } from '../../games/contra2026/js/hd-actors.mjs';
 import { CLASSIC_LAYERS, CLASSIC_FACILITIES, CLASSIC_TURRET_BASE_BOUNDS, nightStars } from '../../games/contra2026/js/stage-one-classic.mjs';
+import { COMBAT_ASSETS } from '../../games/contra2026/js/combat-art.mjs';
 
 test('星空闪烁只改变亮度，镜头移动按远景视差移动星点而不随机重排',()=>{
   const first=nightStars(0,0),later=nightStars(0,3),scrolled=nightStars(50,0);
@@ -103,6 +104,9 @@ test('第一关正式位图资源存在，角色及要塞高清透明，裁切�
     const png = fs.readFileSync(new URL(file.href.replace(/\.webp$/, '.png')));
     assert.equal(png.toString('hex', 0, 8), '89504e470d0a1a0a');
     const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+    if(name==='riverFish'){assert.equal(png[25],6);assert.equal(width,512);assert.ok(height>=128);continue;}
+    if(name==='fortressBreach'){assert.equal(png[25],6);assert.equal(width,640);assert.ok(height>=900);continue;}
+    if(COMBAT_ASSETS[name]){assert.equal(png[25],6);assert.ok(width>=512&&height>=144);continue;}
     if (name === 'jungle' || name === 'rock') { assert.ok(width>=1000&&height>=1000); continue; }
     assert.equal(png[25], 6, `${name}: PNG RGBA transparency`);
     if(CLASSIC_LAYERS[name]||name==='facilities'||name==='turretBase'){
