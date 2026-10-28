@@ -1,7 +1,8 @@
-import { gameResourceJobs } from './resource-preloader.mjs?v=stage-loading-1';
+import { gameResourceJobs } from './resource-preloader.mjs?v=lives-load-1';
 import { COMBAT_ASSETS } from './combat-art.mjs?v=combat-polish-1';
 
-const ACTORS = ['actorRed','actorBlue','actorEnemy','runRed','runBlue','runEnemy','actorDeath','runLimbs'];
+const ACTORS = ['actorRed','actorBlue','actorEnemy','actorDeath','runLimbs'];
+const LEGACY_RUNS=new Set(['runRed','runBlue','runEnemy']);
 
 /** URLs describe usage, rather than the directory where a shared atlas lives. */
 export function stageAssetUrls(stage, arts) {
@@ -13,7 +14,8 @@ export function stageAssetUrls(stage, arts) {
       urls.add(art.assets[key]);
     }
   };
-  if (stage === 1) add(one);
+  // All three roles animate with the shared limb rig. Full-body run sheets are legacy fallbacks.
+  if (stage === 1) add(one,Object.keys(one.assets).filter(key=>!LEGACY_RUNS.has(key)));
   else if (stage === 2 || stage === 4) {
     add(stage === 2 ? two : four);
     add(one, ['actorRed','actorBlue']); // Life icons use the shared portraits.

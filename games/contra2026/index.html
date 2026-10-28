@@ -370,7 +370,7 @@ body:not(.touchmode) .touch-only{display:none!important}
           </dl>
           <h3>30 条命秘籍</h3>
           <dl>
-            <dt>PC 键盘</dt><dd>在标题画面依次输入 ↑ ↑ ↓ ↓ ← → ← → B A，再选择开始；按键间隔不超过 2 秒，长按不算重复输入。</dd>
+            <dt>PC 键盘</dt><dd>在标题画面依次输入 ↑ ↑ ↓ ↓ ← → ← → B A B A，再选择开始；按键间隔不超过 2 秒，长按不算重复输入。</dd>
             <dt>手机触屏</dt><dd>在标题画面的魂斗罗 Logo 上，4 秒内轻点 8 次；滑动和长按不计入。</dd>
             <dt>成功提示</dt><dd>显示“30 条命已就绪”。本局以 30 条命开局，死亡扣命，过关保留剩余生命；重复输入不叠加。退出本局回到标题后取消，本来的无限生命设置保持不变。</dd>
           </dl>
@@ -386,7 +386,7 @@ body:not(.touchmode) .touch-only{display:none!important}
           <h3>规则</h3>
           <ul>
             <li>被子弹或敌人碰到即阵亡，阵亡后会失去强化武器</li>
-            <li>默认无限生命，阵亡只会失去强化武器；在设置里关闭后，普通难度 3 条命，每到 20,000 分和此后每 70,000 分奖励一条命</li>
+            <li>默认有限生命，普通难度 3 条命、简单难度 5 条命；每到 20,000 分和此后每 70,000 分奖励一条命，可在设置里开启无限生命</li>
             <li>在水中按下可以潜水躲子弹，但潜水时不能射击</li>
             <li>站立时按住上可以朝正上方射击，卧倒可以躲过齐胸高的子弹</li>
           </ul>
@@ -479,7 +479,7 @@ import { WukongBattleAudio, queueEnemyCry } from '/games/wukong/js/wukong-battle
 import { WukongHeroAudio, queueHeroSounds } from '/games/wukong/js/wukong-hero-audio.mjs?v=dialogue-4';
 import { normalizeAudioMix, audioMixLevels } from '/games/contra2026/js/audio-mix.mjs';
 import { addMartialHit } from '/games/wukong/js/wukong-impact.mjs';
-import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=breach-fish-2';
+import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '/games/contra2026/js/stage-one-art.mjs?v=lives-load-1';
 import { StageTwoArt } from '/games/contra2026/js/stage-two-art.mjs?v=polish-closeout-1';
 import { StageFourArt } from '/games/contra2026/js/stage-four-art.mjs?v=polish-closeout-1';
 import { StageFiveArt } from '/games/contra2026/js/stage-five-art.mjs?v=combat-polish-1';
@@ -488,7 +488,7 @@ import { STAGE_FIVE_ROUTE, createSnowDefenders, snowDefenderBox, advanceSnowDefe
 import { STAGE_FOUR_ROOMS, STAGE_FOUR_DEVICES, makeTwinProjections, advanceTwinProjections, initStageFourDefenses, advanceStageFourShutters, stageFourFacilityClosed, advanceStageFourGallery, stageFourGalleryTargets } from '/games/contra2026/js/stage-four-layout.mjs?v=stage-four-defense-1';
 import { StageThreeArt } from '/games/contra2026/js/stage-three-art.mjs?v=multi-stage-polish-1';
 import { GamepadInput } from '/games/contra2026/js/gamepad-input.mjs?v=controller-refinements-1';
-import { THIRTY_LIVES, ThirtyLivesCheat, inTitleLogo } from '/games/contra2026/js/thirty-lives.mjs?v=thirty-lives-1';
+import { THIRTY_LIVES, ThirtyLivesCheat, inTitleLogo } from '/games/contra2026/js/thirty-lives.mjs?v=lives-load-1';
 import { STAGE_THREE, createStageThreeSolids, advanceStageThreePlatforms, flameJetBoxes, makeWaterfallBoss, waterfallNodesAlive, waterfallMouthOpen, waterfallTargetVulnerable, canEnterSummit, beginSummitEntry, advanceSummitEntry, teamInsideSummit, STAGE_THREE_SNIPERS, STAGE_THREE_TURRETS, STAGE_THREE_BOXES, STAGE_THREE_PODS } from '/games/contra2026/js/stage-three-layout.mjs?v=supply-spacing-1';
 import { WATERFALL_ARMS, waterfallArmPose, updateWaterfallArms, waterfallArmBoxes } from '/games/contra2026/js/stage-three-arms.mjs?v=boss-detail-1';
 import { baseUpMuzzle } from '/games/contra2026/js/base-actor-poses.mjs?v=webp-1';
@@ -505,11 +505,11 @@ import { canEnterExit, beginExitEntry, advanceExitEntry, teamInsideExit } from '
 import { addImpact } from '/games/contra2026/js/impact-effects.mjs?v=hit-feedback-1';
 import { beginDeath, advanceDeath } from '/games/contra2026/js/player-death.mjs?v=death-fall-1';
 import { CONTRA_TRACKS, fixedStageMusicKeys, fixedMusicTrack } from '/games/contra2026/js/fixed-soundtrack.mjs?v=snow-fortress-1';
-import { versionedAssetUrl } from '/games/contra2026/js/asset-url.mjs?v=lean-load-1';
+import { versionedAssetUrl } from '/games/contra2026/js/asset-url.mjs?v=lives-load-1';
 import { REFERENCE_TRACKS, ReferenceMusic, StageMusicSession, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '/games/contra2026/js/reference-music.mjs?v=lean-load-1';
 import { musicRecord } from '/games/contra2026/js/music-records.mjs?v=stage-four-1';
-import { ResourcePreloader, gameResourceJobs, musicResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=stage-loading-1';
-import { stageResourceJobs } from '/games/contra2026/js/stage-resources.mjs?v=combat-polish-1';
+import { ResourcePreloader, gameResourceJobs, musicResourceJobs } from '/games/contra2026/js/resource-preloader.mjs?v=lives-load-1';
+import { stageResourceJobs } from '/games/contra2026/js/stage-resources.mjs?v=lives-load-1';
 (() => {
 'use strict';
 // ================= constants =================
@@ -738,8 +738,14 @@ function groundAt(x) { return solids.find(s => s.g && x >= s.x + 6 && x <= s.x +
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 
 // ================= settings =================
-const SET = { music: 'on', sfx: 'on', musicVolume:WUKONG?30:100, sfxVolume:100, inf: 'on', diff: 'normal', autofire: 'on', shake: 'on', scan: 'off', pad: 'm', v: 2 };
-try { const saved = JSON.parse(localStorage.getItem(WUKONG ? 'wukong-settings' : 'chiyan-settings') || '{}'); if (saved.v !== 2) { delete saved.scan; saved.v = 2; } Object.assign(SET, saved); } catch (e) {}
+const SET = { music: 'on', sfx: 'on', musicVolume:WUKONG?30:100, sfxVolume:100, inf: WUKONG?'on':'off', diff: 'normal', autofire: 'on', shake: 'on', scan: 'off', pad: 'm', v: WUKONG?2:3 };
+try {
+  const saved = JSON.parse(localStorage.getItem(WUKONG ? 'wukong-settings' : 'chiyan-settings') || '{}');
+  if(saved.v!==2&&saved.v!==3)delete saved.scan;
+  // Older releases silently defaulted to infinite lives. Migrate that setting once.
+  if(!WUKONG&&saved.v!==3)saved.inf='off';
+  saved.v=SET.v;Object.assign(SET,saved);
+} catch (e) {}
 Object.assign(SET,normalizeAudioMix(SET,{musicVolume:WUKONG?30:100,sfxVolume:100}));
 if(WUKONG)SET.stageMusic=normalizeWukongMusic(SET.stageMusic);else delete SET.stageMusic;
 const stageMusicSession = new StageMusicSession();
@@ -1231,7 +1237,7 @@ function killPlayer(force,hit={}) {
   if(WUKONG&&G.stage===1)cancelStaffCharge(p,true);
   if(WUKONG&&G.stage===1){if(p.hurt)p.hurt=null;if(p.staff)p.staff=null;if(hit.face)p.vx=Math.sign(hit.face)*70;}
   if(WUKONG&&G.stage===1)clearWukongMagic(p);
-  p.weapon = 'rifle'; p.rapid = false; p.shieldT = 0; if (!infiniteLives()) G.lives--; G.deaths++; // infinite lives (default): dying still costs your weapon
+  p.weapon = 'rifle'; p.rapid = false; p.shieldT = 0; if (!infiniteLives()) G.lives--; G.deaths++; // Dying also costs the current weapon.
   sfx.die(); shake(3);
 }
 function respawn() {

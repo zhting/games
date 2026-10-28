@@ -1,5 +1,5 @@
 export const THIRTY_LIVES=30;
-const SEQUENCE=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA'];
+const SEQUENCE=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA','KeyB','KeyA'];
 const KEYS=new Set(SEQUENCE);
 
 // Only deliberate presses count. Partial input is discarded when leaving the title.

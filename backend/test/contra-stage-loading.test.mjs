@@ -35,7 +35,8 @@ test('冷启动每关只请求本关画面和配乐；第一关不请求任何�
       assert.ok(paths.every(path=>!path.includes(name)),name+' does not belong to this stage');
     if(stage===4)for(const name of ['corridor-hd','corridor-power','corridor-armory','corridor-command','control-wall-hd'])
       assert.ok(paths.every(path=>!path.includes(name)),name+' is unused in stage four');
-    assert.equal(state.total,{1:24,2:20,3:27,4:18,5:28}[stage]);
+    assert.equal(state.total,{1:21,2:20,3:24,4:18,5:25}[stage]);
+    assert.ok(paths.every(path=>!path.includes('/commando-run-')),'the limb rig replaces full-body run downloads');
   }
 });
 

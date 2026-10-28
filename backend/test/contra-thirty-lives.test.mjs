@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ThirtyLivesCheat, THIRTY_LIVES, inTitleLogo } from '../../games/contra2026/js/thirty-lives.mjs';
 
-const keys=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA'];
+const keys=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA','KeyB','KeyA'];
 test('PC 秘籍必须完整输入，长按重复不补齐按键，超时与修饰键会中断',()=>{
   const code=new ThirtyLivesCheat();assert.equal(THIRTY_LIVES,30);
-  for(const [i,key]of keys.entries())assert.equal(code.key(key,i*100),i===9);
+  // The old ten-key code is only a prefix; the final B A is required.
+  for(const [i,key]of keys.entries())assert.equal(code.key(key,i*100),i===keys.length-1);
   code.key('ArrowUp',2000);code.key('ArrowUp',2100,{repeat:true});
   for(const [i,key]of keys.slice(2).entries())assert.equal(code.key(key,2200+i*100),false);
   code.resetInput();for(const [i,key]of keys.entries())assert.equal(code.key(key,i?3001+i*100:0),false);

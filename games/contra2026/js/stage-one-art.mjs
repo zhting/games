@@ -1,4 +1,4 @@
-import { versionedAssetUrl } from './asset-url.mjs?v=multi-stage-polish-1';
+import { versionedAssetUrl } from './asset-url.mjs?v=lives-load-1';
 import { RIVER_FISH_ASSET, riverFishJumps, drawRiverFish } from './river-fish.mjs?v=breach-fish-2';
 import { ATLASES } from './stage-one-atlas.mjs?v=wreck-1';
 import { drawSupplySaucer } from './supply-saucer.mjs?v=pointed-drop-1';
@@ -104,7 +104,7 @@ export class StageOneArt {
     this.cache.clear();this.terrainCache.clear();this.hdActors.clear();
     return image;
   }
-  get ready() { return Object.keys(this.assets).every(key => this.loaded.has(key)); }
+  get ready() { return Object.keys(this.assets).filter(key=>!this.assets.runLimbs||!['runRed','runBlue','runEnemy'].includes(key)).every(key => this.loaded.has(key)); }
   inspect() { return { ready: this.ready, loaded: [...this.loaded], failed: [...this.failed], frameCount: this.cache.size, resolution: [this.surface.width, this.surface.height] }; }
   prepare(destination) {
     const width = destination.canvas?.width || 1536, height = destination.canvas?.height || 864;

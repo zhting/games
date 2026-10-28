@@ -18,8 +18,8 @@
           1254
         ]
       },
-      "bytes": 460474,
-      "sha256": "b13bb58394c9e1e5cde221612d4c150e05ef1bfbfa31c0a53442ed7a5fe2fd83",
+      "bytes": 286530,
+      "sha256": "291009ddc338807de2ae8bed35c6959d5743f96c759209700d4ec406e3ac17b7",
       "alphaPreserved": true,
       "sourceBounds": [
         22,
@@ -56,8 +56,8 @@
           620
         ]
       },
-      "bytes": 274404,
-      "sha256": "bf703b6f859776282a5cf56ac4aee21b748b252a6b3171f9916494ffdd7b5221",
+      "bytes": 200274,
+      "sha256": "4a4759b0c17faf060a16cf641358160f6047eb5128a95f2c3490151495df1aaf",
       "alphaPreserved": true,
       "sourceBounds": {
         "gunA": [
@@ -81,7 +81,7 @@
       }
     }
   ],
-  "totalBytes": 734878,
+  "totalBytes": 486804,
   "worldFacade": {
     "x": 3191,
     "y": 28,

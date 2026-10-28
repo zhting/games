@@ -39,9 +39,10 @@ import { GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox
 
 // Run the real inline game engine with a no-op drawing surface. No production
 // mutation hooks are exposed; the test hook is injected into this VM only.
-function engine({getGamepads=()=>[],coldResources=false,previewStage5=false,touch=false,hostname='localhost'}={}) {
+function engine({getGamepads=()=>[],coldResources=false,previewStage5=false,touch=false,hostname='localhost',savedSettings=null}={}) {
   let fullscreenRequests=0;
   const elements = new Map(), storage = new Map(), documentEvents=new Map();
+  if(savedSettings)storage.set('chiyan-settings',JSON.stringify(savedSettings));
   const gradient = { addColorStop() {} };
   const context = new Proxy({
     measureText: text => ({ width: String(text).length * 6 }),
@@ -123,7 +124,7 @@ test('触屏开始、选关、加载及跨关均不自动请求全屏',async()=>
 test('第五关战车是中途战斗，继续穿越雪林后击败空中堡垒才通关',async()=>{
   const e=engine({hostname:'games.tangletang.top',coldResources:true});assert.equal(e.element('btnSel5').hidden,false);
   const requested=[];e.referenceMusic.prefetch=async key=>requested.push(key);
-  assert.equal(await e.startStage(5),true);assert.equal(e.G.mode,'intro');assert.equal(e.inspect().resources.total,28);assert.equal(e.inspect().audio.resolved.track,'stage5');assert.deepEqual(requested,['stage5']);
+  assert.equal(await e.startStage(5),true);assert.equal(e.G.mode,'intro');assert.equal(e.inspect().resources.total,25);assert.equal(e.inspect().audio.resolved.track,'stage5');assert.deepEqual(requested,['stage5']);
   e.play(5,false);e.G.en=[];e.G.podTrig=[];e.G.p.invT=9999;
   const ice=e.solids.find(s=>s.g&&s.ice);Object.assign(e.G.p,{x:ice.x+20,y:176,onGround:true,support:ice,vx:60});
   e.step();assert.ok(e.G.p.vx>20,'ice retains momentum after releasing movement');
@@ -343,7 +344,26 @@ test('真实引擎通过手柄移动、射击、跳跃、扔雷、切换道具�
   tick();tick([8]);assert.equal(e.G.mode,'pause');
 });
 
-const enterLifeCode=e=>{for(const code of ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA'])e.dispatchDocument('keydown',{code});};
+const enterLifeCode=e=>{for(const code of ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA','KeyB','KeyA'])e.dispatchDocument('keydown',{code});};
+test('默认有限生命会扣命；旧默认无限设置迁移，用户新选择的无限模式保留',()=>{
+  for(const savedSettings of [null,{v:2,inf:'on'},{v:2,inf:'off'}]){
+    const e=engine({savedSettings});e.play(1,false);assert.equal(e.infiniteLives(),false);assert.equal(e.G.lives,3);
+    e.G.p.invT=0;e.killPlayer();assert.equal(e.G.lives,2);assert.equal(e.SET.v,3);
+  }
+  const chosen=engine({savedSettings:{v:3,inf:'on'}});chosen.play(1,false);assert.equal(chosen.infiniteLives(),true);
+  const easy=engine({savedSettings:{v:3,inf:'off',diff:'easy'}});easy.play(1,false);assert.equal(easy.G.lives,5);
+});
+
+test('首关不下载旧跑步图集，单人及双人仍用共享肢体绘制跑步',async()=>{
+  const e=engine({coldResources:true});e.referenceMusic.prefetch=async()=>{};await e.startStage(1);
+  for(const key of ['runRed','runBlue','runEnemy'])assert.equal(e.stageOneArt.loaded.has(key),false);
+  assert.equal(e.stageOneArt.loaded.has('runLimbs'),true);assert.equal(e.stageOneArt.ready,true);
+  for(const online of [false,true]){
+    e.play(1,online);e.K.KeyD=true;ticks(e,10);e.render();
+    assert.ok(e.stageOneArt.hdActors.movingFrames.size>0);
+  }
+});
+
 test('PC 标题秘籍让前五关以 30 条有限生命开局，扣命与切关继承正常且不覆盖无限生命偏好',()=>{
   const e=engine();e.SET.inf='on';enterLifeCode(e);assert.equal(e.inspect().lives.armed,true);
   assert.match(e.element('btnStart').textContent,/30 条命/);e.play(1,false);
