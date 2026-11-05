@@ -65,7 +65,7 @@ export function advanceSnowOrdnance(b,dt,findLand){
 
 export function createFlyingFortress(){
   const home=STAGE_FIVE_ROUTE.arena+220;
-  return {home,x:home,y:-48,active:false,dead:false,deadT:0,time:0,entryT:2,phase:'entry',phaseT:1.4,cycle:0,warning:0,
+  return {home,x:home,y:-48,active:false,dead:false,deadT:0,time:0,entryT:2,phase:'entry',phaseT:1.4,cycle:0,warning:0,escortT:2.55,escortWarning:false,
     parts:[{fortress:1,k:'left',ox:-61,oy:2,w:15,h:15,hp:16,max:16,flash:0},
       {fortress:1,k:'right',ox:46,oy:2,w:15,h:15,hp:16,max:16,flash:0},
       {fortress:1,k:'core',ox:-11,oy:4,w:22,h:24,hp:90,max:90,flash:0}]};
@@ -73,7 +73,43 @@ export function createFlyingFortress(){
 export function placeFlyingFortress(fortress){
   for(const part of fortress.parts){part.x=fortress.x+part.ox;part.y=fortress.y+part.oy;}
 }
-/** A visible lock-on precedes each aimed volley. Only projectiles hurt players. */
+export function fortressEscortPort(F,side){
+  return {x:F.x+side*61,y:F.y+8};
+}
+
+export function advanceFortressEscorts(F,target,dt,enemies,{frozen=false}={}){
+  if(!F.active||F.dead||F.entryT>0||frozen)return [];
+  const available=target&&enemies.filter(e=>e.t==='fortressSaucer'&&!e.dead).length<=2;
+  F.escortT=Math.max(0,(F.escortT??2.55)-dt);
+  F.escortWarning=!!available&&F.escortT<=.45;
+  if(!available||F.escortT>0)return [];
+  F.escortWarning=false;
+  F.escortT=F.parts[2].hp<=F.parts[2].max/2?4.3:5.2;
+  return [-1,1].map(side=>({
+    t:'fortressSaucer',...fortressEscortPort(F,side),side,age:0,vx:side*62,vy:16,turning:false,hp:1,flash:0
+  }));
+}
+
+export function advanceFortressSaucer(e,target,dt,camera){
+  if(e.dead)return;
+  e.age+=dt;
+  if(e.age>=.58&&!e.turning){
+    e.turning=true;
+    e.attackDir=Math.sign((target?.x??e.x)-e.x)||-e.side;
+  }
+  if(e.turning){
+    e.vx+=(e.attackDir*96-e.vx)*Math.min(1,dt*5);
+    e.vy=Math.min(112,Math.max(0,(165-e.y)*4));
+  }
+  e.x+=e.vx*dt;e.y+=e.vy*dt;
+  if(e.age>4.5||(e.age>1.2&&(e.x<camera-32||e.x>camera+416)))e.dead=true;
+}
+
+export function fortressSaucerBox(e){
+  return {x:e.x-10,y:e.y-4,w:20,h:8};
+}
+
+/** A visible lock-on precedes each aimed volley. */
 export function advanceFlyingFortress(fortress,target,dt,{frozen=false}={}){
   const F=fortress,shots=[];
   for(const part of F.parts)part.flash=Math.max(0,part.flash-dt);

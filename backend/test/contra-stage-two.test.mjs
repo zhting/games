@@ -3,11 +3,87 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { STAGE_TWO_ASSETS, baseActorPose, basePoint, baseScale, barrierArc, StageTwoArt } from '../../games/contra2026/js/stage-two-art.mjs';
 import { BASE_ACTORS, BASE_KIT } from '../../games/contra2026/js/stage-two-atlas.mjs';
-import { BASE_UPWARD, baseUpMuzzle } from '../../games/contra2026/js/base-actor-poses.mjs';
+import { BASE_UPWARD, baseUpMuzzle, baseGateTransitionActor, baseExitRollActor, BASE_EXIT_ROLL_DURATION } from '../../games/contra2026/js/base-actor-poses.mjs';
 import { BASE_ROOM_THEMES, baseRoomTheme, nextBaseRoomTheme, baseRoomSignals } from '../../games/contra2026/js/stage-two-rooms.mjs';
 import { BASE_SOLDIER, baseSoldierScale } from '../../games/contra2026/js/base-soldier.mjs';
 import { beginDeath } from '../../games/contra2026/js/player-death.mjs';
 import { redSupplyUniform } from '../../games/contra2026/js/base-supply.mjs';
+import { StageFourArt } from '../../games/contra2026/js/stage-four-art.mjs';
+
+test('基地关卡横移使用侧后方步态并随方向镜像，过门仍使用向前奔跑',()=>{
+  const poses=[],scales=[];
+  const g=new Proxy({globalAlpha:1,scale:(x,y)=>scales.push([x,y])},{get:(o,k)=>k in o?o[k]:()=>{}});
+  const art={g,state:{time:0,fx:[],base:{}},scale:1,loaded:new Set(['lateralBlue','lateralRed']),baseActors:{draw:(_g,p,role)=>poses.push([p.artPose,role])}};
+  for(const role of ['blue','red'])for(const vx of [-60,60]){
+    const p={x:100,y:204,vx,onGround:true,anim:3};
+    StageTwoArt.prototype.figure.call(art,p,role);
+    assert.match(poses.at(-1)[0],/^side[0-3]$/);assert.equal(Math.sign(scales.at(-1)[0]),Math.sign(vx));
+    StageTwoArt.prototype.figure.call(art,baseGateTransitionActor(p,.3).player,role);
+    assert.match(poses.at(-1)[0],/^run[0-7]$/);
+  }
+});
+
+test('第二、四关击败首领后跑向两侧时使用侧身角色，平时横移与翻滚仍保持各自姿势',()=>{
+  for(const Art of [StageTwoArt,StageFourArt])for(const role of ['blue','red'])for(const vx of [-90,90]){
+    const calls=[],scales=[],g=new Proxy({globalAlpha:1,scale:(x,y)=>scales.push([x,y])},{get:(o,k)=>k in o?o[k]:()=>{}});
+    const art={g,state:{time:0,fx:[],base:{dead:true}},scale:1,loaded:new Set(['lateralBlue','lateralRed']),
+      hdActors:{images:{runLimbs:{naturalWidth:100}},ready:()=>true,draw:(_g,p,r)=>{calls.push({sheet:'side',p,role:r});return true;}},
+      baseActors:{draw:(_g,p,r)=>calls.push({sheet:'rear',p,role:r})}};
+    const p={x:120,y:204,vx,onGround:true,anim:3,ay:-1};
+    Art.prototype.figure.call(art,p,role);
+    assert.equal(calls.at(-1).sheet,'side');assert.equal(calls.at(-1).p.ay,0);assert.equal(calls.at(-1).role,role);
+    assert.equal(Math.sign(scales[0][0]),Math.sign(vx));assert.equal(p.ay,-1,'rendering never changes game state');
+    art.state.base.dead=false;Art.prototype.figure.call(art,p,role);assert.match(calls.at(-1).p.artPose,/^side/);
+    art.state.base.dead=true;Art.prototype.figure.call(art,{...p,spin:true,onGround:false},role);assert.equal(calls.at(-1).p.artPose,'roll');
+  }
+});
+
+test('基地首领房间地面标志位于中央并保持地面透视，普通房间不绘制',()=>{
+  for(const Art of [StageTwoArt,StageFourArt]){
+    const transforms=[],g=new Proxy({translate:(...p)=>transforms.push(['translate',...p]),scale:(...p)=>transforms.push(['scale',...p]),
+      createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>k in o?o[k]:()=>{}});
+    const art={g};Art.prototype.floorEmblem.call(art,{def:{}});assert.equal(transforms.length,0);
+    Art.prototype.floorEmblem.call(art,{def:{boss:'eye'}});
+    assert.deepEqual(transforms[0],['translate',192,186]);assert.deepEqual(transforms[1],['scale',1,.42]);
+  }
+});
+
+test('基地门口先向前奔跑再跳入竖井翻滚，双人各自保留位置',()=>{
+  const p={x:110,y:204,anim:2},run=baseGateTransitionActor(p,.3),roll=baseGateTransitionActor(p,.85);
+  assert.equal(run.phase,'run');assert.ok(run.player.y<p.y);assert.equal(run.player.spin,false);
+  assert.equal(roll.phase,'roll');assert.equal(roll.player.spin,true);assert.equal(roll.player.onGround,false);
+  const left=baseExitRollActor(p,BASE_EXIT_ROLL_DURATION/2,0,true),right=baseExitRollActor(p,BASE_EXIT_ROLL_DURATION/2,1,true);
+  assert.equal(left.player.spin,true);assert.ok(left.player.x<right.player.x);assert.ok(left.player.y>0);
+  assert.deepEqual(p,{x:110,y:204,anim:2});
+});
+
+test('仅有滚雷的房间在墙底画出两个发射口，过关后隐藏',()=>{
+  const rectangles=[],art={rect:(...p)=>rectangles.push(p),metalBeam(){},disc(){},line(){}};
+  for(const Art of [StageTwoArt,StageFourArt]){
+    rectangles.length=0;Art.prototype.mineLaunchers.call(art,{def:{rol:4},rollT:.2,cleared:false});
+    assert.ok(rectangles.some(r=>r[0]===99));assert.ok(rectangles.some(r=>r[0]===259));
+    rectangles.length=0;Art.prototype.mineLaunchers.call(art,{def:{rol:4},rollSide:-1,rolled:0,rollT:.01});
+    const doorAt=x=>rectangles.some(r=>r[0]===x&&r[4]==='#43564e');
+    assert.equal(doorAt(102),false,'armed left outlet clears the drum opening');
+    assert.equal(doorAt(262),true,'the other outlet stays shut');
+    rectangles.length=0;Art.prototype.mineLaunchers.call(art,{def:{rol:4},rolled:4,rollSide:0,rollT:2,rol:[{u0:160,z:.96}]});
+    assert.equal(doorAt(102),true);
+    assert.equal(doorAt(262),false,'the final drum keeps its outlet open as it emerges');
+    rectangles.length=0;Art.prototype.mineLaunchers.call(art,{def:{rol:0},rollT:0,cleared:false});assert.equal(rectangles.length,0);
+    Art.prototype.mineLaunchers.call(art,{def:{rol:4},rollT:0,cleared:true});assert.equal(rectangles.length,0);
+  }
+});
+
+test('第二、四关推进全程隐藏旧快照中的近远景士兵、滚雷与侧门守军，绘制不修改快照',()=>{
+  const context=new Proxy({figure(){throw Error('旧敌人不应继续绘制');}},{get:(o,k)=>k in o?o[k]:()=>{}});
+  for(const trans of [1.3,.975,.65,.325,.01]){
+    const B={trans,cleared:false,dead:false,def:{},sol:[{u:0,z:.8,st:'leave'},{u:0,z:.1,st:'leave'}],rol:[{z:.5}],gallery:[{side:-1,y:107,x:120}]};
+    const before=JSON.stringify(B);
+    for(const Art of [StageTwoArt,StageFourArt])for(const near of [false,true])Art.prototype.soldiers.call(context,B,near);
+    StageFourArt.prototype.drawGalleries.call(context,B);
+    assert.equal(JSON.stringify(B),before);
+  }
+});
 
 test('红色补给兵只替换橄榄绿制服，皮肤、枪靴和透明像素保持原色',()=>{
   const colors=[[74,91,30,255],[170,187,65,255],[242,149,73,255],[82,53,25,255],[22,24,27,255],[175,181,186,255],[70,90,30,0]];
@@ -55,6 +131,7 @@ test('第二关高清机关与三张正背视角色图集存在，透明源图�
   for(const [key,url]of Object.entries(STAGE_TWO_ASSETS)){
     const file=new URL('../..'+url,import.meta.url),webp=fs.readFileSync(file);
     assert.equal(webp.toString('ascii',0,4),'RIFF');assert.equal(webp.toString('ascii',8,12),'WEBP');
+    if(key==='enemyUniform'||key==='sideEnemyUniform'||key==='lateralBlue'||key==='lateralRed'){assert.equal(webp.toString('ascii',12,16),'VP8X');assert.ok(webp[20]&16);continue;}
     const png=fs.readFileSync(new URL(file.href.replace(/\.webp$/,'.png')));
     assert.equal(png.toString('hex',0,8),'89504e470d0a1a0a');
     const width=png.readUInt32BE(16),height=png.readUInt32BE(20);
@@ -169,7 +246,7 @@ test('第二关过门时掉落物跟随地面、隐藏旧弹丸，HUD 保持固�
       backdrop(){floorMatrix={...matrix};},hud(){hudMatrix={...matrix};},
       light(){projectiles.push('glow');},disc(){projectiles.push('bullet');},kit(){projectiles.push('grenade');},
       capsule(x,y,kind){icons.push({kind,x:x*matrix.sx+matrix.x,foot:(y+5)*matrix.sy+matrix.y,scale:matrix.sx});}};
-    for(const method of ['prepare','roomIdentity','portal','target','soldiers','sideLifts','effects','present'])art[method]=()=>{};
+    for(const method of ['prepare','roomIdentity','mineLaunchers','floorEmblem','portal','target','soldiers','sideLifts','effects','present','transitionTunnel'])art[method]=()=>{};
     art.line=(...args)=>overlays.push(args);
     const G={mode:'play',base:{room:0,def:{},cleared:true,trans:remaining,targets:[]},time:2,t:120,
       items:[{x:112,y:204,kind:'L',rest:true},{x:272,y:204,kind:'S',rest:true},{x:190,y:204,kind:'F',dead:true}],
@@ -210,5 +287,40 @@ test('蓝红角色卧倒保持与站姿接近的原画缩放，脚底锚点不�
     assert.ok(prone.h>=25&&prone.h<=26);
     assert.ok(prone.w/native[2]>=BASE_ACTORS[role].scale*.9,'head and limbs retain native proportions');
     assert.ok(Math.abs(prone.y+prone.h)<.01,'same floor anchor');
+  }
+});
+
+test('第二、四关普通与红色巡逻兵左右移动时始终绘制正面射击姿势',()=>{
+  for(const Art of [StageTwoArt,StageFourArt]){
+    const calls=[],context={loaded:new Set(['sideEnemyUniform']),state:{freezeT:0},supplyUniform(){},muzzle(){},
+      figure:(p,role,size,enemy)=>calls.push({p,role,size,enemy}),sideSoldier(){throw Error('巡逻兵不应侧身');}};
+    const B={trans:0,dead:false,rol:[],sol:[
+      {u:-80,z:.92,st:'walk',anim:1,patrolArmed:true,patrolDir:1,face:1},
+      {u:20,z:.92,st:'walk',anim:2,patrolArmed:true,patrolDir:-1,face:-1},
+      {u:80,z:.92,st:'walk',anim:3,patrolArmed:true,dropKind:'S',jumpY:30,patrolDir:1,face:1}
+    ]};
+    Art.prototype.soldiers.call(context,B);assert.equal(calls.length,3);
+    assert.deepEqual(calls.map(c=>c.role),['enemy','enemy','supply']);assert.ok(calls.every(c=>c.enemy&&c.p.vx!==0));
+    assert.ok(calls[0].p.vx>0);assert.ok(calls[1].p.vx<0,'leg direction follows horizontal patrol direction');
+    assert.equal(calls[2].p.y,basePoint(80,.92).y-30*baseSoldierScale(.92));
+  }
+});
+
+test('墙边敌兵上身始终瞄向玩家，普通兵和红色补给兵的腿按横移方向交替迈步',()=>{
+  for(const Art of [StageTwoArt,StageFourArt])for(const role of ['enemy','supply'])for(const direction of [-1,1]){
+    const draws=[],scales=[],g=new Proxy({globalAlpha:1,filter:'none',scale:(x,y)=>scales.push([x,y]),drawImage:()=>draws.push({kind:'upper'})},{get:(o,k)=>k in o?o[k]:()=>{}});
+    const art={g,state:{stage:Art===StageTwoArt?2:4,time:1,fx:[],base:{}},scale:1,loaded:new Set(['enemyUniform']),
+      images:{enemyUniform:{naturalWidth:100,naturalHeight:100}},
+      hdActors:{images:{runLimbs:{naturalWidth:100}},ready:()=>true,draw:(_g,p,r)=>{draws.push({kind:'legs',p,r});return true;}},
+      baseActors:{draw:(_g,p,r)=>{draws.push({kind:'body',p,r});return true;}}};
+    const p={x:192,y:140,vx:62*direction,onGround:true,st:'walk',patrolArmed:true,anim:2,jumpY:0};
+    Art.prototype.figure.call(art,p,role,1,true);
+    const legs=draws.find(d=>d.kind==='legs');assert.ok(legs);assert.equal(legs.r,'enemy');assert.equal(legs.p.anim,2);
+    assert.ok(scales.some(([x,y])=>x===direction*1.25&&y===1.25));
+    assert.ok(draws.some(d=>d.kind===(role==='enemy'?'upper':'body')),'front-facing torso remains visible');
+    draws.length=0;Art.prototype.figure.call(art,{...p,anim:5},role,1,true);
+    assert.equal(draws.find(d=>d.kind==='legs').p.anim,5,'gait receives the advancing simulation phase');
+    draws.length=0;Art.prototype.figure.call(art,{...p,jumpY:20},role,1,true);
+    assert.ok(!draws.some(d=>d.kind==='legs'),'jumping keeps its own airborne pose');
   }
 });

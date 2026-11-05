@@ -1,5 +1,6 @@
-import { StageOneArt } from './stage-one-art.mjs?v=combat-polish-1';
-import { StageTwoArt, STAGE_TWO_ASSETS } from './stage-two-art.mjs?v=polish-closeout-1';
+import { HUD_PLAYER_X } from './hud-layout.mjs';
+import { StageOneArt } from './stage-one-art.mjs?v=single-enemy-rifle-1';
+import { StageTwoArt, STAGE_TWO_ASSETS } from './stage-two-art.mjs?v=single-enemy-rifle-1';
 import { STAGE_FOUR_ROOMS, STAGE_FOUR_GALLERY_TIERS } from './stage-four-layout.mjs?v=stage-four-defense-1';
 import { baseCoreShielded } from './base-shooting.mjs?v=stage-four-1';
 import { bossDevicesRemaining, deviceAimHint } from './base-boss.mjs?v=polish-closeout-1';
@@ -7,6 +8,8 @@ import { bossDevicesRemaining, deviceAimHint } from './base-boss.mjs?v=polish-cl
 // Shared animation atlases are deduplicated by the resource preloader.
 const {power,armory,command,...sharedAssets}=STAGE_TWO_ASSETS;
 export const STAGE_FOUR_ASSETS=Object.freeze({...sharedAssets,
+  enemyUniform:'/games/contra2026/assets/stage4/enemy-fortress-front-aim-v1.webp',
+  sideEnemyUniform:'/games/contra2026/assets/stage4/enemy-fortress-side.webp',
   corridor:'/games/contra2026/assets/stage4/corridor-alert.webp',
   bossWall:'/games/contra2026/assets/stage4/control-wall.webp',
   twinMask:'/games/contra2026/assets/stage4/twin-mask.webp',
@@ -36,11 +39,11 @@ export class StageFourArt extends StageTwoArt{
     const g=this.g,pulse=.5+.5*Math.sin(this.state.time*3.4+B.room);
     for(const x of [82,300]){g.save();g.globalAlpha=.25+pulse*.55;this.light(x,73,7,'rgba(245,72,22,.4)');this.rect(x-1,69,2,8,'#e8592a');g.restore();}
     // Rails show where a moving cannon can travel before it starts to move.
-    if(B.def.rails){this.metalBeam(99,135,186,2);this.line(100,137,284,137,'#1a100c',1);}
+    if(B.def.rails){this.metalBeam(99,123,186,2);this.line(100,125,284,125,'#1a100c',1);}
     this.drawGalleries(B);
   }
   drawGalleries(B){
-    if(B.cleared||B.dead)return;
+    if(B.cleared||B.trans>0||B.dead)return;
     const g=this.g;
     for(const y of STAGE_FOUR_GALLERY_TIERS)for(const side of [-1,1]){
       const x=side<0?88:280;this.rect(x,y-25,16,26,'#080e0b');
@@ -58,15 +61,36 @@ export class StageFourArt extends StageTwoArt{
   }
   facilityArmor(t){
     if(!t.armored||t.hp<=0)return;
-    const g=this.g,x=t.x+1.4,y=t.y+1.2,w=t.w-2.8,h=t.h-2.4,opening=t.aperture??1;
-    g.save();g.beginPath();g.rect(x,y,w,h);g.clip();
-    for(let i=0;i<5;i++){
-      const yy=y+i*h/5-opening*h,rib=g.createLinearGradient(0,yy,0,yy+h/5);
-      for(const [stop,color]of [[0,'#bbc0a5'],[.18,'#758175'],[.65,'#394b44'],[1,'#131f1d']])rib.addColorStop(stop,color);
-      this.rect(x,yy,w,h/5+.04,rib);this.line(x+1,yy+.3,x+w-1,yy+.3,'#d4d2b3',.35);
+    const g=this.g,opening=Math.max(0,Math.min(1,t.aperture??1));
+    const cx=t.x+t.w/2,y=t.y+t.h*.21,half=t.w*.42,h=t.h*.66;
+    const travel=opening*half;
+    const bevel=Math.min(1.8,h*.2);
+    g.save();g.translate(cx,y);
+    if(opening<.995){
+      // Each cheek retracts into the outer casting, leaving the original housing visible.
+      const plate=g.createLinearGradient(0,0,0,h);
+      for(const [stop,color]of [[0,'#777a68'],[.16,'#565b52'],[.26,'#3d4743'],[.81,'#2a3431'],[1,'#151b1a']])plate.addColorStop(stop,color);
+      g.save();g.beginPath();g.rect(-half,0,half*2,h);g.clip();
+      for(const side of [-1,1]){
+        g.save();g.scale(side,1);g.translate(travel,0);
+        g.fillStyle=plate;g.strokeStyle='#161c1a';g.lineWidth=.55;g.beginPath();
+        g.moveTo(.32,bevel);g.lineTo(bevel,0);g.lineTo(half,0);g.lineTo(half,h);
+        g.lineTo(bevel,h);g.lineTo(.32,h-bevel);g.closePath();g.fill();g.stroke();
+        this.line(bevel,.38,half,.38,'#999886',.55);
+        this.line(.65,bevel,.65,h-bevel,'#74796b',.45);
+        this.line(bevel,h-.8,half,h-.8,'#101918',.65);
+        this.disc(half*.7,h*.51,.53,'#191f1b');
+        g.restore();
+      }
+      g.restore();
     }
-    g.restore();this.line(x,y,x+w,y,'#b4b99f',.5);this.line(x,y+h,x+w,y+h,'#111d18',.7);
-    this.disc(t.x+t.w-1,t.y+t.h-1,.65,opening>.995?'#9dd997':opening<.01?'#bb683e':'#f5c67a');
+    for(const side of [-1,1]){
+      const x=side*half-.65;
+      this.rect(x,-.45,1.3,h+.9,'#222b26');
+      this.line(x+.25,0,x+.25,h,'#727564',.46);
+      this.disc(side*half,h-.7,.48,opening>.995?'#a0b780':'#c17b50');
+    }
+    g.restore();
   }
   portal(B){
     if(!B.cleared||B.def.boss)return;
@@ -130,14 +154,14 @@ export class StageFourArt extends StageTwoArt{
   hud(G,options){
     const g=this.g,B=G.base;g.save();
     const shade=g.createLinearGradient(0,0,0,37);shade.addColorStop(0,'rgba(8,12,8,.97)');shade.addColorStop(.75,'rgba(8,12,8,.83)');shade.addColorStop(1,'rgba(8,12,8,0)');g.fillStyle=shade;g.fillRect(0,0,384,37);
-    this.playerHud(G,G.p,{x:8,blue:false,role:StageOneArt.playerRole(options.online),inventory:G.inv,selection:G.sel,cooldown:G.nadeCd,infinite:options.settings.inf==='on',local:!options.guest});
-    if(options.online&&G.p2)this.playerHud(G,G.p2,{x:248,blue:true,inventory:G.inv2,selection:G.sel2,cooldown:G.nadeCd2,infinite:options.settings.inf==='on',local:!!options.guest});
+    this.playerHud(G,G.p,{x:HUD_PLAYER_X[0],blue:false,role:StageOneArt.playerRole(options.online),inventory:G.inv,selection:G.sel,cooldown:G.nadeCd,infinite:options.settings.inf==='on',local:!options.guest});
+    if(options.online&&G.p2)this.playerHud(G,G.p2,{x:HUD_PLAYER_X[1],blue:true,inventory:G.inv2,selection:G.sel2,cooldown:G.nadeCd2,infinite:options.settings.inf==='on',local:!!options.guest});
     else{this.hudText('第四关',376,4,'#efdfbc',7,'right');this.hudText(B.def.name,376,17,'#d6ad72',5.8,'right');}
     this.hudText('最高分  '+String(Math.max(options.highScore||0,G.score)).padStart(6,'0'),192,5,'#c1c4ad',6,'center',84);
     const twins=B.targets.filter(t=>t.k==='twin'),hp=twins.reduce((sum,t)=>sum+Math.max(0,t.hp),0);
     if(twins.length&&!B.dead){
       this.hudText('双生',149,18,'#d6badc',5.3);this.rect(166,17.5,67,5,'#4b4454');this.rect(166.5,18,66,4,'#100e18');this.rect(167,18.5,65*hp/60,3,'#ae91d3');
-    }else this.hudText(B.dead?'投影中枢已摧毁':B.def.boss?B.bossPhase==='reveal'?'双生投影启动中':`防卫装置 ${bossDevicesRemaining(B)} / 4`:B.cleared?'通道已开启':baseCoreShielded(B,G.empT)?'先拆除炮台和高位机关':'核心已暴露',192,18,'#c8c5a9',5.3,'center',90);
+    }else this.hudText(B.dead?'投影中枢已摧毁':B.def.boss?B.bossPhase==='reveal'?'双生投影启动中':`防卫装置 ${bossDevicesRemaining(B)} / 4`:B.cleared?'通道已开启':baseCoreShielded(B,G.empT)?'先拆除炮台和高位机关':'趴下射击下层核心',192,18,'#c8c5a9',5.3,'center',90);
     if(G.bannerT>0&&G.bannerText)this.hudText(G.bannerText,192,33,'#e8cda5',6,'center',230);
     else if(B.bossPhase==='twins'&&!B.dead)this.hudText(B.projectionSplit?'投影分散 · 等待合拢攻击':'按上举枪 · 射击合拢的实体',192,33,'#ded3f0',5.8,'center',200);
     else if(deviceAimHint(B))this.hudText(deviceAimHint(B),192,33,'#dfcda5',5.5,'center',200);

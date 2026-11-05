@@ -54,18 +54,26 @@ export function advanceStageThreePlatforms(solids,players,time){
   }
 }
 
-// A visible ember warning precedes each flame; the two bridges are out of phase.
+// The two fires have time to cross, reach opposite ends, and cross again;
+// the ember warning and the safe interval remain visible between sweeps.
+const FLAME_PERIOD=6.8, FLAME_START=2.3, FLAME_DURATION=4;
+const flameCycle=(time,phase=0)=>((time+phase)%FLAME_PERIOD+FLAME_PERIOD)%FLAME_PERIOD;
 export function flameJetState(time,phase=0){
-  const t=((time+phase)%4.8+4.8)%4.8;
+  const t=flameCycle(time,phase);
   if(t<1.7)return{phase:'off',height:0};
-  if(t<2.3)return{phase:'warning',height:3+Math.sin((t-1.7)*26)};
-  if(t<3.75){const edge=Math.min(1,(t-2.3)/.16,(3.75-t)/.22);return{phase:'fire',height:edge*(25+Math.sin(t*31)*2)};}
+  if(t<FLAME_START)return{phase:'warning',height:3+Math.sin((t-1.7)*26)};
+  if(t<FLAME_START+FLAME_DURATION){const edge=Math.min(1,(t-FLAME_START)/.16,(FLAME_START+FLAME_DURATION-t)/.22);return{phase:'fire',height:edge*(25+Math.sin(t*31)*2)};}
   return{phase:'cooling',height:2};
+}
+export function flameJetPositions(bridge,time){
+  const progress=Math.max(0,Math.min(1,(flameCycle(time,bridge.phase)-FLAME_START)/FLAME_DURATION));
+  const offset=.3*Math.cos(progress*Math.PI*2);
+  return [bridge.x+bridge.w*(.5-offset),bridge.x+bridge.w*(.5+offset)];
 }
 export function flameJetBoxes(time){
   return FLAME_BRIDGES.flatMap(bridge=>{
     const fire=flameJetState(time,bridge.phase);
-    return fire.phase==='fire'&&fire.height>8?[.23,.77].map(u=>({x:bridge.x+bridge.w*u-5,y:bridge.y-fire.height,w:10,h:fire.height})):[];
+    return fire.phase==='fire'&&fire.height>8?flameJetPositions(bridge,time).map(x=>({x:x-5,y:bridge.y-fire.height,w:10,h:fire.height})):[];
   });
 }
 

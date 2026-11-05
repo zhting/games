@@ -7,7 +7,7 @@ const PATH = '/games/contra2026/ws';
 const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const send = (ws, value) => { if (ws?.readyState === WebSocket.OPEN && ws.bufferedAmount < 512 * 1024) ws.send(JSON.stringify(value)); };
 
-export function attachContra(server) {
+export function attachContra(server, { path = PATH, stageAllowed = isStageOpen, releaseMessage = STAGE_RELEASE_MESSAGE } = {}) {
   const rooms = new Map(), perIp = new Map();
   const wss = new WebSocketServer({ noServer: true, maxPayload: 256 * 1024, perMessageDeflate: { threshold: 1024 } });
   const fail = (ws, message) => send(ws, { t: 'error', message });
@@ -23,7 +23,7 @@ export function attachContra(server) {
     }
   }
   function upgrade(req, socket, head) {
-    if (new URL(req.url, 'http://localhost').pathname !== PATH) return;
+    if (new URL(req.url, 'http://localhost').pathname !== path) return;
     const allowed = process.env.GAMES_ALLOWED_ORIGINS?.split(',').map(s => s.trim());
     if (allowed && !allowed.includes('*') && req.headers.origin && !allowed.includes(req.headers.origin)) { socket.end('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n'); return; }
     const ip = req.socket.remoteAddress;
@@ -47,7 +47,7 @@ export function attachContra(server) {
       if (m.t === 'ping') { if (Number.isSafeInteger(m.at)) send(ws, { t: 'pong', at: m.at }); return; }
       if (m.t === 'leave') { leave(ws); return; }
       if (m.t === 'create') {
-        if (!isStageOpen(m.stage)) return fail(ws, STAGE_RELEASE_MESSAGE);
+        if (!stageAllowed(m.stage)) return fail(ws, releaseMessage);
         leave(ws);
         let code; do { code = Array.from({ length: 6 }, () => alphabet[randomInt(alphabet.length)]).join(''); } while (rooms.has(code));
         const room = { code, host: ws, guest: null, stage: m.stage, started: false };
@@ -68,7 +68,7 @@ export function attachContra(server) {
       if (m.t === 'start') {
         if (room.host !== ws) return fail(ws, '由房主开始游戏');
         if (!room.guest) return fail(ws, '等待第二位玩家加入');
-        if (!isStageOpen(m.stage)) return fail(ws, STAGE_RELEASE_MESSAGE);
+        if (!stageAllowed(m.stage)) return fail(ws, releaseMessage);
         room.started = true; room.stage = m.stage; room.host.seq = room.guest.seq = -1;
         for (const peer of [room.host, room.guest]) send(peer, { t: 'started', stage: room.stage }); return;
       }
@@ -80,7 +80,7 @@ export function attachContra(server) {
       if (m.t === 'state' && room.host === ws) {
         if (!Number.isSafeInteger(m.seq) || m.seq <= ws.seq || m.world?.v !== 1 || !Array.isArray(m.world.nodes) || m.world.nodes.length > 16000) return;
         let state;try{const world=unpackWorld(m.world);state=Array.isArray(world)?world[0]:world;}catch{return fail(ws,'无效的游戏画面');}
-        if(!isStageOpen(state?.stage))return fail(ws,STAGE_RELEASE_MESSAGE);
+        if(!stageAllowed(state?.stage))return fail(ws,releaseMessage);
         ws.seq = m.seq; send(room.guest, { t: 'state', world: m.world });
       }
       if (m.t === 'action' && room.guest === ws) {

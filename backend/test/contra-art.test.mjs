@@ -7,6 +7,15 @@ import { isRunning } from '../../games/contra2026/js/stage-one-motion.mjs';
 import { HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG, HDActorArt, actorPose } from '../../games/contra2026/js/hd-actors.mjs';
 import { CLASSIC_LAYERS, CLASSIC_FACILITIES, CLASSIC_TURRET_BASE_BOUNDS, nightStars } from '../../games/contra2026/js/stage-one-classic.mjs';
 import { COMBAT_ASSETS } from '../../games/contra2026/js/combat-art.mjs';
+import {motorcycleMuzzle} from '../../games/contra2026/js/motorcycle-motion.mjs';
+
+test('摩托起跳射击时枪口火光跟随当前骑乘姿态，不停留在起跳前的位置',()=>{
+  const flashes=[],g=new Proxy({globalAlpha:1},{get:(o,k)=>k in o?o[k]:()=>{}});
+  const art={g,state:{t:30,time:.5,fx:[]},scale:1,snap:n=>n,sprite:()=>true,hdActors:{draw:()=>true},muzzle:(x,y)=>flashes.push({x,y})};
+  const rider={x:180,y:110,face:1,ax:1,ay:0,ride:'moto',motoPitch:.3,onGround:false,flashT:.04,fx:160,fy:145};
+  StageOneArt.prototype.actor.call(art,rider,'blue');
+  assert.deepEqual(flashes,[motorcycleMuzzle(rider)]);assert.notEqual(flashes[0].y,rider.fy);
+});
 
 test('星空闪烁只改变亮度，镜头移动按远景视差移动星点而不随机重排',()=>{
   const first=nightStars(0,0),later=nightStars(0,3),scrolled=nightStars(50,0);
@@ -101,9 +110,25 @@ test('第一关正式位图资源存在，角色及要塞高清透明，裁切�
     const webp = fs.readFileSync(file);
     assert.equal(webp.toString('ascii', 0, 4), 'RIFF');
     assert.equal(webp.toString('ascii', 8, 12), 'WEBP');
+    if(name==='enemyUniform'){
+      assert.equal(webp.toString('ascii',12,16),'VP8X');assert.ok(webp[20]&16,'stage uniform keeps transparency');continue;
+    }
+    if(name==='turf'){
+      // This shared shelf predates the PNG master archive; inspect WebP's
+      // extended header directly instead of requiring a duplicate master.
+      assert.equal(webp.toString('ascii',12,16),'VP8X');assert.ok(webp[20]&16);
+      assert.deepEqual([webp.readUIntLE(24,3)+1,webp.readUIntLE(27,3)+1],[1774,887]);continue;
+    }
     const png = fs.readFileSync(new URL(file.href.replace(/\.webp$/, '.png')));
     assert.equal(png.toString('hex', 0, 8), '89504e470d0a1a0a');
     const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+    if(name==='freezeAtlas'){
+      const m=JSON.parse(fs.readFileSync(new URL('../../games/contra2026/design/enemy-freeze-v2.json',import.meta.url),'utf8'));
+      assert.equal(png[25],6);assert.deepEqual([width,height],m.dimensions);assert.equal(webp.length,m.bytes);
+      for(const [x,y,w,h]of Object.values(m.frames))assert.ok(x>=0&&y>=0&&x+w<=width&&y+h<=height);
+      continue;
+    }
+    if(name==='demolitionCharge'){assert.equal(png[25],6);assert.deepEqual([width,height],[512,256]);continue;}
     if(name==='riverFish'){assert.equal(png[25],6);assert.equal(width,512);assert.ok(height>=128);continue;}
     if(name==='fortressBreach'){assert.equal(png[25],6);assert.equal(width,640);assert.ok(height>=900);continue;}
     if(COMBAT_ASSETS[name]){assert.equal(png[25],6);assert.ok(width>=512&&height>=144);continue;}

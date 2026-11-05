@@ -20,6 +20,20 @@ export const runStride=(enemy=false)=>enemy?36:42;
 export const WADE_STANCE=.62;
 export const WADE_STRIDE=26;
 
+// Hips rest on the saddle; knees point forward and boots stay on the pegs.
+// Both bones retain their walking lengths, without squeezing the painted trousers.
+export const MOTORCYCLE_RIDER=Object.freeze({
+  phase:0,bob:0,lean:.12,seatX:-3.8,waist:-16.3,muzzleHeight:22.5,
+  legs:Object.freeze([[-5.2,-15,-3.2,-6.9],[-3.2,-14.8,-1.2,-6.4]].map(([hx,hy,ax,ay])=>{
+    const hip={x:hx,y:hy},ankle={x:ax,y:ay},dx=ax-hx,dy=ay-hy,distance=Math.hypot(dx,dy);
+    const along=(RUN_BONES.upper**2-RUN_BONES.lower**2+distance**2)/(2*distance);
+    const bend=Math.sqrt(RUN_BONES.upper**2-along**2);
+    return Object.freeze({hip:Object.freeze(hip),ankle:Object.freeze(ankle),
+      knee:Object.freeze({x:hx+dx/distance*along+dy/distance*bend,y:hy+dy/distance*along-dx/distance*bend}),
+      footAngle:0});
+  }))
+});
+
 /** Actual painted-leg rig: fixed-length bones and a C1 foot trajectory, driven by travelled distance. */
 export function runGait(animation, speed = 90, size = 1, enemy = false) {
   return legGait(animation,speed,size,enemy,false);

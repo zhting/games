@@ -1,18 +1,27 @@
-import { versionedAssetUrl } from './asset-url.mjs?v=lives-load-1';
-import { RIVER_FISH_ASSET, riverFishJumps, drawRiverFish } from './river-fish.mjs?v=breach-fish-2';
+import { versionedAssetUrl } from './asset-url.mjs?v=enemy-freeze-2';
+import { HUD_PLAYER_X, inventorySlotBounds } from './hud-layout.mjs';
+import { RIVER_FISH_ASSET, riverFishJumps, drawRiverFish } from './river-fish.mjs?v=fish-life-1';
 import { ATLASES } from './stage-one-atlas.mjs?v=wreck-1';
 import { drawSupplySaucer } from './supply-saucer.mjs?v=pointed-drop-1';
 import { COMBAT_ASSETS, drawExplosion, drawSupplyDisc, drawEquipmentTurret, drawEquipmentSupply } from './combat-art.mjs?v=combat-polish-1';
 import { itemLabel, WEAPON_LABELS } from './zh-cn.mjs';
-import { rockCells, rotorAngle, meteorPosition, openingDrop, coastHeight } from './stage-one-scenery.mjs?v=coast-1';
-import { HDActorArt, HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG } from './hd-actors.mjs?v=webp-1';
+import { rockCells, rotorAngle, meteorPosition, openingDrop, coastHeight, cliffEdgeProfile } from './stage-one-scenery.mjs?v=cliff-edge-1';
+import { HDActorArt, HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG } from './hd-actors.mjs?v=moto-wheelie-2';
 import { giantPowerLabel, drawGiantStomp } from './giant-power.mjs?v=giant-smash-1';
-import { WADE_STRIDE } from './stage-one-motion.mjs?v=leg-alignment-2';
+import { WADE_STRIDE, MOTORCYCLE_RIDER } from './stage-one-motion.mjs?v=leg-alignment-2';
 import { drawShieldField } from './actor-status.mjs?v=energy-field-1';
 import { drawImpact } from './impact-effects.mjs?v=hit-feedback-1';
 import { openingCaption } from './opening-story.mjs?v=opening-story-1';
 import { CLASSIC_LAYERS, CLASSIC_FACILITIES, CLASSIC_TURRET_BASE_BOUNDS, nightStars, drawWingBadge, drawRifleSymbol, drawClassicBullet, drawTurretBarrel } from './stage-one-classic.mjs?v=night-weather-1';
 import { rainStrength, drawWindForest, drawStageOneRain, drawWindblownLeaves } from './stage-one-atmosphere.mjs?v=permanent-monsoon-1';
+import {drawImpactHelmet} from './impact-helmet-art.mjs?v=helmet-detail-2';
+import {TROPICAL_GRASS_ASSET,tropicalGrassFrame,paintTropicalCliff} from './tropical-grass-art.mjs?v=cliff-edge-1';
+import {ENEMY_FREEZE_ASSET,drawFrozenEnemy} from './enemy-freeze-art.mjs?v=enemy-freeze-2';
+import {DEMOLITION_CHARGE_ASSET,drawDemolitionCharge} from './demolition-charge-art.mjs?v=satchel-2';
+import {roofGuardPose} from './fortress-roof-guard.mjs?v=roof-guard-1';
+import {FORTRESS_CANNON_ART,fortressCannonPose,drawFortressCannonEffects} from './fortress-cannon.mjs?v=cannon-recoil-1';
+import {motorcyclePose,motorcycleMuzzle,drawMotorcycleDust} from './motorcycle-motion.mjs?v=moto-wheelie-2';
+import {drawStageEnemyUniform} from './stage-enemy-uniforms.mjs?v=stage-uniforms-1';
 
 export const STAGE_ONE_PALETTE = Object.freeze({
   black: '#000c10', sky: '#020306', leaf: '#007838', moss: '#78d820',
@@ -26,10 +35,14 @@ export const STAGE_ONE_ASSETS = Object.freeze({
   facilities: '/games/contra2026/assets/stage1/classic-facilities.webp',
   ...COMBAT_ASSETS,
   rock: '/games/contra2026/assets/stage1/rock-arcade.webp',
-  damage: '/games/contra2026/assets/stage1/fortress-damage-detail-v2.webp',
+  turf:TROPICAL_GRASS_ASSET,
+  demolitionCharge:DEMOLITION_CHARGE_ASSET,
+  freezeAtlas:ENEMY_FREEZE_ASSET,
+  enemyUniform:'/games/contra2026/assets/stage1/enemy-jungle-upper.webp',
+  damage: '/games/contra2026/assets/stage1/fortress-wreck-realistic-v3.webp',
   environment: '/games/contra2026/assets/stage1/environment.webp',
-  fortress: '/games/contra2026/assets/stage1/fortress-detail-v2.webp',
-  fortressBreach: '/games/contra2026/assets/stage1/fortress-breach-v3.webp',
+  fortress: '/games/contra2026/assets/stage1/fortress-realistic-v3.webp',
+  fortressBreach: '/games/contra2026/assets/stage1/fortress-breach-realistic-v4.webp',
   riverFish: RIVER_FISH_ASSET,
   ...Object.fromEntries([...Object.values(HD_ACTORS),...Object.values(HD_RUNS),...Object.values(HD_DEATH),...Object.values(HD_RUN_RIG)].map(sheet=>[sheet.key,sheet.url]))
 });
@@ -104,7 +117,7 @@ export class StageOneArt {
     this.cache.clear();this.terrainCache.clear();this.hdActors.clear();
     return image;
   }
-  get ready() { return Object.keys(this.assets).filter(key=>!this.assets.runLimbs||!['runRed','runBlue','runEnemy'].includes(key)).every(key => this.loaded.has(key)); }
+  get ready() { return Object.keys(this.assets).filter(key=>(!this.assets.runLimbs||!['runRed','runBlue','runEnemy'].includes(key))&&!(key==='rock'&&this.assets.turf&&this.loaded.has('turf'))).every(key => this.loaded.has(key)); }
   inspect() { return { ready: this.ready, loaded: [...this.loaded], failed: [...this.failed], frameCount: this.cache.size, resolution: [this.surface.width, this.surface.height] }; }
   prepare(destination) {
     const width = destination.canvas?.width || 1536, height = destination.canvas?.height || 864;
@@ -290,7 +303,9 @@ export class StageOneArt {
     canvas.width = 128 * this.scale; canvas.height = 216 * this.scale;
     const g = canvas.getContext('2d'); g.setTransform(this.scale, 0, 0, this.scale, -start * this.scale, 0);
     g.fillStyle = '#352c1b'; g.fillRect(start, 0, 128, 216);
-    if (this.loaded.has('rock')) {
+    if(paintTropicalCliff(this,g,start)){
+      // The turf and cliff now share the same weathered mossy stone palette.
+    } else if (this.loaded.has('rock')) {
       // Each cache chunk samples the same continuous world texture, including partial tiles.
       g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
       this.textureSpan(g,this.images.rock,start,start+128,216,216,6);
@@ -345,6 +360,18 @@ export class StageOneArt {
     return canvas;
   }
   grass(s,ends={left:true,right:true}) {
+    const turf=tropicalGrassFrame(this,s,ends);
+    if(turf){
+      const g=this.g;g.save();
+      if(s.g){
+        // The high bank's new roots blend into its cliff. Low banks remain
+        // clipped to the existing waterline, including its world-space waves.
+        g.beginPath();g.moveTo(s.x-3,s.y-turf.top-1);g.lineTo(s.x+s.w+3,s.y-turf.top-1);
+        for(let x=s.x+s.w+3;x>s.x-3;x-=1.5)g.lineTo(x,coastHeight(x));
+        g.lineTo(s.x-3,coastHeight(s.x-3));g.closePath();g.clip();
+      }
+      g.drawImage(turf.canvas,s.x-3,s.y-turf.top,s.w+6,turf.height);g.restore();return;
+    }
     const key = `grass:${s.x}:${s.y}:${s.w}:${+ends.left}:${+ends.right}`;
     let canvas = this.cache.get(key);
     if (!canvas) {
@@ -426,14 +453,29 @@ export class StageOneArt {
       const left = Math.max(s.x, camera - 4), right = Math.min(s.x + s.w, camera + 388);
       const connected=x=>solids.some(other=>other!==s&&!other.gone&&!other.water&&other.x<=x&&other.x+other.w>=x&&other.y<=s.y+.1&&(other.g?216:other.y+(other.bridge?12:23))>s.y+1);
       const ends={left:!connected(s.x-.1),right:!connected(s.x+s.w+.1)};
+      const higher=x=>solids.some(other=>other!==s&&!other.gone&&!other.water&&other.g&&other.x<=x&&other.x+other.w>=x&&other.y<s.y-.1);
+      ends.blendLeft=!!s.g&&higher(s.x-.1);ends.blendRight=!!s.g&&higher(s.x+s.w+.1);
+      if(!s.g&&this.loaded.has('turf')){this.grass(s,ends);continue;}
+      const edge=side=>{
+        const x=side<0?s.x:s.x+s.w;
+        if(!s.g||!ends[side<0?'left':'right']||x<camera-4||x>camera+388)return null;
+        const beyond=x+side*.1;
+        const adjoining=solids.filter(other=>other!==s&&!other.gone&&!other.water&&other.x<=beyond&&other.x+other.w>=beyond&&other.y>s.y);
+        const bottom=Math.min(coastHeight(x),...adjoining.map(other=>other.y));
+        return {side,points:cliffEdgeProfile(x,s.y+3,bottom,side)};
+      };
+      const edgeL=edge(-1),edgeR=edge(1),paintL=left-(edgeL?4:0),paintR=right+(edgeR?4:0);
       const cornerL=left===s.x&&ends.left?3:0,cornerR=right===s.x+s.w&&ends.right?3:0;
       g.save(); g.beginPath();
       g.moveTo(left,s.y+cornerL);if(cornerL)g.quadraticCurveTo(left,s.y,left+cornerL,s.y);
       g.lineTo(right-cornerR,s.y);if(cornerR)g.quadraticCurveTo(right,s.y,right,s.y+cornerR);
       if (s.g) {
+        if(edgeR)for(const point of edgeR.points)g.lineTo(...point);
         g.lineTo(right,coastHeight(right));
         for(let x=right;x>left;x-=1.5)g.lineTo(x,coastHeight(x));
-        g.lineTo(left,coastHeight(left));g.closePath();
+        g.lineTo(left,coastHeight(left));
+        if(edgeL)for(const point of edgeL.points.toReversed())g.lineTo(...point);
+        g.closePath();
       }
       else {
         g.lineTo(right,s.y+depth-2);
@@ -441,14 +483,28 @@ export class StageOneArt {
         g.lineTo(left,s.y+depth-2);g.closePath();
       }
       g.clip();
-      this.rect(left, s.y, right - left, depth, '#633000');
-      for (let i = Math.floor(left / 128); i <= Math.floor(right / 128); i++) g.drawImage(this.terrainChunk(i), i * 128, 0, 128, 216);
+      this.rect(paintL, s.y, paintR - paintL, depth, '#633000');
+      for (let i = Math.floor(paintL / 128); i <= Math.floor(paintR / 128); i++) g.drawImage(this.terrainChunk(i), i * 128, 0, 128, 216);
       const soil=g.createLinearGradient(0,s.y,0,s.y+6);soil.addColorStop(0,'rgba(20,29,12,.7)');soil.addColorStop(1,'rgba(34,32,14,0)');
       g.fillStyle=soil;g.fillRect(left,s.y,right-left,6);
       if(!s.g){const underside=g.createLinearGradient(0,s.y+depth-7,0,s.y+depth);underside.addColorStop(0,'rgba(8,15,10,0)');underside.addColorStop(1,'rgba(8,15,10,.62)');g.fillStyle=underside;g.fillRect(left,s.y+depth-7,right-left,7);}
       if(s.g){const wet=g.createLinearGradient(0,190,0,201);wet.addColorStop(0,'rgba(2,20,18,0)');wet.addColorStop(1,'rgba(2,28,27,.7)');g.fillStyle=wet;g.fillRect(left,190,right-left,12);}
+      for(const exposed of [edgeL,edgeR])if(exposed){
+        g.beginPath();exposed.points.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));
+        g.strokeStyle=exposed.side>0?'rgba(12,22,14,.42)':'rgba(202,171,96,.25)';g.lineWidth=1.5;g.stroke();
+      }
       g.restore();
       this.grass(s,ends);
+      for(const exposed of [edgeL,edgeR])if(exposed){
+        const [x,y]=exposed.points[0],bottom=exposed.points.at(-1)[1];
+        for(let n=0;n<3;n++){
+          const length=Math.min(bottom-y-1,6+n*2.4+rnd(Math.floor(x)*31+n)*3);
+          if(length<3)continue;
+          g.beginPath();g.moveTo(x-exposed.side*(1+n*.8),y-1);
+          g.bezierCurveTo(x+exposed.side*(1+n*.3),y+3,x-exposed.side*(1+n*.4),y+length-2,x-exposed.side*n*.3,y+length);
+          g.strokeStyle=n%2?'#48542a':'#6b6440';g.lineWidth=.32;g.stroke();
+        }
+      }
       if(s.g)this.shore(left,right,this.state.t);
     }
   }
@@ -525,7 +581,14 @@ export class StageOneArt {
     const face = p.face || 1, giant = !enemy && p.giantT > 0 ? 2 : 1;
     const g = this.g;
     let y = p.y;
-    if (!p.dead && p.ride === 'moto') { this.sprite('motorcycle', p.x - 17, p.y - 21, 36, 21, face < 0); y -= 9; }
+    const moto=!p.dead&&p.ride==='moto',ridePose=moto?motorcyclePose(p):null;
+    if(moto){
+      if(!enemy)drawShieldField(g,{...p,y},this.state.time||tick/60,true);
+      const px=p.x+face*ridePose.rearX,py=p.y+ridePose.axleY;
+      if(p.onGround){g.save();g.fillStyle='rgba(5,11,7,.45)';g.beginPath();g.ellipse(px,p.y-.15,5.2,.75,0,0,Math.PI*2);g.fill();g.restore();}
+      g.save();g.translate(px,py);g.rotate(-face*ridePose.pitch);g.translate(-px,-py);
+      g.save();g.translate(p.x,p.y);g.scale(face,1);this.sprite('motorcycle',-17,-21,36,21);g.restore();
+    }
     if (!p.dead && p.ride === 'heli') {
       this.helicopter(p.x - 22, p.y - 27, 44, 27, tick, face < 0);
       if (p.flashT > 0) this.muzzle(p.fx, p.fy); return;
@@ -534,24 +597,34 @@ export class StageOneArt {
     if(!enemy&&p.onGround&&!p.inWater&&!p.ride&&!p.enteringExit&&!p.dead){
       g.save();g.fillStyle='rgba(2,9,8,.5)';g.beginPath();g.ellipse(p.x,y-.1,(p.prone?12:5.5)*giant,.85*giant,0,0,Math.PI*2);g.fill();g.restore();
     }
-    if(!enemy)drawShieldField(g,shieldActor,this.state.time||tick/60,true);
+    if(!enemy&&!moto)drawShieldField(g,shieldActor,this.state.time||tick/60,true);
     g.save();
     if(p.enteringExit){this.exitPath();g.clip();}
     g.translate(this.snap(p.x), this.snap(y)); g.scale(face * giant, giant);
     if (enemy && p.flash > 0) g.filter = 'brightness(1.65) saturate(.65)';
-    if (!this.hdActors.draw(g,{...p,statusTime:this.state.time||tick/60,...(p.enteringExit?{onGround:true,vx:p.enteringExit.speed||90,ay:0}:{})},role,this.scale*giant)) {
+    const actorState={...p,statusTime:this.state.time||tick/60,...(p.enteringExit?{onGround:true,vx:p.enteringExit.speed||90,ay:0}:{})};
+    const drawBody=()=>this.hdActors.draw(g,actorState,role,this.scale*giant);
+    // The old downward-aim rifle extends below the waist clip. Use the
+    // level pose for the legs and let the new upper body own the aim.
+    const drawLegs=()=>this.hdActors.draw(g,{...actorState,ay:0,artPose:undefined},role,this.scale*giant);
+    const uniform=enemy&&!p.roofGuard&&(p.t==='run'||p.t==='snp')&&drawStageEnemyUniform(this,p,drawBody,{drawLegs});
+    if (!uniform&&!drawBody()) {
       this.rect(-4, -27, 7, 7, '#f8c080'); this.rect(-5, -20, 10, 12, role === 'enemy' ? '#688020' : '#f8b878');
       this.rect(-5, -10, 4, 10, role === 'blue' ? '#0058f8' : '#f83800'); this.rect(2, -10, 4, 10, role === 'blue' ? '#0058f8' : '#f83800');
       this.rect(4, -21, 11, 3, '#bcbcbc');
     }
+    if(!enemy&&p.helmT>0){
+      g.save();if(moto){const {seatX,waist}=MOTORCYCLE_RIDER;g.translate(seatX,waist);g.rotate(ridePose.pitch);g.translate(-seatX,-waist);}
+      drawImpactHelmet(g,this.images.impactHelmet,p,role,tick);g.restore();
+    }
     g.restore();
+    if(moto)g.restore();
     if(p.dead||p.enteringExit)return;
     if (!enemy) {
       const hit=(this.state.fx||[]).find(f=>f.k==='impact'&&f.material==='shield'&&f.t<.2&&Math.hypot(f.x-p.x,f.y-(y-15*giant))<24*giant);
       drawShieldField(g,shieldActor,this.state.time||tick/60,false,hit?1-hit.t/.2:0);
       if (p.hook) this.line(p.x, p.y - 24, p.hook.x, p.hook.y, '#bcbcbc');
-      if (p.helmT > 0) { this.rect(p.x - 5, p.y - 30, 10, 3, '#7c7c7c'); this.rect(p.x - 3, p.y - 32, 6, 2, '#bcbcbc'); }
-      if (p.flashT > 0) this.muzzle(p.fx, p.fy);
+      if (p.flashT > 0) {const muzzle=moto?motorcycleMuzzle(p):{x:p.fx,y:p.fy};this.muzzle(muzzle.x,muzzle.y);}
     }
   }
   muzzle(x, y) {
@@ -569,6 +642,7 @@ export class StageOneArt {
     this.disc(x, y, radius, gradient);
   }
   enemy(e) {
+    if(e.t!=='box'&&drawFrozenEnemy(this,e,()=>this.enemy(e)))return;
     if (e.t === 'tur') {
       const image=(this.baseArt||this).images?.equipmentTurret;
       if(!drawEquipmentTurret(this.g,image,e,{frozen:this.state.freezeT>0})){
@@ -581,17 +655,17 @@ export class StageOneArt {
         if (!this.sprite('crate',e.x-10,e.y-height,20,height)) this.rect(e.x-10,e.y-height,20,height,'#7c7c7c');
       }
       if (e.flash > 0) this.muzzle(e.x, e.y - 12);
-    } else this.actor({ ...e, vx: e.t === 'run' && !e.attack ? e.vx : 0, onGround: !!e.on,
+    } else this.actor({ ...e, vx: e.t === 'run' && !e.attack && !e.hazardHold ? e.vx : 0, onGround: !!e.on,
       face: e.t === 'run' ? e.attack ? e.fireFace : Math.sign(e.vx) || -1 : e.face || -1, ay: e.ay || 0 }, 'enemy', true);
-    if(e.shotFlash>0&&!e.dead)this.muzzle(e.shotX,e.shotY);
-    if (this.state.freezeT > 0 && e.t !== 'box') {
-      const top = e.t === 'tur' ? e.y - 8 : e.y - 28;
-      this.line(e.x - 8, top, e.x + 8, top, '#a4e4fc'); this.line(e.x - 8, top, e.x - 8, top + 25, '#3cbcfc');
-      this.line(e.x + 8, top, e.x + 8, top + 25, '#a4e4fc');
-      for (let i = 0; i < 4; i++) this.rect(e.x - 6 + i * 4, top + 26 - i % 2, 2, 3, '#a4e4fc');
-    }
+    if(e.shotFlash>0&&!e.dead&&!(this.state.freezeT>0))this.muzzle(e.shotX,e.shotY);
   }
   capsule(x, y, kind, flying = true) {
+    if(kind==='life'){
+      const g=this.g;drawWingBadge(g,x,y);
+      this.rect(x-7,y-4.8,14,9.2,'#c0b484');this.rect(x-6.3,y-4.1,12.6,7.8,'#153b29');
+      this.line(x-5.5,y-3.5,x+5.5,y-3.5,'#8cc67a',.6);
+      this.hudText('1UP',x,y-3.1,'#e6ffc6',5.2,'center');return;
+    }
     if(flying){
       if(!drawSupplyDisc(this.g,(this.baseArt||this).images?.supplySaucer,x,y))drawSupplySaucer(this.g,x,y,(this.state?.t||0)/60);
       return;
@@ -599,8 +673,23 @@ export class StageOneArt {
     drawWingBadge(this.g,x,y);
     this.text(String(kind).toUpperCase(), x, y - 4.1, '#df594a', .95, 'center');
   }
+  fortressLayers(){
+    const key='fortress:cannon-layers';if(this.cache.has(key))return this.cache.get(key);
+    const b=FORTRESS_ART,original=this.frame('environment','fortress',b.w,b.h);if(!original)return null;
+    const facade=this.createCanvas();facade.width=original.width;facade.height=original.height;
+    const ink=facade.getContext('2d');ink.drawImage(original,0,0);
+    const barrels={};
+    for(const [name,art]of Object.entries(FORTRESS_CANNON_ART)){
+      const [x,y,w,h]=art.crop,sx=x/1201*original.width,sy=y/1254*original.height,sw=w/1201*original.width,sh=h/1254*original.height;
+      const canvas=this.createCanvas();canvas.width=Math.ceil(sw);canvas.height=Math.ceil(sh);
+      const g=canvas.getContext('2d');g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+      g.drawImage(original,sx,sy,sw,sh,0,0,canvas.width,canvas.height);ink.clearRect(sx,sy,sw,sh);
+      barrels[name]={canvas,x:b.x+x/1201*b.w,y:b.y+y/1254*b.h,w:w/1201*b.w,h:h/1254*b.h};
+    }
+    const result={facade,barrels};this.cache.set(key,result);return result;
+  }
   fortressFrame(boss) {
-    const b=FORTRESS_ART, base=this.frame('environment','fortress',b.w,b.h);
+    const b=FORTRESS_ART, base=this.fortressLayers()?.facade;
     if(!base)return null;
     const mask=boss.parts.reduce((n,p,i)=>p.hp<=0?n|(1<<i):n,0);
     if(!mask)return base;
@@ -650,6 +739,13 @@ export class StageOneArt {
   }
   fortress(boss) {
     const b = FORTRESS_ART, g = this.g;
+    // Painting before the facade lets the actual concrete hide his legs and body.
+    if(!boss.dead)for(const e of this.state.en||[])if(e.roofGuard&&!e.dead)this.enemy(roofGuardPose(e));
+    const layers=this.fortressLayers();
+    for(const part of boss.parts)if(part.hp>0&&layers?.barrels[part.k]){
+      const barrel=layers.barrels[part.k],pose=fortressCannonPose(part);
+      g.drawImage(barrel.canvas,barrel.x+pose.recoil,barrel.y,barrel.w,barrel.h);
+    }
     const facade=this.fortressFrame(boss);
     if(facade)g.drawImage(facade,b.x,b.y,b.w,b.h);
     else this.rect(b.x + 40, 0, b.w - 40, b.h, '#6c8094');
@@ -669,13 +765,10 @@ export class StageOneArt {
         if(mask){g.save();g.globalAlpha=Math.min(1,part.flash/.06)*.34;g.drawImage(mask,part.x,part.y,part.w,part.h);g.restore();}
       }
     }
-    const core = boss.parts[2];
+    if(!boss.dead)for(const part of boss.parts)if(FORTRESS_CANNON_ART[part.k]&&part.hp>0)drawFortressCannonEffects(g,part);
     if(boss.dead)this.exitHole(boss);
-    if (core.hp > 0) {
-      g.save(); g.globalAlpha = .12 + (Math.sin(this.state.t * .09) + 1) * .12;
-      g.fillStyle = '#fff1b2'; g.beginPath();
-      g.ellipse(core.x + core.w / 2, core.y + core.h / 2, core.w * .24, core.h * .33, 0, 0, Math.PI * 2); g.fill(); g.restore();
-    }
+    // The contained reactor light and its reflected color are painted into the
+    // chamber. A flat glowing oval would hide the new steelwork and coolant pipes.
   }
   bullets(bullets, hostile = false) {
     for (const b of bullets) {
@@ -698,6 +791,8 @@ export class StageOneArt {
     for (const gr of grenades) {
       if (gr.dead) continue;
       if (gr.tnt) {
+        if(gr.fuse<=0)continue;
+        if(drawDemolitionCharge(this.g,(this.baseArt||this).images?.demolitionCharge,gr,tick))continue;
         this.rect(gr.x - 5, gr.y - 8, 10, 8, '#f83800'); this.rect(gr.x - 4, gr.y - 5, 8, 2, '#000000');
         this.line(gr.x, gr.y - 8, gr.x + 2, gr.y - 12, '#bcbcbc');
       } else {
@@ -726,6 +821,18 @@ export class StageOneArt {
         this.line(fx.x - size, fx.y, fx.x, fx.y - size, '#a4e4fc'); this.line(fx.x, fx.y - size, fx.x + size, fx.y, '#a4e4fc');
         this.line(fx.x + size, fx.y, fx.x, fx.y + size, '#a4e4fc'); this.line(fx.x, fx.y + size, fx.x - size, fx.y, '#a4e4fc');
       } else if (fx.k === 'stomp') drawGiantStomp(this.g,fx);
+      else if(fx.k==='motoDust')drawMotorcycleDust(this.g,fx);
+      else if(fx.k==='fishHit'){
+        const g=this.g;g.save();g.globalAlpha=1-progress;
+        for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5]){
+          const r=2+progress*9;this.line(fx.x+Math.cos(a)*r,fx.y+Math.sin(a)*r,fx.x+Math.cos(a)*(r+2),fx.y+Math.sin(a)*(r+2),'#e7ffd2',.8);
+        }
+        g.restore();
+      }
+      else if(fx.k==='lifeUp'){
+        this.g.save();this.g.globalAlpha=Math.min(1,(1-progress)*2);
+        this.hudText('+1 命',fx.x,fx.y-progress*14,'#dcffae',6.5,'center');this.g.restore();
+      }
       else if (fx.k === 'impact') drawImpact(this.g,fx);
       else if (fx.k === 'hit') drawImpact(this.g,{...fx,material:'metal',angle:Math.PI,power:1,seed:Math.floor(fx.x*31+fx.y*97),life:.2});
       else this.rect(fx.x, fx.y, fx.k === 'debris' ? 3 : 1, fx.k === 'debris' ? 2 : 1, fx.k === 'drop' ? '#a4e4fc' : fx.k === 'debris' ? '#6c8094' : '#f8b800');
@@ -761,19 +868,28 @@ export class StageOneArt {
     if (actor.rapid) this.hudText('速', x + 21, 17.5, '#dfb66b', 5);
     // Empty slots are quiet notches; occupied slots keep their labels and selection cue.
     for (let i = 0; i < 3; i++) {
-      const sx = x + 39 + i * 18, item = inventory?.[i], selected = i === selection;
+      const box = inventorySlotBounds(i, x), sx = box.x, item = inventory?.[i], selected = i === selection;
       if (item) {
-        this.rect(sx, 15.5, 17, 9, selected ? 'rgba(182,143,71,.16)' : 'rgba(22,48,35,.4)');
-        this.hudText(this.itemLabel(item), sx + 8.5, 17, selected ? '#e5be77' : muted, 5.3, 'center', 16);
+        this.rect(sx, box.y, box.w, 9, selected ? 'rgba(182,143,71,.16)' : 'rgba(22,48,35,.4)');
+        if(item==='j'&&this.images.impactHelmet?.naturalWidth>0){
+          g.drawImage(this.images.impactHelmet,sx+1,16.2,8.5,8.5*331/512);
+          this.hudText('盔',sx+13.4,17.2,selected?'#e5be77':muted,5,'center',6);
+        }else this.hudText(this.itemLabel(item), sx + 8.5, 17, selected ? '#e5be77' : muted, 5.3, 'center', 16);
         this.rect(sx + 1, 24, 15, selected ? .8 : .4, selected ? '#c99c53' : '#4b6659');
       } else this.rect(sx + 6, 21, 5, .6, 'rgba(147,171,150,.35)');
     }
-    const ready = !(cooldown > 0), gx = x + 98;
-    this.rect(gx, 18, 3.4, 4.8, ready ? '#819e53' : '#45594c'); this.rect(gx + .9, 16.5, 1.6, 1.5, '#b4bf9f');
-    this.hudText(ready ? '就绪' : Math.ceil(cooldown) + '秒', gx + 5.5, 17.8, ready ? muted : '#d5b36c', 4.9);
+    const ready = !(cooldown > 0), gx = x + 98, aircraftMissile=actor.ride==='heli'&&!this.assets?.skinActors;
+    if(aircraftMissile){
+      this.line(gx+.3,22.7,gx+3.1,17.2,ready?'#d1d7c5':'#63746c',2);
+      this.line(gx-.3,22.8,gx+2.6,22.1,ready?'#8faaa1':'#45594c',.7);
+    }else{
+      this.rect(gx, 18, 3.4, 4.8, ready ? '#819e53' : '#45594c'); this.rect(gx + .9, 16.5, 1.6, 1.5, '#b4bf9f');
+    }
+    this.hudText(ready ? aircraftMissile?'导弹':'就绪' : Math.ceil(cooldown) + '秒', gx + 5.5, 17.8, ready ? muted : '#d5b36c', 4.9);
     const buffs = [];
     if (actor.shieldT > 0) buffs.push('护盾' + Math.ceil(actor.shieldT) + '秒');
     if (actor.camoT > 0) buffs.push('迷彩' + Math.ceil(actor.camoT) + '秒');
+    if (actor.helmT > 0) buffs.push('头盔' + Math.ceil(actor.helmT) + '秒');
     if (actor.giantT > 0) buffs.push(giantPowerLabel(actor));
     if (actor.ride) buffs.push((actor.ride === 'heli' ? '飞行' : '摩托') + Math.ceil(actor.rideT) + '秒');
     if (local && G.freezeT > 0) buffs.push('冻结' + Math.ceil(G.freezeT) + '秒');
@@ -787,10 +903,10 @@ export class StageOneArt {
     shade.addColorStop(0, 'rgba(1,12,9,.9)'); shade.addColorStop(.56, 'rgba(2,16,11,.75)');
     shade.addColorStop(.8, 'rgba(2,16,11,.25)'); shade.addColorStop(1, 'rgba(2,16,11,0)');
     g.fillStyle = shade; g.fillRect(0, 0, 384, 38);
-    this.playerHud(G, G.p, { x: 8, blue: false, role:StageOneArt.playerRole(online), inventory: G.inv, selection: G.sel, cooldown: G.nadeCd,
+    this.playerHud(G, G.p, { x: HUD_PLAYER_X[0], blue: false, role:StageOneArt.playerRole(online), inventory: G.inv, selection: G.sel, cooldown: G.nadeCd,
       infinite: settings.inf === 'on', local: !guest });
     this.hudText('最高分  ' + score(Math.max(highScore || 0, G.score)), 192, 5, '#b8c4af', 6, 'center', 84);
-    if (online && G.p2) this.playerHud(G, G.p2, { x: 248, blue: true, inventory: G.inv2, selection: G.sel2, cooldown: G.nadeCd2,
+    if (online && G.p2) this.playerHud(G, G.p2, { x: HUD_PLAYER_X[1], blue: true, inventory: G.inv2, selection: G.sel2, cooldown: G.nadeCd2,
       infinite: settings.inf === 'on', local: !!guest });
     else {
       this.hudText('第一关', 376, 4, '#e1e6d5', 7, 'right');
@@ -887,7 +1003,7 @@ export class StageOneArt {
     drawWindblownLeaves(g,camera,G.t/60,rain,options);
     if (camera + 384 > FORTRESS_ART.x) this.fortress(G.boss);
     this.ground(options.solids, camera);
-    for (const e of G.en) if (!e.dead && e.x > camera - 40 && e.x < camera + 424) this.enemy(e);
+    for (const e of G.en) if (!e.dead && !e.roofGuard && e.x > camera - 40 && e.x < camera + 424) this.enemy(e);
     // Once shot, a carrier is already an item; landing never switches its appearance.
     for (const it of G.items) if (!it.dead) this.capsule(it.x, it.y - 5, it.kind, false);
     for (const pod of G.pods) if (!pod.dead) this.capsule(pod.x, pod.y, pod.kind, true, pod);
@@ -901,7 +1017,7 @@ export class StageOneArt {
     this.drawSubmergedGround(options.solids,camera,options.water.surf);
     if(G.stage===1&&this.loaded.has('riverFish')){
       const water={x0:0,x1:FORTRESS_ART.levelEnd,surf:options.water.surf};
-      for(const event of riverFishJumps(G.time,camera,options.solids,water))drawRiverFish(g,this.images.riverFish,event);
+      for(const event of riverFishJumps(G.time,camera,options.solids,water,G.riverFishHits))drawRiverFish(g,this.images.riverFish,event);
     }
     for(const p of options.players)this.wadingWake(p,options.water.surf);
     drawStageOneRain(g,camera,G.t/60,rain,options,true);

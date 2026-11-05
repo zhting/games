@@ -3,14 +3,31 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { isLocalStageFivePreview } from '../../games/contra2026/js/local-stage-preview.mjs';
 import { OPEN_STAGES, isStageOpen, nextOpenStage } from '../../games/contra2026/js/release-stages.mjs';
-import { snowGroundGroups, snowParticle, snowfallProfile, polarClouds, fighterFlyby, STAGE_FIVE_ASSETS, SNOW_LEDGE, WINTER_TANK } from '../../games/contra2026/js/stage-five-art.mjs';
+import { StageFiveArt, snowGroundGroups, snowParticle, snowfallProfile, polarClouds, fighterFlyby, STAGE_FIVE_ASSETS, SNOW_LEDGE, WINTER_TANK } from '../../games/contra2026/js/stage-five-art.mjs';
 import { createSnowDefenders, advanceSnowDefender, advanceSnowOrdnance, snowDefenderBox, createFlyingFortress, advanceFlyingFortress } from '../../games/contra2026/js/stage-five-combat.mjs';
+
+test('第五关双人显示各自道具和冷却，热像标尺避开玩家二的右侧 HUD',()=>{
+  for(const online of [false,true])for(const guest of [false,true]) {
+    const draws=[],rects=[],gradients=[],gradient={addColorStop(){}};
+    const art={g:{save(){},restore(){},createLinearGradient(...args){gradients.push(args);return gradient;}},
+      rect(...args){rects.push(args);},hudText(){},playerHud(_G,p,options){draws.push({p,...options});}};
+    const p={pid:1,thermT:8},p2={pid:2,thermT:0};
+    const G={p,p2,score:0,inv:['g'],inv2:['f','m'],sel:0,sel2:1,nadeCd:0,nadeCd2:2,bannerT:0};
+    StageFiveArt.prototype.hud.call(art,G,{online,guest,highScore:0,settings:{inf:'off'},players:online?[p,p2]:[p]});
+    assert.equal(draws.length,online?2:1);
+    assert.equal(draws[0].x,8);assert.equal(draws[0].inventory,G.inv);
+    if(online){assert.equal(draws[1].p,p2);assert.equal(draws[1].x,248);assert.equal(draws[1].inventory,G.inv2);assert.equal(draws[1].selection,1);assert.equal(draws[1].cooldown,2);assert.equal(draws[1].local,guest);}
+    const legend=rects.find(rect=>rect[2]===32&&rect[3]===3);
+    assert.deepEqual(legend.slice(0,4),online?[176,35,32,3]:[342,8,32,3]);
+    assert.deepEqual(gradients.at(-1),online?[176,0,208,0]:[342,0,374,0]);
+  }
+});
 
 test('第五关正式开放，旧本地预览参数不再决定公开边界',()=>{
   for(const hostname of ['localhost','127.0.0.1','[::1]','::1','LOCALHOST'])assert.equal(isLocalStageFivePreview({hostname,search:'?preview=5'}),true);
   for(const hostname of ['games.tangletang.top','localhost.example.com','192.168.1.2',''])assert.equal(isLocalStageFivePreview({hostname,search:'?preview=5'}),false);
   for(const search of ['','?preview=6','?preview=05','?stage=5'])assert.equal(isLocalStageFivePreview({hostname:'localhost',search}),false);
-  assert.deepEqual(OPEN_STAGES,[1,2,3,4,5]);assert.equal(isStageOpen(5),true);assert.equal(nextOpenStage(4),5);assert.equal(nextOpenStage(5),null);assert.equal(isStageOpen(6),false);
+  assert.deepEqual(OPEN_STAGES,[1,2,3,4,5,6,7,8]);assert.equal(isStageOpen(5),true);assert.equal(nextOpenStage(4),5);assert.equal(nextOpenStage(5),6);assert.equal(isStageOpen(6),true);assert.equal(nextOpenStage(6),7);assert.equal(isStageOpen(7),true);assert.equal(nextOpenStage(7),8);assert.equal(isStageOpen(8),true);assert.equal(isStageOpen(9),false);
 });
 
 test('雪地和相邻冰面共用完整岩壁，保留真正裂隙和不同高度，不改变物理平台',()=>{
@@ -59,7 +76,7 @@ test('手雷先沿弧线落地弹跳，再点燃爆炸判定，爆炸到期后�
 
 test('第五关素材为压缩 WebP，图集裁切完整，提示词、透明边界和文件尺寸有记录',()=>{
   const manifest=JSON.parse(fs.readFileSync(new URL('../../games/contra2026/design/stage-05-assets.json',import.meta.url),'utf8'));
-  assert.equal(manifest.generatedWith,'built-in imagegen');assert.equal(manifest.assets.length,15);
+  assert.equal(manifest.generatedWith,'built-in imagegen');assert.equal(manifest.assets.length,17);
   for(const entry of manifest.assets){
     const bytes=fs.readFileSync(new URL('../..'+entry.url,import.meta.url));assert.equal(bytes.toString('ascii',0,4),'RIFF');assert.equal(bytes.toString('ascii',8,12),'WEBP');
     assert.equal(bytes.length,entry.bytes);assert.ok(entry.bytes<700000);assert.ok(entry.prompt.length>200);

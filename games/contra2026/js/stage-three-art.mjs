@@ -1,10 +1,14 @@
-import { StageOneArt } from './stage-one-art.mjs?v=combat-polish-1';
-import { STAGE_THREE, WATERFALL_GATE, FLAME_BRIDGES, flameJetState, waterfallNodesAlive } from './stage-three-layout.mjs?v=boss-detail-1';
+import { HUD_PLAYER_X } from './hud-layout.mjs';
+import { StageOneArt } from './stage-one-art.mjs?v=single-enemy-rifle-1';
+import { STAGE_THREE, WATERFALL_GATE, FLAME_BRIDGES, flameJetState, flameJetPositions, waterfallNodesAlive } from './stage-three-layout.mjs?v=crossing-flames-1';
 import { WATERFALL_ARMS, waterfallArmPose } from './stage-three-arms.mjs?v=boss-detail-1';
 import { drawStageThreeWaterfall } from './stage-three-waterfall.mjs?v=boss-detail-1';
 import { FLAME_JET_ASSET, drawFlameJet } from './flame-jet-art.mjs?v=multi-stage-polish-1';
+import {IMPACT_HELMET_ASSET} from './impact-helmet-art.mjs?v=helmet-detail-2';
+import {drawFrozenEnemy} from './enemy-freeze-art.mjs?v=enemy-freeze-2';
+import {stageThreeRockWobble} from './stage-three-rockfall.mjs?v=wall-rock-cycle-1';
 
-export const STAGE_THREE_ASSETS=Object.freeze({guardian:'/games/contra2026/assets/stage3/waterfall-guardian-v3.webp',guardianWreck:'/games/contra2026/assets/stage3/waterfall-guardian-v3-wreck.webp',flameJets:FLAME_JET_ASSET,armKit:'/games/contra2026/assets/stage3/guardian-arm-kit.webp',ledge:'/games/contra2026/assets/stage3/mossy-rock-ledge.webp',waterfall:'/games/contra2026/assets/stage3/waterfall-layers.webp',boulderTurns:'/games/contra2026/assets/stage3/boulder-turns.webp',floatingStone:'/games/contra2026/assets/stage3/floating-stone.webp',supplyHatch:'/games/contra2026/assets/stage3/supply-hatch.webp'});
+export const STAGE_THREE_ASSETS=Object.freeze({enemyUniform:'/games/contra2026/assets/stage3/enemy-waterfall-upper.webp',enemyHovercraft:'/games/contra2026/assets/stage3/enemy-hovercraft-v1.webp',guardian:'/games/contra2026/assets/stage3/waterfall-guardian-v3.webp',guardianWreck:'/games/contra2026/assets/stage3/waterfall-guardian-v3-wreck.webp',flameJets:FLAME_JET_ASSET,armKit:'/games/contra2026/assets/stage3/guardian-arm-kit.webp',ledge:'/games/contra2026/assets/stage3/mossy-rock-ledge.webp',waterfall:'/games/contra2026/assets/stage3/waterfall-layers.webp',boulderTurns:'/games/contra2026/assets/stage3/boulder-turns.webp',floatingStone:'/games/contra2026/assets/stage3/floating-stone.webp',supplyHatch:'/games/contra2026/assets/stage3/supply-hatch.webp',impactHelmet:IMPACT_HELMET_ASSET});
 export const SUPPLY_HATCH_ART=Object.freeze({frame:[18,58,595,546],shutter:[632,165,372,397],opening:[137,159,329,346],width:24});
 // The new atlas is wide by construction. Keep the stationary body registered
 // and animate only the jaw, so imperfect generated row alignment cannot move
@@ -110,18 +114,47 @@ export class StageThreeArt extends StageOneArt{
     for(const bridge of FLAME_BRIDGES){
       if(bridge.y<this.state.camY-32||bridge.y>this.state.camY+236)continue;
       const fire=flameJetState(time,bridge.phase);
-      for(const u of [.23,.77]){
+      for(const [i,x] of flameJetPositions(bridge,time).entries()){
         drawFlameJet(g,this.loaded.has('flameJets')?this.images.flameJets:null,
-          bridge.x+bridge.w*u,bridge.y,fire,time,bridge.phase+u*13);
+          x,bridge.y,fire,time,bridge.phase+i*7);
       }
     }
   }
   enemy(e){
+    const freezeBounds=e.t==='waterAmbush'?{bounds:{x:e.x-28,y:e.y-40,w:56,h:56,foot:e.y}}:{};
+    if(e.t!=='box'&&drawFrozenEnemy(this,e,()=>this.enemy(e),freezeBounds))return;
+    if(e.t==='waterAmbush'){this.waterAmbush(e);return;}
     if(e.t==='box'){this.supplyWindow(e);return;}
     if(e.t==='rock'){
       this.fallingBoulder(e);return;
     }
     super.enemy(e);
+  }
+  waterAmbush(e){
+    const g=this.g,t=this.state.time||0,x=e.x,y=e.y,w=52,h=w*167/1063;
+    // The craft's upper surface and the soldier's boot anchor use the same y.
+    // Thruster glow flickers without moving either part or its hitbox.
+    if(!(this.state.freezeT>0)){
+      g.save();g.globalAlpha=.45+.15*Math.sin(t*12);
+      for(const dx of [-11,11])this.light(x+dx,y+h-1,5,'rgba(81,198,255,.40)');
+      g.restore();
+    }
+    if(this.loaded.has('enemyHovercraft'))g.drawImage(this.images.enemyHovercraft,x-w/2,y,w,h);
+    else{
+      this.rect(x-21,y,42,5,'#303d3d');this.rect(x-16,y,32,1.2,'#a7aa94');
+      this.rect(x-13,y+5,5,2,'#76d9ef');this.rect(x+8,y+5,5,2,'#76d9ef');
+    }
+    // Keep the full legs and boots visible; trim the horizontal rifle barrel
+    // above the waist so the existing soldier can carry the raised gun.
+    g.save();g.beginPath();g.rect(x-40,y-40,49,25);g.rect(x-40,y-15,80,16);g.clip();
+    this.actor({...e,t:'snp',y,face:1,ay:-1,onGround:true,vx:0},'enemy',true);g.restore();
+    g.save();
+    this.line(x+7,y-19,x+7,y-35,'#111a19',3);
+    this.line(x+6.5,y-20,x+6.5,y-34,'#84958b',.8);
+    this.rect(x+5.2,y-35.5,3.6,2,'#253632');
+    if(e.warning>0){g.globalAlpha=.5+.35*Math.sin(t*20);this.disc(x+7,y-35,2.6,'#ffb65b');}
+    if(e.shotFlash>0)this.muzzle(x+7,y-35);
+    g.restore();
   }
   supplyWindow(e){
     if(!this.loaded.has('supplyHatch'))return this.supplyWindowFallback(e);
@@ -167,13 +200,24 @@ export class StageThreeArt extends StageOneArt{
     g.restore();
   }
   fallingBoulder(e){
-    if(!this.loaded.has('boulderTurns')){this.boulder(e.x,e.y-e.r,2*e.r,2*e.r,e.rot||0,e.flash>0);return;}
+    const wobble=stageThreeRockWobble(e),anchored=e.phase==='embedded'||e.phase==='warning';
+    if(anchored){
+      const g=this.g;g.save();g.translate(e.x,e.y-e.r);
+      const edge=[1.04,.98,1.08,.99,1.04,.96,1.06,.98,1.1,.96,1.04,.99,1.08,.97];
+      g.beginPath();for(let i=0;i<edge.length;i++){const a=i*Math.PI*2/edge.length,r=e.r*edge[i],x=Math.cos(a)*r,y=Math.sin(a)*r*.94;i?g.lineTo(x,y):g.moveTo(x,y);}g.closePath();
+      g.fillStyle='rgba(18,22,13,.72)';g.fill();g.strokeStyle='#343627';g.lineWidth=.8;g.stroke();
+      this.line(-e.r*.75,-e.r*.75,-e.r*.35,-e.r*.95,'rgba(185,169,112,.55)',.5);
+      this.line(e.r*.42,e.r*.9,e.r*.83,e.r*.61,'rgba(135,133,88,.42)',.5);
+      for(const side of [-1,1]){this.line(side*e.r*.8,-e.r*.7,side*e.r*1.15,-e.r*.95,'#29291d',.8);this.line(side*e.r*.9,e.r*.45,side*e.r*1.17,e.r*.7,'#29291d',.7);}
+      g.restore();
+    }
+    if(!this.loaded.has('boulderTurns')){this.boulder(e.x+wobble.x,e.y-e.r+wobble.y,2*e.r,2*e.r,(e.rot||0)+wobble.angle,e.flash>0);return;}
     const g=this.g,image=this.images.boulderTurns,step=Math.PI/4,rotation=e.rot||0,pose=Math.round(rotation/step);
     const frame=mod(pose,8),cw=image.naturalWidth/4,ch=image.naturalHeight/2,pad=.045;
-    g.save();g.translate(e.x,e.y-e.r);
+    g.save();g.translate(e.x+wobble.x,e.y-e.r+wobble.y);
     // Each pose has its own painted volume under the same world light. A small
     // residual angle between poses keeps the tumbling silhouette continuous.
-    g.rotate(rotation-pose*step);if(e.flash>0)g.filter='brightness(2.2) saturate(.35)';
+    g.rotate(rotation-pose*step+wobble.angle);if(e.flash>0)g.filter='brightness(2.2) saturate(.35)';
     g.drawImage(image,(frame%4+pad)*cw,(Math.floor(frame/4)+pad)*ch,cw*(1-pad*2),ch*(1-pad*2),-e.r,-e.r,2*e.r,2*e.r);g.restore();
     if(e.vy>28){
       g.save();
@@ -263,9 +307,9 @@ export class StageThreeArt extends StageOneArt{
   }
   hud(G,options){
     const g=this.g;g.save();const shade=g.createLinearGradient(0,0,0,39);shade.addColorStop(0,'rgba(1,8,13,.94)');shade.addColorStop(.7,'rgba(1,8,13,.65)');shade.addColorStop(1,'rgba(1,8,13,0)');g.fillStyle=shade;g.fillRect(0,0,384,39);
-    this.playerHud(G,G.p,{x:8,role:StageOneArt.playerRole(options.online),inventory:G.inv,selection:G.sel,cooldown:G.nadeCd,infinite:options.settings.inf==='on',local:!options.guest});
+    this.playerHud(G,G.p,{x:HUD_PLAYER_X[0],role:StageOneArt.playerRole(options.online),inventory:G.inv,selection:G.sel,cooldown:G.nadeCd,infinite:options.settings.inf==='on',local:!options.guest});
     this.hudText('最高分  '+String(Math.max(options.highScore||0,G.score)).padStart(6,'0'),192,5,'#bccbd0',6,'center',90);
-    if(options.online&&G.p2)this.playerHud(G,G.p2,{x:248,blue:true,inventory:G.inv2,selection:G.sel2,cooldown:G.nadeCd2,infinite:options.settings.inf==='on',local:!!options.guest});
+    if(options.online&&G.p2)this.playerHud(G,G.p2,{x:HUD_PLAYER_X[1],blue:true,inventory:G.inv2,selection:G.sel2,cooldown:G.nadeCd2,infinite:options.settings.inf==='on',local:!!options.guest});
     else{this.hudText('第三关',376,4,'#e3e7db',7,'right');this.hudText('峡谷瀑布',376,17,'#b2c7c7',5.8,'right');}
     const boss=G.mech;
     if(boss.active&&!boss.dead){

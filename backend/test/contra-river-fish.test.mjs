@@ -1,8 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { riverFishJumps } from '../../games/contra2026/js/river-fish.mjs';
+import { riverFishJumps, riverFishBox, riverFishLifeReward } from '../../games/contra2026/js/river-fish.mjs';
 
 const banks=Object.freeze([Object.freeze({x:0,y:112,w:3334,h:104,g:1})]);
+
+test('命中记录只隐藏本次跃起，后续周期仍正常出鱼，旋转命中框只覆盖水面以上',()=>{
+  const fish=riverFishJumps(6.65,0,banks)[0],caught={[fish.tile]:fish.cycle};
+  assert.deepEqual(riverFishJumps(6.65,0,banks,undefined,caught),[]);
+  assert.equal(riverFishJumps(24.65,0,banks,undefined,caught).length,1);
+  for(const time of [6,6.2,6.65,7.1]){
+    const event=riverFishJumps(time,0,banks)[0],box=riverFishBox(event);
+    assert.ok(box.x<event.x&&box.x+box.w>event.x);
+    assert.ok(box.h>0&&box.y+box.h<=event.surface+.500001);
+  }
+});
+
+test('生命奖励在岸边落地，不落到坍塌桥上；无岸可达时浮在水面供游泳拾取',()=>{
+  const fish=riverFishJumps(6.65,0,banks)[0];
+  const item=riverFishLifeReward(fish,banks,0);assert.equal(item.kind,'life');assert.ok(item.vy<0);
+  let landed=false;
+  for(let tick=0;tick<180;tick++){
+    const before=item.y;item.vy+=560/60;item.x+=item.vx/60;item.y+=item.vy/60;
+    if(item.vy>0&&before<=112&&item.y>=112){landed=true;assert.ok(item.x>=8&&item.x<=376);break;}
+  }
+  assert.equal(landed,true);
+  const floating=riverFishLifeReward(fish,[{x:0,y:112,w:500,bridge:{},gone:true}],0);
+  assert.equal(floating.rest,true);assert.equal(floating.floating,true);assert.equal(floating.y,180,'以实际游泳水面定位，不使用岸脚的装饰水面');
+});
 
 test('河鱼偶尔出现，每个视野同时最多一条，首个跃起前保持安静',()=>{
   assert.deepEqual(riverFishJumps(5.9,0,banks),[]);

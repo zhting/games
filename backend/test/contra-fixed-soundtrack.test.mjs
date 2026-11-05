@@ -8,7 +8,7 @@ import { StageOneArt } from '../../games/contra2026/js/stage-one-art.mjs';
 import { versionedAssetUrl } from '../../games/contra2026/js/asset-url.mjs';
 
 test('第一关从片头到战斗固定摇滚，暂停和结算停止；后续关卡按场景切换对应配乐',()=>{
-  assert.deepEqual(Object.keys(CONTRA_TRACKS),['stage1rock','stage2','stage2boss','stage3','stage4','stage4boss','stage5']);
+  assert.deepEqual(Object.keys(CONTRA_TRACKS),['stage1rock','stage2','stage2boss','stage3','stage4','stage4boss','stage5','stage6','stage7']);
   for(const mode of ['intro','play','cine'])assert.equal(fixedMusicTrack({stage:1,mode,cine:{kind:'open'}}),'stage1rock');
   for(const mode of ['title','select','settings','pause','clear','over'])assert.equal(fixedMusicTrack({stage:1,mode}),null);
   assert.equal(fixedMusicTrack({stage:1,mode:'play',boss:{dead:true}}),null);
@@ -21,6 +21,12 @@ test('第一关从片头到战斗固定摇滚，暂停和结算停止；后续�
   assert.deepEqual(fixedStageMusicKeys(5),['stage5']);
   assert.equal(fixedMusicTrack({stage:5,mode:'play',tank:{dead:true}}),'stage5');
   assert.equal(fixedMusicTrack({stage:5,mode:'play',fortress:{dead:true}}),null);
+  assert.deepEqual(fixedStageMusicKeys(6),['stage6']);assert.equal(fixedMusicTrack({stage:6,mode:'play',golem:{dead:false}}),'stage6');assert.equal(fixedMusicTrack({stage:6,mode:'play',golem:{dead:true}}),null);
+  assert.equal(CONTRA_TRACKS.stage6.url,'/games/contra2026/assets/audio/reference-stage6.ogg');
+  assert.deepEqual(fixedStageMusicKeys(7),['stage1rock']);assert.equal(fixedMusicTrack({stage:7,mode:'play',gate:{dead:false}}),'stage1rock');assert.equal(fixedMusicTrack({stage:7,mode:'play',gate:{dead:true}}),null);
+  assert.deepEqual(fixedStageMusicKeys(8),['stage7']);assert.equal(fixedMusicTrack({stage:8,mode:'play',hive:{dead:false}}),'stage7');assert.equal(fixedMusicTrack({stage:8,mode:'play',hive:{dead:true}}),null);
+  assert.equal(fixedMusicTrack({stage:8,mode:'cine',cine:{kind:'end'}}),'synth');
+  assert.equal(fixedMusicTrack({stage:8,mode:'clear'}),null);
 });
 
 test('第一关仅下载压缩摇滚文件，默认缓存不会拉取其他音乐，重播复用下载',async()=>{

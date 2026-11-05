@@ -76,3 +76,32 @@ test('角色进洞全过程保持原尺寸，放大状态同样不随入洞进�
     assert.deepEqual(scales,[[giantT?2:1,giantT?2:1]],'入洞只淡出，不叠加缩放');
   }
 });
+
+test('第三关桥上火焰的绘制位置与移动碰撞框一致',async()=>{
+  const {FLAME_BRIDGES,flameJetBoxes}=await import('../../games/contra2026/js/stage-three-layout.mjs');
+  const bridge=FLAME_BRIDGES[0],image={},draws=[],gradient={addColorStop(){}};
+  const g=new Proxy({globalAlpha:1,createRadialGradient:()=>gradient,drawImage:(...args)=>draws.push(args)},
+    {get:(o,k)=>k in o?o[k]:()=>{},set:(o,k,v)=>(o[k]=v,true)});
+  const art={g,state:{camY:bridge.y-80},loaded:new Set(['flameJets']),images:{flameJets:image}};
+  for(const time of [2.55,3.3,4.3,5.3,6.05]){
+    draws.length=0;StageThreeArt.prototype.flames.call(art,time);
+    const centers=draws.map(args=>args[5]+args[7]/2);
+    const boxes=flameJetBoxes(time).filter(b=>Math.abs(b.y+b.h-bridge.y)<1e-8);
+    assert.equal(centers.length,4);assert.equal(boxes.length,2);
+    for(let i=0;i<2;i++)for(const center of centers.slice(i*2,i*2+2))assert.ok(Math.abs(center-(boxes[i].x+boxes[i].w/2))<1e-8);
+  }
+});
+
+test('第三关敌人双脚贴合悬浮飞行器甲板，向上枪口与子弹位置一致',()=>{
+  const calls=[],image={},g=new Proxy({globalAlpha:1,drawImage:(...a)=>calls.push(['image',...a])},
+    {get:(o,k)=>k in o?o[k]:()=>{},set:(o,k,v)=>(o[k]=v,true)});
+  const art={g,state:{time:1,freezeT:0},loaded:new Set(['enemyHovercraft']),images:{enemyHovercraft:image},
+    light(){},line(){},rect(){},disc(){},muzzle:(...a)=>calls.push(['muzzle',...a]),actor:(...a)=>calls.push(['actor',...a])};
+  const enemy={t:'waterAmbush',x:218,y:160,warning:0,shotFlash:.1};
+  StageThreeArt.prototype.waterAmbush.call(art,enemy);
+  const craft=calls.find(c=>c[0]==='image'),actor=calls.find(c=>c[0]==='actor'),muzzle=calls.find(c=>c[0]==='muzzle');
+  assert.equal(craft[3],enemy.y,'craft top is the feet anchor');assert.equal(actor[1].y,enemy.y);
+  assert.deepEqual(muzzle.slice(1),[enemy.x+7,enemy.y-35]);assert.ok(calls.indexOf(craft)<calls.indexOf(actor));
+  const webp=fs.readFileSync(new URL('../..'+STAGE_THREE_ASSETS.enemyHovercraft,import.meta.url));
+  assert.equal(webp.toString('ascii',8,12),'WEBP');assert.ok(webp[20]&0x10,'transparent hovercraft asset');
+});

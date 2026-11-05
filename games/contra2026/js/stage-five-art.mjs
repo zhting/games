@@ -1,14 +1,19 @@
-import { StageOneArt } from './stage-one-art.mjs?v=combat-polish-1';
+import { HUD_PLAYER_X } from './hud-layout.mjs';
+import { StageOneArt } from './stage-one-art.mjs?v=single-enemy-rifle-1';
 import { COMBAT_ASSETS, EQUIPMENT_SUPPLY, EQUIPMENT_TURRET, drawExplosion, drawEquipmentSupply, drawEquipmentTurret } from './combat-art.mjs?v=combat-polish-1';
-import { STAGE_FIVE_ROUTE, FOREST_GRENADIERS, snowDefenderBox } from './stage-five-combat.mjs?v=snow-fortress-1';
+import { STAGE_FIVE_ROUTE, FOREST_GRENADIERS, snowDefenderBox, fortressEscortPort } from './stage-five-combat.mjs?v=fortress-saucers-1';
 import { ThermalMaterialCache, thermalSeconds } from './stage-five-thermal.mjs?v=thermal-vision-2';
+import {WINTER_TANK_CORE_ASSET,drawWinterTankCore} from './winter-tank-core-art.mjs?v=tank-core-2';
+import {drawFrozenEnemy} from './enemy-freeze-art.mjs?v=enemy-freeze-2';
 
 export const STAGE_FIVE_ASSETS=Object.freeze({
+  enemyUniform:'/games/contra2026/assets/stage5/enemy-snow-upper.webp',
   polar:'/games/contra2026/assets/stage5/polar-mountains.webp',
   snowPines:'/games/contra2026/assets/stage5/snow-pines.webp',
   snowLedge:'/games/contra2026/assets/stage5/snow-rock-ledge.webp',
   iceLedge:'/games/contra2026/assets/stage5/frozen-rock-ledge.webp',
   winterTank:'/games/contra2026/assets/stage5/winter-tank.webp',
+  tankCore:WINTER_TANK_CORE_ASSET,
   winterWeapons:'/games/contra2026/assets/stage5/winter-weapons.webp',
   fieldArtillery:'/games/contra2026/assets/stage5/manned-field-cannon.webp',
   forestAmbusher:'/games/contra2026/assets/stage5/forest-ambusher.webp',
@@ -210,6 +215,11 @@ export class StageFiveArt extends StageOneArt{
     if(this.loaded.has('flyingFortress'))g.drawImage(this.images.flyingFortress,sx,sy,sw,sh,F.x-w/2,F.y-h*.5,w,h);
     g.restore();if(F.dead)return;
     for(const part of F.parts.slice(0,2))if(part.hp<=0){this.disc(part.x+7,part.y+7,5,'#10202b');this.line(part.x+2,part.y+4,part.x+12,part.y+10,'#56646a',1);}
+    if(F.escortWarning)for(const side of [-1,1]){
+      const {x,y}=fortressEscortPort(F,side);
+      this.light(x,y,8,'rgba(255,146,62,.48)');
+      this.line(x-3,y,x+3,y,'#ffd8a3',1.15);
+    }
     const engine=F.parts[2];this.light(F.x,F.y+28,12+Math.sin(this.state.time*16)*2,F.warning?'rgba(255,125,45,.5)':'rgba(241,102,38,.2)');
     if(F.warning){
       this.disc(F.x,F.y+25,2.4+Math.sin(this.state.time*24)*.6,'#fff0bb');
@@ -231,7 +241,29 @@ export class StageFiveArt extends StageOneArt{
       for(let i=0;i<5;i++){const phase=mod(G.time*4+i*.2,1),direction=Math.sign(p.vx);this.g.save();this.g.globalAlpha=(1-phase)*.45;this.disc(p.x-direction*(3+phase*12),p.y-1-Math.sin(phase*Math.PI)*3,.3+phase*.9,'#edf5f6');this.g.restore();}
     }
   }
+  escortSaucer(e){
+    const g=this.g,thermal=this.thermalPainting;
+    g.save();g.translate(e.x,e.y);g.rotate(Math.max(-.16,Math.min(.16,e.vx*e.vy*.000014)));
+    const shell=g.createLinearGradient(0,-4.6,0,4.3);
+    shell.addColorStop(0,thermal?'#a74c79':'#d1d9db');
+    shell.addColorStop(.38,thermal?'#723666':'#778894');
+    shell.addColorStop(.57,thermal?'#592551':'#4f6471');
+    shell.addColorStop(1,thermal?'#2d2650':'#1f2a33');
+    const lamp=thermal?'#ffdda5':'#ffad60';
+    this.light(-Math.sign(e.vx)*7,2,5,thermal?'rgba(255,100,90,.38)':'rgba(255,123,41,.37)');
+    g.beginPath();g.moveTo(-11,0);g.lineTo(-6,-2);g.lineTo(-3.5,-4.4);g.lineTo(3.5,-4.4);
+    g.lineTo(6,-2);g.lineTo(11,0);g.lineTo(7,2.4);g.lineTo(3.9,3.7);g.lineTo(-3.9,3.7);g.lineTo(-7,2.4);g.closePath();
+    g.fillStyle=shell;g.fill();g.strokeStyle='#111b27';g.lineWidth=.65;g.stroke();
+    this.rect(-2.8,-3.5,5.6,1.8,thermal?'#75406f':'#172639');
+    this.line(-2.4,-3.4,2.3,-3.4,thermal?'#cc7191':'#8db0d6',.46);
+    this.line(-8.5,0,8.5,0,thermal?'#d4759a':'#b3bfc0',.55);
+    for(const x of [-6,0,6])this.disc(x,1.6,x===0?.85:.53,lamp);
+    this.line(-3,3.1,3,3.1,lamp,.55);
+    g.restore();
+  }
   enemy(e){
+    if(e.t!=='box'&&drawFrozenEnemy(this,e,()=>this.enemy(e)))return;
+    if(e.t==='fortressSaucer'){this.escortSaucer(e);return;}
     const g=this.g;g.save();g.filter='saturate(.2) brightness(1.22)';
     if(e.t==='tur'){
       g.filter='none';this.winterTurret(e);
@@ -266,13 +298,16 @@ export class StageFiveArt extends StageOneArt{
     if(!this.loaded.has('forestAmbusher'))return;
     const g=this.g,art=SNOW_DEFENDERS.ambusher;
     const pose=(e,name,alpha)=>{
-      if(alpha<=0)return;const [sx,sy,sw,sh]=art[name],[ax,ay]=art.anchors[name];g.save();g.globalAlpha=alpha;
+      if(alpha<=0)return;const g=this.g,[sx,sy,sw,sh]=art[name],[ax,ay]=art.anchors[name];g.save();g.globalAlpha=alpha;
       g.translate(e.x+e.face*(5+13*(e.peek||0)),e.y-6);g.scale(e.face/art.faces[name],1);if(e.flash>0)g.filter='brightness(1.6)';
       this.withThermalMaterial('human',()=>g.drawImage(this.images.forestAmbusher,sx,sy,sw,sh,(sx-ax)*art.scale,(sy-ay)*art.scale,sw*art.scale,sh*art.scale));g.restore();
     };
     for(const worldX of FOREST_GRENADIERS)if(worldX>cx-70&&worldX<cx+454){
       const e=enemies.find(e=>e.t==='grenadier'&&e.x===worldX&&!e.dead);
-      if(e){const peek=e.peek||0;pose(e,'cover',1-peek);pose(e,e.phase==='release'?'release':'windup',peek);}
+      if(e){
+        const paint=()=>{const peek=e.peek||0;pose(e,'cover',1-peek);pose(e,e.phase==='release'?'release':'windup',peek);};
+        if(!drawFrozenEnemy(this,e,paint))paint();
+      }
       const [sx,sy,sw,sh]=SNOW_DEFENDERS.tree,h=58,w=h*sw/sh,x=worldX+6-w*.5,y=178-h;
       g.save();
       // Exclude the neighboring animation's boots from the atlas's narrow tip gutter.
@@ -316,21 +351,7 @@ export class StageFiveArt extends StageOneArt{
     const shotAge=(T.phase2?2:2.8)-T.canT,recoil=T.active&&shotAge>=0&&shotAge<.14?2*(1-shotAge/.14):0;
     this.weapon(can.hp>0?'cannon':'broken',T,{recoil:can.hp>0?recoil:0,flash:can.flash>0});
     this.weapon(mg.hp>0?'machineGun':'mount',T,{flash:mg.flash>0,scorched:mg.hp<=0});
-    if(core.hp>0){
-      const hot=T.phase2,flash=core.flash>0,thermal=this.thermalPainting;
-      const frame=g.createLinearGradient(0,116,0,131);frame.addColorStop(0,thermal?'#8f438a':'#b0bfc5');frame.addColorStop(.2,thermal?'#572361':'#687c87');frame.addColorStop(.8,thermal?'#251e54':'#253c4a');frame.addColorStop(1,thermal?'#101b3e':'#142835');
-      this.path([[T.x+76,116],[T.x+99,116],[T.x+102,119],[T.x+102,129],[T.x+99,131],[T.x+76,131],[T.x+73,128],[T.x+73,119]],frame);
-      this.rect(T.x+76,119,23,9,thermal?'#3a195c':'#10212c');this.line(T.x+77,128,T.x+98,128,thermal?'#bd3c69':'#708b99',.5);
-      this.light(T.x+88,123,14,hot?'rgba(240,99,37,.2)':'rgba(250,176,67,.14)');
-      for(const xx of [T.x+81,T.x+88,T.x+95]){
-        this.disc(xx,123.5,3.1,thermal?'#d14a49':'#3c4d53');this.disc(xx,123.5,2.4,flash?'#ffffff':thermal?'#ffc741':hot?'#c64f28':'#a26930');this.disc(xx-.2,123,1.5,flash?'#ffffff':thermal?'#fff2b0':hot?'#ffb15c':'#f4c175');this.disc(xx-.6,122.2,.5,'#fff3cf');
-      }
-      for(const [xx,yy]of [[75,119],[100,119],[75,128],[100,128]]){this.disc(T.x+xx,yy,.6,'#1d303c');this.disc(T.x+xx-.1,yy-.1,.25,'#cbd2ce');}
-    }else{this.rect(T.x+73,116,29,15,'#0a131a');this.line(T.x+75,118,T.x+96,129,'#4b4240',2);}
-    for(const part of T.parts)if(part.hp<=0){
-      const mark={core:[88,123,13]}[part.k];
-      if(mark){g.save();g.globalAlpha=.7;this.disc(T.x+mark[0],mark[1],mark[2],'#101820');g.restore();}
-    }
+    this.withThermalMaterial(core.hp>0?'device':'wreck',()=>drawWinterTankCore(g,this.images.tankCore,T,{time:this.state.time,thermal:this.thermalPainting}));
     if(!T.dead){
       const phase=mod(this.state.time*1.7,1);g.save();g.globalAlpha=(1-phase)*.3;this.disc(T.x+145+phase*8,130-phase*21,2+phase*7,'#a6b3bc');g.restore();
       if(T.mode==='fwd'||T.mode==='back')for(let i=0;i<8;i++){const t=mod(this.state.time*2+i*.13,1);g.save();g.globalAlpha=(1-t)*.55;this.disc(T.x+(T.mode==='fwd'?1:146)+(T.mode==='fwd'?1:-1)*t*15,175-t*8,.6+t*1.8,'#dceff2');g.restore();}
@@ -392,9 +413,11 @@ export class StageFiveArt extends StageOneArt{
   }
   hud(G,options){
     const g=this.g;g.save();const shade=g.createLinearGradient(0,0,0,39);shade.addColorStop(0,'rgba(5,19,31,.94)');shade.addColorStop(.7,'rgba(10,29,42,.65)');shade.addColorStop(1,'rgba(10,29,42,0)');this.rect(0,0,384,39,shade);
-    this.playerHud(G,G.p,{x:8,role:StageOneArt.playerRole(options.online),inventory:G.inv,selection:G.sel,cooldown:G.nadeCd,infinite:options.settings.inf==='on',local:!options.guest});
+    this.playerHud(G,G.p,{x:HUD_PLAYER_X[0],role:StageOneArt.playerRole(options.online),inventory:G.inv,selection:G.sel,cooldown:G.nadeCd,infinite:options.settings.inf==='on',local:!options.guest});
     this.hudText('最高分  '+String(Math.max(options.highScore||0,G.score)).padStart(6,'0'),192,5,'#b7cbd6',6,'center',90);
-    this.hudText('第五关',330,4,'#f0f0df',7,'right');this.hudText('极地冰原',330,17,'#bdcfd7',5.8,'right');
+    const online=options.online&&G.p2;
+    if(online)this.playerHud(G,G.p2,{x:HUD_PLAYER_X[1],blue:true,inventory:G.inv2,selection:G.sel2,cooldown:G.nadeCd2,infinite:options.settings.inf==='on',local:!!options.guest});
+    else {this.hudText('第五关',330,4,'#f0f0df',7,'right');this.hudText('极地冰原',330,17,'#bdcfd7',5.8,'right');}
     if(G.fortress?.active&&!G.fortress.dead){
       const core=G.fortress.parts[2];this.hudText('空中堡垒',148,19,'#e1b082',5.2,'right');this.rect(153,19,73,4,'#2b424d');this.rect(154,20,71*Math.max(0,core.hp/core.max),2,'#e38961');
     }else if(G.tank?.active&&!G.tank.dead){
@@ -402,9 +425,10 @@ export class StageFiveArt extends StageOneArt{
     }else this.hudText(G.tank?.dead?'穿越雪林 · 向基地前进':G.s5?.bliz>.5?'逆风 · 留意冰面滑行':'大雪 · 小心林间手雷',192,19,'#b6d0dc',5,'center',94);
     const heatTime=thermalSeconds(options.players);
     if(heatTime>0){
-      this.hudText('热像 '+Math.ceil(heatTime)+'秒',330,29,'#ffe5a0',4.8,'right');
-      const scale=g.createLinearGradient(341,0,375,0);for(const [at,color]of [[0,'#1c2b6a'],[.35,'#672189'],[.55,'#c5274e'],[.75,'#f4671d'],[1,'#fffce2']])scale.addColorStop(at,color);
-      this.rect(342,8,32,3,scale);this.hudText('冷',342,15,'#77a8d8',4.3);this.hudText('热',374,15,'#fff0b1',4.3,'right');
+      this.hudText('热像 '+Math.ceil(heatTime)+'秒',online?192:330,online?27:29,'#ffe5a0',4.8,online?'center':'right');
+      const scale=g.createLinearGradient(online?176:342,0,online?208:374,0);for(const [at,color]of [[0,'#1c2b6a'],[.35,'#672189'],[.55,'#c5274e'],[.75,'#f4671d'],[1,'#fffce2']])scale.addColorStop(at,color);
+      // In co-op the right header belongs to player two; keep the heat key central.
+      this.rect(online?176:342,online?35:8,32,3,scale);this.hudText('冷',online?164:342,online?33:15,'#77a8d8',4.3);this.hudText('热',online?220:374,online?33:15,'#fff0b1',4.3,'right');
     }
     if(G.bannerT>0&&G.bannerText){this.rect(38,42,308,15,'rgba(5,20,31,.76)');this.hudText(G.bannerText,192,46,'#ead7ad',6.5,'center',294);}
     g.restore();
