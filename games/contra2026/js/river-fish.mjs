@@ -4,12 +4,12 @@ export const RIVER_FISH_ASSET='/games/contra2026/assets/stage1/river-fish.webp';
 const PERIOD=18,SPAN=256;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
-/** World-space schedules survive camera motion and require no network state. */
-export function riverFishJumps(time,camera,solids,water={x0:0,x1:3334,surf:186}){
+/** World-space schedules survive camera motion; catches are shared in snapshots. */
+export function riverFishJumps(time,camera,solids,water={x0:0,x1:3334,surf:186},caught={}){
   const events=[];
   for(let tile=Math.floor((camera-40)/SPAN);tile<=Math.floor((camera+424)/SPAN);tile++){
     const phase=6+((tile%3+3)%3)*6,cycle=Math.floor((time-phase)/PERIOD);
-    if(cycle<0)continue;
+    if(cycle<0||caught[tile]===cycle)continue;
     const seed=tile*379+cycle*971+38,age=time-phase-cycle*PERIOD,duration=1.22+sceneryRandom(seed+11)*.16;
     if(age<0||age>duration+.5)continue;
     const start=tile*SPAN+64+sceneryRandom(seed)*128,face=sceneryRandom(seed+7)>.5?1:-1,travel=46+sceneryRandom(seed+17)*10;
@@ -26,6 +26,31 @@ export function riverFishJumps(time,camera,solids,water={x0:0,x1:3334,surf:186})
       shoreline:nearBank?Math.max(coastHeight(left),coastHeight(start),coastHeight(right)):null});
   }
   return events;
+}
+
+// Follow the rotation of the painted fish and exclude its submerged portion.
+export function riverFishBox(fish){
+  const c=Math.abs(Math.cos(fish.angle)),s=Math.abs(Math.sin(fish.angle));
+  const rx=fish.width/2*c+3.6*s,ry=fish.width/2*s+3.6*c;
+  const top=fish.y-ry,bottom=Math.min(fish.y+ry,fish.surface+.5);
+  return {x:fish.x-rx,y:top,w:rx*2,h:Math.max(0,bottom-top)};
+}
+
+export function riverFishLifeReward(fish,solids,camera=0,waterSurface=186){
+  let landing=null,distance=Infinity;
+  for(const s of solids){
+    if(s.gone||s.water||s.bridge)continue;
+    const left=Math.max(s.x+8,camera+8),right=Math.min(s.x+s.w-8,camera+376);
+    if(right<left)continue;
+    const x=clamp(fish.x,left,right),d=Math.abs(x-fish.x);
+    if(d<distance){distance=d;landing={x,y:s.y};}
+  }
+  const item={kind:'life',fromFish:true,fishKey:fish.tile+':'+fish.cycle,x:fish.x,y:fish.y-4,vx:0,vy:0};
+  // In a completely open stretch of water the medal floats within swimming reach.
+  if(!landing)return {...item,y:Math.min(fish.surface,waterSurface)-6,rest:true,floating:true};
+  const gravity=560,rise=Math.max(24,item.y-landing.y+24),speed=Math.sqrt(2*gravity*rise);
+  const flight=(speed+Math.sqrt(Math.max(0,speed*speed+2*gravity*(landing.y-item.y))))/gravity;
+  return {...item,vx:(landing.x-item.x)/flight,vy:-speed};
 }
 
 export function drawRiverFish(g,image,event){

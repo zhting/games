@@ -34,3 +34,31 @@ test('快速退出再建房时，旧连接的延迟关闭和消息不会清除�
     }
   }
 });
+
+test('独立悟空客户端连接专用路径，支持统一后台域名与自定义反代路径', async () => {
+  const saved = { WebSocket: globalThis.WebSocket, window: globalThis.window, location: globalThis.location };
+  class Socket {
+    static OPEN = 1;
+    readyState = 0;
+    constructor(url) { this.url = String(url); queueMicrotask(() => { this.readyState = 1; this.onopen(); }); }
+    send() {}
+    close() { this.readyState = 3; }
+  }
+  globalThis.WebSocket = Socket;
+  globalThis.location = { origin: 'http://localhost:4187' };
+  try {
+    for (const [game, config, expected] of [
+      ['wukong', {}, 'ws://localhost:4187/games/wukong/ws'],
+      ['wukong', { url: 'https://api.example.test', wukongPath: '/custom/wukong/ws' }, 'wss://api.example.test/custom/wukong/ws'],
+      ['contra2026', {}, 'ws://localhost:4187/games/contra2026/ws'],
+    ]) {
+      globalThis.window = { GAMES_BACKEND: config };
+      const client = new CoopClient({}, { game });
+      await client.connect(); assert.equal(client.socket.url, expected); client.leave();
+    }
+  } finally {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete globalThis[key]; else globalThis[key] = value;
+    }
+  }
+});

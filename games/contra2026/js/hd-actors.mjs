@@ -1,5 +1,5 @@
 import { HD_ACTORS } from './hd-actor-atlas.mjs?v=webp-1';
-import { isRunning, isWading, runFrame, runGait, wadeGait } from './stage-one-motion.mjs?v=leg-alignment-2';
+import { isRunning, isWading, runFrame, runGait, wadeGait, MOTORCYCLE_RIDER } from './stage-one-motion.mjs?v=leg-alignment-2';
 import { HD_RUNS } from './hd-run-atlas.mjs?v=webp-1';
 import { deathVisual } from './player-death.mjs?v=death-fall-1';
 import { HD_DEATH } from './hd-death-atlas.mjs?v=webp-1';
@@ -8,6 +8,7 @@ export { HD_ACTORS, HD_RUNS, HD_DEATH, HD_RUN_RIG };
 
 export function actorPose(p,enemy=false){
   if(p.dead)return 'dead';
+  if(p.ride==='moto')return 'moto';
   if(p.spin)return 'roll';
   if(p.prone)return 'prone';
   if(isWading(p))return 'wade';
@@ -44,12 +45,13 @@ export class HDActorArt {
     this.cache.set(key,result);return result;
   }
   movingFrame(role,p,pose,density){
-    const size=p.giantT>0&&role!=='enemy'?2:1,wading=pose==='wade';
-    const gait=wading?wadeGait(p.anim||0,p.vx,size):runGait(p.anim||0,p.vx,size,role==='enemy');
+    const size=p.giantT>0&&role!=='enemy'?2:1,wading=pose==='wade',riding=pose==='moto';
+    const gait=riding?MOTORCYCLE_RIDER:wading?wadeGait(p.anim||0,p.vx,size):runGait(p.anim||0,p.vx,size,role==='enemy');
     const aim=p.ay<-.85?'up':p.ay<-.2?'diagonalUp':p.ay>.2?'diagonalDown':'idle';
     const upper=this.frame(role,aim,density),legs=['Far','Near'].map(name=>['Shin','Thigh','Boot'].map(part=>this.frame(role,`rig${name}${part}`,density)));
     if(!upper||legs.some(parts=>parts.some(part=>!part)))return null;
-    const key=`${role}:${density}`,signature=`${wading}:${gait.phase}:${aim}`;
+    const pitch=riding?(p.motoPitch||0):0;
+    const key=`${role}:${riding?'moto:':''}${density}`,signature=`${riding}:${wading}:${gait.phase}:${aim}:${pitch}`;
     let frame=this.movingFrames.get(key);
     if(!frame){
       // Fixed actor-space bounds cover every aim and stride, without moving the ground anchor.
@@ -58,7 +60,7 @@ export class HDActorArt {
       frame={canvas,x,y,w,h,version:0};this.movingFrames.set(key,frame);
     }
     if(frame.signature===signature)return frame;
-    const ink=frame.canvas.getContext('2d'),waist=-15.2+gait.bob;
+    const ink=frame.canvas.getContext('2d'),waist=riding?gait.waist:-15.2+gait.bob;
     ink.setTransform(1,0,0,1,0,0);ink.clearRect(0,0,frame.canvas.width,frame.canvas.height);
     ink.imageSmoothingEnabled=true;ink.imageSmoothingQuality='high';
     ink.setTransform(density,0,0,density,-frame.x*density,-frame.y*density);
@@ -70,7 +72,7 @@ export class HDActorArt {
       ink.save();ink.translate(leg.ankle.x,leg.ankle.y);ink.rotate(leg.footAngle);paint(boot);ink.restore();
     }
     // The curved pelvis overlaps the hip sockets inside the finished, unoutlined sprite.
-    ink.save();ink.beginPath();ink.moveTo(-70,-80);ink.lineTo(70,-80);ink.lineTo(70,waist+.7);ink.lineTo(4.5,waist+.7);
+    ink.save();if(riding){ink.translate(gait.seatX,waist);ink.rotate(pitch);ink.translate(0,-waist);}ink.beginPath();ink.moveTo(-70,-80);ink.lineTo(70,-80);ink.lineTo(70,waist+.7);ink.lineTo(4.5,waist+.7);
     ink.quadraticCurveTo(4,waist+2.8,1,waist+3.2);ink.lineTo(-1,waist+3.2);ink.quadraticCurveTo(-4,waist+2.8,-4.5,waist+.7);ink.lineTo(-70,waist+.7);ink.closePath();ink.clip();
     ink.translate(0,waist);ink.transform(1,0,-gait.lean,1,0,0);ink.translate(0,-waist);paint(upper,waist-upper.waist);ink.restore();
     frame.waist=waist;frame.signature=signature;frame.version++;return frame;
@@ -117,7 +119,7 @@ export class HDActorArt {
       else {g.translate(0,-14);g.rotate(visual.angle*(dedicated ? .25 : 1));g.drawImage(body.canvas,-body.w/2,-body.h/2,body.w,body.h);}
       g.restore();return true;
     }
-    const pose=p.artPose||actorPose(p,role==='enemy'),rig=(pose.startsWith('run')||pose==='wade')&&this.runRig?.[role]&&this.images[this.runRig[role].key]?.naturalWidth>0;
+    const pose=p.artPose||actorPose(p,role==='enemy'),rig=(pose.startsWith('run')||pose==='wade'||pose==='moto')&&this.runRig?.[role]&&this.images[this.runRig[role].key]?.naturalWidth>0;
     const aimedRun=!rig&&pose.startsWith('run')&&Math.abs(p.ay||0)>.2;
     const action=this.actionFrame?.(this,role,p,density);
     const assembled=action||(rig?this.movingFrame(role,p,pose,density):aimedRun?this.aimedRunFrame(role,pose,p.ay<-.85?'up':p.ay<0?'diagonalUp':'diagonalDown',density):this.frame(role,pose==='wade'?'idle':pose,density));

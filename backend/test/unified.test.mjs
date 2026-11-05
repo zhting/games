@@ -61,7 +61,7 @@ test('同一后台同时提供静态合集、军棋和干瞪眼，兼容轮询�
     assert.equal(health.ok, true);
     assert.ok(health.games.junqi);
     assert.ok(health.games.gandengyan);
-    for (const url of ['/', '/backend-config.js', '/games/game/3d', '/games/junqi/', '/games/gandengyan/', '/games/gandengyan/js/socket.io.min.js', '/games/gandengyan/js/game-shared.js']) {
+    for (const url of ['/', '/backend-config.js', '/games/game/3d', '/games/contra2026/', '/games/contra2026/js/main.mjs', '/games/shared/arcade-engine.mjs', '/games/shared/arcade.css', '/games/junqi/', '/games/gandengyan/', '/games/gandengyan/js/socket.io.min.js', '/games/gandengyan/js/game-shared.js']) {
       assert.equal((await fetch(origin + url)).status, 200, url);
     }
     for (const url of ['/games/gandengyan/data/db.json', '/games/gandengyan/lib/store.js', '/games/gandengyan/server.js', '/games/junqi/server/store.js']) {

@@ -500,6 +500,69 @@
       "source": "assets/stage5/winter-supply-saucer.webp",
       "prompt": "Built-in imagegen, transparent background, 2026-10-25.\n\nUse case: stylized-concept. Asset type: production transparent game sprite, a detailed flying supply saucer for a high-definition arcade side-scrolling action game. Primary request: redesign a small red-and-ivory pointed flying disc into a finely crafted dimensional machine. Single intact symmetrical saucer centered on a transparent canvas, wide low profile approximately 2.4:1 width to height, entire object visible with generous empty alpha padding. Almost straight-on side view, slightly elevated enough to reveal its top armor plane, compatible with a flat side-scrolling game camera. Preserve a strong diamond-like rim with sharp left and right tips, a shallow raised central red cockpit cap, ivory painted metal edging and a layered dark steel belly. Add thick beveled overlapping armor plates, red enamel with restrained worn edges, inset dark red cockpit glass, a small warm amber central optical lens, radial panel seams that follow the disc shape, small bolts, fine rim vents, ribbed lower mechanical housing, and two tiny recessed amber engine ports. Sculpt clear large readable masses first, then restrained crisp metal details; make the silhouette and red-white identity readable at a small on-screen size. Hand-painted HD arcade pixel-art style, crisp clustered texture, consistent with richly detailed snowy military tanks and cannons, cold steel reflections, warm ivory highlights, dark blue-grey recesses and understated red paint. Strong depth, precise occlusion shadows under the upper rim, controlled highlights along the top lip. No scene or ground, no snow lump, no giant halos, no exhaust trails, no cast shadow outside the body, no motion blur, no flat vector look, no plastic 3D toy look, no text, letters, labels, logos, UI or watermark. ONE saucer only, no variants or detached parts. Genuine transparent alpha background, no checkerboard printed into image.\n",
       "alphaPreserved": true
+    },
+    {
+      "generatedWith": "built-in imagegen",
+      "source": "games/contra2026/assets/stage5/winter-tank-core-v2.png",
+      "file": "games/contra2026/assets/stage5/winter-tank-core-v2.webp",
+      "url": "/games/contra2026/assets/stage5/winter-tank-core-v2.webp",
+      "dimensions": [
+        512,
+        192
+      ],
+      "bounds": [
+        0,
+        0,
+        512,
+        192
+      ],
+      "sourceBounds": [
+        146,
+        161,
+        1628,
+        716
+      ],
+      "bytes": 38424,
+      "sha256": "f28ca1c02684bab9d1a9747547ffd5450063405c4fcef41b7c4e15deecf3755f",
+      "alphaPreserved": true,
+      "lamps": [
+        [
+          155.0,
+          102.5,
+          25.0
+        ],
+        [
+          251.0,
+          102.5,
+          25.0
+        ],
+        [
+          348.0,
+          102.5,
+          25.0
+        ]
+      ],
+      "prompt": "Use case: precise-object-edit. Asset type: one production transparent replacement sprite for the three-lamp core device on an arctic armored tank. Image 1 is the edit target: the flat dark blue rectangular three-amber-light panel at the center of the tank close-up. Image 2 is a supporting style reference: the existing entire winter tank, whose white-grey armor, brushed metal edges, aged bolts, dirty seams and snow must be matched. Redesign only that three-lamp device as a physical embedded armored component. Deliver ONLY the isolated replacement component on real transparent background, not the surrounding tank.\n\nOne horizontally wide, low-profile, chamfered rectangular housing, about 2:1 silhouette width to height, fully visible, face-on to the side camera with extremely restrained perspective. Cold off-white and grey steel exterior, dark graphite inset, substantial beveled armored edges, inset grooves, brass-toned worn corner bolts, layered weld seams, small chips and abrasion showing dark metal beneath paint. A modest uneven dusting of snow and fine frost along the upper lip and two corners, matching the tank reference; no oversized snow mound or icicle curtain. THREE circular recessed amber optical/reactor lenses in ONE horizontal row, evenly spaced, same diameter, all visible. Each lens has a real machined metal bezel and dimensional dark inner recess, shaded translucent amber glass with a softly hot center, subtle inner ridges and an offset specular glint. A restrained warm glow comes from the glass only. Keep lenses clear enough to identify the tank's weak point at small gameplay scale, but the device must read as bolted-in physical armor, never a clean UI widget or floating icon. Small functional side hinges and a short cable gland may be integral to the housing, without protruding loose wires. No screen, no modern flat rounded-card frame, no giant graphic circles, no blue outline, no labels or text.\n\nStyle: exact matching detailed hand-painted arcade pixel sprite of the winter tank, crisp deliberate pixel clusters, dark contact shadows, dimensional stepped metallic highlights, same upper-left lighting and cold grey palette as the reference armor. Avoid smooth vector style, glossy plastic and photorealistic rendering. The whole component fills about 82 percent of image width, centered with transparent margins. Output one component only with true transparent RGBA everywhere outside the housing. No character, tank body, weapon, ground plane, cast floor shadow, checkerboard backdrop, UI, typography, extra devices, border or presentation sheet.",
+      "key": "tankCore"
+    },
+    {
+      "key": "enemyUniform",
+      "prompt": "Use case: stylized-concept. Asset type: upper-body overlay for a 2D side-scrolling action game enemy. Input is a reference for game art style. Draw one side-view soldier facing right: white and gray winter soldier in an insulated hood, goggles, padded jacket and ammunition pouches, carrying a long-barrel battle rifle. Show only helmet to waist, both arms and the complete gun. Detailed painted game sprite with worn fabric and metallic weapon; no background, no legs, no text, true transparency.",
+      "source": "Built-in imagegen: exec-e1a7e952-d8a1-4def-b4b8-b9d4d619e04f.png; full prompt documented in stage-enemy-uniforms-prompts.md.",
+      "file": "assets/stage5/enemy-snow-upper.webp",
+      "url": "/games/contra2026/assets/stage5/enemy-snow-upper.webp",
+      "dimensions": [
+        640,
+        378
+      ],
+      "bounds": [
+        0,
+        0,
+        640,
+        378
+      ],
+      "bytes": 72016,
+      "sha256": "8e81b797c51f326716f4c78d7d301a90ac796fdf6b893fe282c4f4409955b2ee"
     }
   ]
 }

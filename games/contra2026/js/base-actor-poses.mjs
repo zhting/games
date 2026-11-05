@@ -22,3 +22,22 @@ export function baseUpMuzzle(player,role='blue'){
   return {x:player.x+(upper.muzzle[0]-upper.anchor[0])*upper.scale*size,
     y:player.y+((upper.muzzle[1]-upper.anchor[1])*upper.scale+bob)*size};
 }
+
+// Shared visual timeline for passing a checkpoint and entering the next room.
+export const BASE_GATE_ROLL_START=.7, BASE_EXIT_ROLL_DURATION=.9;
+export function baseGateTransitionActor(player,progress,index=0,online=false){
+  const t=Math.max(0,Math.min(1,progress)),near=online?(index?8:-8):0;
+  if(t<BASE_GATE_ROLL_START){
+    const a=t/BASE_GATE_ROLL_START;
+    return {phase:'run',scale:1-a*.3,player:{...player,x:player.x+(192+near-player.x)*a*.8,
+      y:player.y-a*39,vx:60,onGround:true,spin:false,prone:false,aimUp:false,gateTransition:true}};
+  }
+  const r=(t-BASE_GATE_ROLL_START)/(1-BASE_GATE_ROLL_START);
+  return {phase:'roll',scale:.7,player:{...player,x:192+near,y:165-Math.sin(r*Math.PI)*24+r*14,
+    vx:0,onGround:false,spin:true,prone:false,aimUp:false,anim:r*7}};
+}
+export function baseExitRollActor(player,time,index=0,online=false){
+  const t=Math.max(0,Math.min(1,time/BASE_EXIT_ROLL_DURATION)),near=online?(index?12:-12):0;
+  return {phase:'roll',scale:.8,player:{...player,x:192+near,y:78+t*75-Math.sin(t*Math.PI)*12,
+    vx:0,onGround:false,spin:true,prone:false,aimUp:false,deathHidden:false,anim:t*9}};
+}

@@ -1,7 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isRunning, isWading, runGait, wadeGait, RUN_STANCE, RUN_BONES, runStride, WADE_STANCE, WADE_STRIDE } from '../../games/contra2026/js/stage-one-motion.mjs';
+import { isRunning, isWading, runGait, wadeGait, RUN_STANCE, RUN_BONES, runStride, WADE_STANCE, WADE_STRIDE, MOTORCYCLE_RIDER } from '../../games/contra2026/js/stage-one-motion.mjs';
 import {HDActorArt,HD_ACTORS,HD_RUN_RIG,actorPose} from '../../games/contra2026/js/hd-actors.mjs';
+import {advanceMotorcycle,motorcyclePose,motorcycleMuzzle,MOTORCYCLE_WHEELS} from '../../games/contra2026/js/motorcycle-motion.mjs';
+
+test('摩托快行时抬前轮，起跳抬得更高，松油门后平稳放下，后轮轴保持固定',()=>{
+  const p={ride:'moto',onGround:true,vx:170,vy:0};
+  for(let i=0;i<30;i++)advanceMotorcycle(p,1/60);
+  const ground=motorcyclePose(p);assert.ok(ground.frontLift>3.8&&ground.frontLift<4.1);
+  p.onGround=false;p.vy=-260;for(let i=0;i<10;i++)assert.equal(advanceMotorcycle(p,1/60),false);
+  const jump=motorcyclePose(p);assert.ok(jump.frontLift>ground.frontLift+3);
+  assert.equal(jump.rearX,MOTORCYCLE_WHEELS.rearX);assert.equal(jump.axleY,MOTORCYCLE_WHEELS.axleY);
+  p.onGround=true;p.vx=0;p.vy=0;const before=p.motoPitch;advanceMotorcycle(p,1/60);
+  assert.ok(p.motoPitch>0&&p.motoPitch<before,'落地收油不会瞬间拍下前轮');
+  for(let i=0;i<60;i++)advanceMotorcycle(p,1/60);assert.equal(p.motoPitch,0);
+});
+
+test('摩托枪口随座垫移动但不改变瞄准方向，左右轮抬姿势完全镜像',()=>{
+  for(const pitch of [0,.16,.36])for(const ay of [0,-Math.SQRT1_2]){
+    const p={x:100,y:176,face:1,ax:Math.sqrt(1-ay*ay),ay,motoPitch:pitch};
+    const right=motorcycleMuzzle(p),left=motorcycleMuzzle({...p,face:-1,ax:-p.ax});
+    assert.ok(Math.abs(right.x-100-(100-left.x))<1e-9);assert.equal(right.y,left.y);
+    const dx=MOTORCYCLE_RIDER.seatX-MOTORCYCLE_WHEELS.rearX,dy=MOTORCYCLE_RIDER.waist-MOTORCYCLE_WHEELS.axleY;
+    const hipY=MOTORCYCLE_WHEELS.axleY-dx*Math.sin(pitch)+dy*Math.cos(pitch);
+    const gunAboveHip=-MOTORCYCLE_RIDER.muzzleHeight+ay*11-MOTORCYCLE_RIDER.waist;
+    assert.ok(Math.abs(right.y-(p.y+hipY+gunAboveHip))<1e-9);
+  }
+});
 
 test('跑步时支撑脚贴地且世界位置保持不动，摆动脚抬起，膝关节连接连续', () => {
   for (const speed of [-120,-90,-60,60,90,120]) for (const size of [1, 2]) {
@@ -73,6 +98,31 @@ function recordedCanvas(){
   const calls=[],ink=new Proxy({globalAlpha:1},{get:(o,k)=>k in o?o[k]:(...args)=>calls.push([k,...args])});
   return {calls,getContext:()=>ink};
 }
+
+test('骑摩托始终坐在车座上，膝盖向前弯曲，脚踩脚踏且行驶中不踏步',()=>{
+  for(const leg of MOTORCYCLE_RIDER.legs){
+    assert.ok(leg.knee.x>leg.hip.x+6);
+    assert.ok(leg.ankle.x<leg.knee.x-4);
+    assert.ok(leg.ankle.y+RUN_BONES.sole< -3,'boots remain above the wheels');
+    assert.ok(Math.abs(Math.hypot(leg.knee.x-leg.hip.x,leg.knee.y-leg.hip.y)-RUN_BONES.upper)<1e-9);
+    assert.ok(Math.abs(Math.hypot(leg.ankle.x-leg.knee.x,leg.ankle.y-leg.knee.y)-RUN_BONES.lower)<1e-9);
+  }
+  for(const role of ['red','blue']){
+    const art=new HDActorArt(recordedCanvas,{[HD_ACTORS[role].key]:{naturalWidth:1086},runLimbs:{naturalWidth:1086}});
+    const output=recordedCanvas(),g=output.getContext('2d');
+    for(const vx of [0,170,-170])for(const onGround of [true,false]){
+      const p={ride:'moto',vx,onGround,anim:35,ay:0};
+      assert.equal(actorPose({...p,spin:true,prone:true}),'moto');
+      art.draw(g,p,role,10);
+      const seated=art.movingFrames.get(`${role}:moto:10`);
+      assert.ok(seated);assert.equal(seated.waist,MOTORCYCLE_RIDER.waist);
+      const version=seated.version;art.draw(g,{...p,anim:200},role,10);
+      assert.equal(seated.version,version,'travel does not cycle the legs');
+      art.draw(g,{...p,ay:-.7},role,10);assert.ok(seated.version>version,'aim still changes the upper body');
+    }
+    assert.equal(actorPose({ride:'moto',dead:true}),'dead');
+  }
+});
 
 test('跑步以完整角色帧绘制，微小时间变化仍会改变关节，放大不挤压裤腿',()=>{
   const make=recordedCanvas;

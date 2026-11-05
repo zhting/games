@@ -3,14 +3,14 @@ import { encodeInput, InputBuffer } from './coop-core.mjs';
 export class CoopClient {
   role = ''; room = ''; playing = false; connected = false; remote = new InputBuffer();
   seq = 0; lastBits = -1; lastInput = 0; lastFrame = 0; latency = 0;
-  constructor(callbacks) { this.callbacks = callbacks; }
+  constructor(callbacks, { game = 'contra2026' } = {}) { this.callbacks = callbacks; this.game = game; }
   connect() {
     if (this.socket?.readyState === WebSocket.OPEN) return Promise.resolve();
     if (this.connecting) return this.connecting;
     const config = window.GAMES_BACKEND || {};
     const url = new URL(config.url || location.origin);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
-    url.pathname = config.contraPath || '/games/contra2026/ws'; url.search = ''; url.hash = '';
+    url.pathname = this.game === 'wukong' ? config.wukongPath || '/games/wukong/ws' : config.contraPath || '/games/contra2026/ws'; url.search = ''; url.hash = '';
     const socket = this.socket = new WebSocket(url);
     this.connecting = new Promise((resolve, reject) => {
       const timeout = setTimeout(() => { socket.close(); reject(Error('连接超时，请确认联机后台已启动')); }, 10000);

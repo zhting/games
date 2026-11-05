@@ -7,6 +7,21 @@ export function sceneryRandom(n) {
 // The cliff's visible foot is above the bottom edge, leaving a continuous river below.
 // Sampling world coordinates keeps the shoreline attached while the camera scrolls.
 export const coastHeight = x => 198 + Math.sin(x * .047) * .65 + Math.sin(x * .123) * .35;
+// Small rounded outcrops follow the rock strata, rather than a ruler-straight cut.
+// World coordinates keep the silhouette still as the camera crosses a chunk.
+export function cliffEdgeProfile(x, top, bottom, side) {
+  const points = [[x, top]], length = bottom - top;
+  if (length <= 0) return points;
+  const phase = sceneryRandom(Math.round(x * 71)) * Math.PI;
+  for (let y = top + 1; y < bottom; y += 1) {
+    const taper = Math.min(1, (y - top) / 3, (bottom - y) / 3);
+    const lobe = Math.sin((y - top) * .43 + phase);
+    const offset = taper * (.7 + 2.1 * lobe + .45 * Math.sin(y * .91 + phase));
+    points.push([x + side * offset, y]);
+  }
+  points.push([x, bottom]);
+  return points;
+}
 function site(column, row) {
   const seed = Math.imul(column + 4096, 73856093) ^ Math.imul(row + 128, 19349663);
   return { x: column * 13 + (row & 1) * 6.5 + (sceneryRandom(seed) - .5) * 8,

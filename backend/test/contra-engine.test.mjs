@@ -4,26 +4,54 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import { GamepadInput } from '../../games/contra2026/js/gamepad-input.mjs';
 import { normalizeAudioMix, audioMixLevels } from '../../games/contra2026/js/audio-mix.mjs';
+import {ContraWeaponAudio,receivedWeaponShots} from '../../games/contra2026/js/weapon-audio.mjs';
+import {aimEscortDrone,escortDroneMuzzle} from '../../games/contra2026/js/escort-drone.mjs';
+import {advanceAlienCrawler,alienCrawlerFrame,ALIEN_CRAWLER_ART} from '../../games/contra2026/js/alien-crawler.mjs';
+import * as stageEightGuardian from '../../games/contra2026/js/stage-eight-guardian.mjs';
+import * as guardianFlyers from '../../games/contra2026/js/guardian-flyer.mjs';
+import * as ceilingParasites from '../../games/contra2026/js/ceiling-parasite.mjs';
+import * as ceilingStalkers from '../../games/contra2026/js/ceiling-stalker.mjs';
+import * as hiveBrood from '../../games/contra2026/js/hive-brood.mjs';
+import {advanceLarvaHop,larvaHopFrame} from '../../games/contra2026/js/larva-hop.mjs';
+import {hiveSpikeHeight} from '../../games/contra2026/js/stage-eight-hazards.mjs';
 import { THIRTY_LIVES, ThirtyLivesCheat, inTitleLogo } from '../../games/contra2026/js/thirty-lives.mjs';
 import { InputBuffer, packWorld, unpackWorld, encodeInput } from '../../games/contra2026/js/coop-core.mjs';
+import { inventorySlotAt, inventorySlotBounds } from '../../games/contra2026/js/hud-layout.mjs';
+import { MOTORCYCLE_RIDER } from '../../games/contra2026/js/stage-one-motion.mjs';
 import { StageOneArt, FORTRESS_ART, FORTRESS_TARGETS, FORTRESS_EXIT } from '../../games/contra2026/js/stage-one-art.mjs';
 import { StageTwoArt } from '../../games/contra2026/js/stage-two-art.mjs';
 import { StageThreeArt } from '../../games/contra2026/js/stage-three-art.mjs';
 import { StageFourArt } from '../../games/contra2026/js/stage-four-art.mjs';
 import { StageFiveArt } from '../../games/contra2026/js/stage-five-art.mjs';
+import { StageSixArt } from '../../games/contra2026/js/stage-six-art.mjs';
+import { StageSevenArt } from '../../games/contra2026/js/stage-seven-art.mjs';
+import { EndingArt } from '../../games/contra2026/js/ending-art.mjs';
+import { ENDING_DURATION, ENDING_PAGES } from '../../games/contra2026/js/ending-story.mjs';
+import { hangarMachinery } from '../../games/contra2026/js/stage-seven-atmosphere.mjs';
+import * as hangarObstacles from '../../games/contra2026/js/stage-seven-obstacles.mjs';
+import * as hangarRoute from '../../games/contra2026/js/stage-seven-layout.mjs';
+import * as minecart from '../../games/contra2026/js/minecart-rider.mjs';
+import * as stageSixCombat from '../../games/contra2026/js/stage-six-combat.mjs';
+import * as stageSixBoss from '../../games/contra2026/js/stage-six-boss.mjs';
+import * as stageSixExit from '../../games/contra2026/js/stage-six-exit.mjs';
 import * as snowCombat from '../../games/contra2026/js/stage-five-combat.mjs';
+import * as fortressRoof from '../../games/contra2026/js/fortress-roof-guard.mjs';
+import * as riverFish from '../../games/contra2026/js/river-fish.mjs';
+import * as fortressCannon from '../../games/contra2026/js/fortress-cannon.mjs';
+import * as motorcycle from '../../games/contra2026/js/motorcycle-motion.mjs';
 import { isLocalStageFivePreview } from '../../games/contra2026/js/local-stage-preview.mjs';
 import * as baseFour from '../../games/contra2026/js/stage-four-layout.mjs';
 import * as waterfall from '../../games/contra2026/js/stage-three-layout.mjs';
 import * as waterfallArms from '../../games/contra2026/js/stage-three-arms.mjs';
-import { baseUpMuzzle } from '../../games/contra2026/js/base-actor-poses.mjs';
+import * as wallRock from '../../games/contra2026/js/stage-three-rockfall.mjs';
+import { baseUpMuzzle, BASE_EXIT_ROLL_DURATION } from '../../games/contra2026/js/base-actor-poses.mjs';
 import { OPENING_DURATION, OPENING_PAGES } from '../../games/contra2026/js/opening-story.mjs';
 import { drawSupplySaucer } from '../../games/contra2026/js/supply-saucer.mjs';
 import { drawExplosion, drawSupplyDisc, drawEquipmentTurret, drawEquipmentSupply } from '../../games/contra2026/js/combat-art.mjs';
-import { BASE_SOLDIER, baseSoldierScale } from '../../games/contra2026/js/base-soldier.mjs';
+import { BASE_SOLDIER, BASE_PATROL_DEPTH, BASE_PATROL_LIMIT, BASE_PATROL_MAX, advanceBasePatrol, baseSoldierScale, baseSoldierJumpOffset, baseSoldierMuzzle, advanceBaseSoldierJump } from '../../games/contra2026/js/base-soldier.mjs';
 import { BASE_HIGH_SWITCH, baseShotHeight, baseTargetAtHeight, baseCoreShielded, baseHomingTarget } from '../../games/contra2026/js/base-shooting.mjs';
 import { baseSupplyKind } from '../../games/contra2026/js/base-supply.mjs';
-import { BASE_BOSS_DEVICES, BASE_BOSS_MOVER, bossDevicesRemaining, movingBossX, advanceBossLift } from '../../games/contra2026/js/base-boss.mjs';
+import { BASE_BOSS_DEVICES, BASE_BOSS_MOVER, bossDevicesRemaining, movingBossX, advanceBossLift, advanceStageTwoBossDevice } from '../../games/contra2026/js/base-boss.mjs';
 import { canEnterExit, beginExitEntry, advanceExitEntry, teamInsideExit } from '../../games/contra2026/js/stage-one-exit.mjs';
 import { ReferenceMusic, StageMusicSession, referenceTrackForScene, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic } from '../../games/contra2026/js/reference-music.mjs';
 import { CONTRA_TRACKS, fixedStageMusicKeys, fixedMusicTrack } from '../../games/contra2026/js/fixed-soundtrack.mjs';
@@ -36,10 +64,11 @@ import { OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextO
 import { beginDeath, advanceDeath, deathVisual } from '../../games/contra2026/js/player-death.mjs';
 import { addImpact } from '../../games/contra2026/js/impact-effects.mjs';
 import { GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox, giantPowerLabel, drawGiantStomp } from '../../games/contra2026/js/giant-power.mjs';
+import {drawImpactHelmet} from '../../games/contra2026/js/impact-helmet-art.mjs';
 
-// Run the real inline game engine with a no-op drawing surface. No production
+// Run the real shared game engine with a no-op drawing surface. No production
 // mutation hooks are exposed; the test hook is injected into this VM only.
-function engine({getGamepads=()=>[],coldResources=false,previewStage5=false,touch=false,hostname='localhost',savedSettings=null}={}) {
+function engine({getGamepads=()=>[],coldResources=false,previewStage5=false,touch=false,hostname='localhost',savedSettings=null,weaponAudioClass=ContraWeaponAudio}={}) {
   let fullscreenRequests=0;
   const elements = new Map(), storage = new Map(), documentEvents=new Map();
   if(savedSettings)storage.set('chiyan-settings',JSON.stringify(savedSettings));
@@ -82,38 +111,331 @@ function engine({getGamepads=()=>[],coldResources=false,previewStage5=false,touc
       decode(){return Promise.resolve();}
     },
     URL, URLSearchParams, Math, Date, Set, Map, console, setTimeout, clearTimeout, setInterval, clearInterval, queueMicrotask, coldResources,
-    ...waterfall,...waterfallArms,...baseFour,...snowCombat,
-    THIRTY_LIVES, ThirtyLivesCheat, inTitleLogo, normalizeAudioMix, audioMixLevels,
-    CoopClient: Network, packWorld, unpackWorld, StageOneArt, StageTwoArt, StageThreeArt, StageFourArt, StageFiveArt, isLocalStageFivePreview, GamepadInput, baseUpMuzzle, FORTRESS_ART, FORTRESS_TARGETS,
+    ...waterfall,...waterfallArms,...wallRock,...baseFour,...snowCombat,...fortressRoof,...riverFish,...fortressCannon,...motorcycle,...stageSixCombat,...stageSixBoss,...stageSixExit,...hangarObstacles,...hangarRoute,...minecart,...stageEightGuardian,...guardianFlyers,...ceilingParasites,...ceilingStalkers,...hiveBrood,
+    THIRTY_LIVES, ThirtyLivesCheat, inTitleLogo, normalizeAudioMix, audioMixLevels,ContraWeaponAudio:weaponAudioClass,receivedWeaponShots,aimEscortDrone,advanceAlienCrawler,advanceLarvaHop,hiveSpikeHeight,EndingArt,ENDING_DURATION,ENDING_PAGES,
+    CoopClient: Network, packWorld, unpackWorld, inventorySlotAt, MOTORCYCLE_RIDER, StageOneArt, StageTwoArt, StageThreeArt, StageFourArt, StageFiveArt, StageSixArt, StageSevenArt, isLocalStageFivePreview, GamepadInput, baseUpMuzzle, BASE_EXIT_ROLL_DURATION, FORTRESS_ART, FORTRESS_TARGETS,
     REFERENCE_TRACKS, CONTRA_TRACKS, fixedStageMusicKeys, fixedMusicTrack, versionedAssetUrl, ResourcePreloader, gameResourceJobs, musicResourceJobs, stageResourceJobs,
-    ReferenceMusic, StageMusicSession, referenceTrackForScene, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic, musicRecord, OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage, OPENING_DURATION, OPENING_PAGES, drawSupplySaucer, BASE_SOLDIER, baseSoldierScale,
+    ReferenceMusic, StageMusicSession, referenceTrackForScene, musicForScene, stageMusicOptions, stageMusicPool, normalizeStageMusic, musicRecord, OPEN_STAGES, LAST_OPEN_STAGE, STAGE_RELEASE_MESSAGE, isStageOpen, nextOpenStage, OPENING_DURATION, OPENING_PAGES, drawSupplySaucer, BASE_SOLDIER, BASE_PATROL_DEPTH, BASE_PATROL_LIMIT, BASE_PATROL_MAX, advanceBasePatrol, baseSoldierScale, baseSoldierJumpOffset, baseSoldierMuzzle, advanceBaseSoldierJump,
     beginDeath, advanceDeath,
     addImpact,
     drawExplosion, drawSupplyDisc, drawEquipmentTurret, drawEquipmentSupply,
-    GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox, giantPowerLabel, drawGiantStomp,
+    GIANT_POWER, startGiant, endGiant, updateGiant, hitGiant, giantCrushBox, giantPowerLabel, drawGiantStomp,drawImpactHelmet,
     BASE_HIGH_SWITCH, baseShotHeight, baseTargetAtHeight, baseCoreShielded, baseHomingTarget,
     baseSupplyKind,
-    BASE_BOSS_DEVICES, BASE_BOSS_MOVER, bossDevicesRemaining, movingBossX, advanceBossLift,
+    BASE_BOSS_DEVICES, BASE_BOSS_MOVER, bossDevicesRemaining, movingBossX, advanceBossLift, advanceStageTwoBossDevice,
     FORTRESS_EXIT, canEnterExit, beginExitEntry, advanceExitEntry, teamInsideExit,
   };
   sandbox.window = sandbox;
-  const html = fs.readFileSync(new URL('../../games/contra2026/index.html', import.meta.url), 'utf8');
-  let source = [...html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]).join('\n').replace(/^import .*$/gm, '');
+  const module = fs.readFileSync(new URL('../../games/shared/arcade-engine.mjs', import.meta.url), 'utf8');
+  let source = module.replace(/^import .*$/gm, '').replace(/^export /gm, '');
   source = source.replace('// ================= loop =================', `
     if(!coldResources)for(const stage of OPEN_STAGES)for(const job of stageJobs(stage))resourceCache.add(job.id);
-    window.engine = { G, K, SET, coop, reset, step, render, collide, collideBasePlayer, withPlayer2, startGame, startStage, startAfterLoading, cancelLoading, stageResourcesReady, referenceMusic, resourceCache, startUWOpening, unlockUW, stageClear, element: id => document.getElementById(id),
-      keepTeamOnScreen, updateCamera, loadRoom, collidePartnerHazards, updateEnemies, updateBullets, collidePlayer, damageEnemy, ebox, updateBoss, updateStage3, hitMech, bossParts, findTarget, solids, BRIDGES, inWall, xMax, stageOneArt, stageThreeArt, Music, stageMusicSession, useSpecial, killPlayer, killSoldier, hitTarget, baseBlast, stageFourArt, stageFiveArt, hitTank, hitFlyingFortress, hitBossPart, placeTank, pBox, toTitle, infiniteLives, gameplaySettings, syncSettingsUI, inspect:()=>window.Contra2026.inspect(),
+    window.engine = { G, K, SET, coop, reset, step, render, collide, collideBasePlayer, withPlayer2, startGame, startStage, startAfterLoading, cancelLoading, stageResourcesReady, referenceMusic, resourceCache, startUWOpening, unlockUW, stageClear, slotHit, element: id => document.getElementById(id),
+      keepTeamOnScreen, updateCamera, loadRoom, collidePartnerHazards, updateActor, updateEnemies, updateBullets, collidePlayer, jetBox, damageEnemy, ebox, updateBoss, updateStage3, hitMech, bossParts, findTarget, solids, BRIDGES, inWall, xMax, stageOneArt, stageThreeArt, Music, stageMusicSession, useSpecial, killPlayer, killSoldier, hitTarget, baseBlast, stageFourArt, stageFiveArt, hitTank, hitFlyingFortress, hitBossPart, placeTank, pBox, toTitle, infiniteLives, gameplaySettings, syncSettingsUI, updateHud, inspect:()=>window.Contra2026.inspect(),
       resizeWindow(width, height, dpr = 1) { $('wrap').clientWidth = width; $('wrap').clientHeight = height; window.devicePixelRatio = dpr; resize(); },
       resolution: () => ({ canvas: [cv.width, cv.height], backgrounds: backgroundResolution, sky: SKY && [SKY.width, SKY.height] }),
       play(stage, online = true) { coop.playing = online; reset(stage); setMode('play'); } };
     // ================= loop =================`);
-  vm.runInNewContext(source, sandbox, { filename: 'contra2026-engine.js' });
+  vm.runInNewContext(source + '\nstartArcade();', sandbox, { filename: 'contra2026-engine.js' });
   sandbox.engine.dispatchDocument=(type,event)=>{for(const handler of documentEvents.get(type)||[])handler({preventDefault(){},cancelable:true,...event});};
   sandbox.engine.fullscreenRequests=()=>fullscreenRequests;
   return sandbox.engine;
 }
 
 const pendingResource=()=>{let resolve;const promise=new Promise(yes=>resolve=yes);return {promise,resolve};};
+
+function weaponAudioSpy(events){return class{
+  constructor(options){this.options=options;this.stops=0;}
+  play(weapon){if(!this.options.enabled())return false;events.push(weapon);return true;}
+  stopAll(){this.stops++;}
+  inspect(){return {played:events.length,stops:this.stops};}
+};}
+
+test('前八关六种武器实际发弹时各播放一次相应枪声，冷却和暂停不重复播放，音效开关仍有效',()=>{
+  for(const stage of [1,2,3,4,5,6,7,8])for(const weapon of ['rifle','machine','spread','laser','fire','homing']){
+    const sounds=[],e=engine({weaponAudioClass:weaponAudioSpy(sounds)});e.play(stage,false);e.G.en=[];e.G.spawnT=9999;e.G.podTrig=[];e.G.p.invT=999;
+    if(stage===6)e.G.jets=[];if(stage===7){e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;}
+    e.step();e.G.p.weapon=weapon;e.K.KeyJ=true;e.step();
+    assert.equal(e.G.p.shotSeq,1,`${stage} ${weapon}`);assert.deepEqual(sounds,[weapon]);for(let i=0;i<3;i++)e.step();assert.equal(sounds.length,1,'cooldown has no extra report');
+    e.G.pb=[];e.G.p.cool=0;e.SET.sfx='off';e.step();assert.equal(e.G.p.shotSeq,2);assert.equal(sounds.length,1,'muted SFX do not play even though firing continues');
+    e.G.mode='pause';for(let i=0;i<20;i++)e.step();assert.equal(e.G.p.shotSeq,2);assert.equal(sounds.length,1);
+  }
+});
+
+test('联机客机按玩家一和玩家二的枪种播放枪声，快照重复或枪口闪光已结束都不漏发或重放',()=>{
+  const hostSounds=[],guestSounds=[],host=engine({weaponAudioClass:weaponAudioSpy(hostSounds)}),guest=engine({weaponAudioClass:weaponAudioSpy(guestSounds)});
+  host.play(1,true);guest.play(1,true);guest.coop.role='guest';host.G.en=[];host.G.podTrig=[];host.G.spawnT=9999;host.G.p.invT=host.G.p2.invT=999;
+  host.G.p.weapon='spread';host.G.p2.weapon='machine';host.step();host.K.KeyJ=true;host.coop.remote.push(encodeInput({fire:true}));host.step();
+  const sync=()=>guest.coop.callbacks.state(packWorld([host.G,host.solids,host.BRIDGES,{inf:'on',diff:'normal',autofire:'on'}]));
+  sync();assert.deepEqual(guestSounds,['spread','machine']);sync();assert.equal(guestSounds.length,2);
+  for(let i=0;i<8;i++){host.coop.remote.push(encodeInput({fire:true}));host.step();}host.G.p.flashT=host.G.p2.flashT=0;
+  sync();assert.ok(guestSounds.length>2);assert.equal(guestSounds.at(-1),'machine');const count=guestSounds.length;sync();assert.equal(guestSounds.length,count);
+  host.G.mode='pause';sync();assert.equal(guestSounds.length,count);assert.ok(guest.inspect().audio.weaponShots.stops>0);
+});
+
+test('真实摩托行驶从后轮扬尘，起跳只留蹬地尘，腾空不续尘，射击仍沿原方向',()=>{
+  const e=engine();e.play(1,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.camX=2750;
+  Object.assign(e.G.p,{x:2900,y:176,onGround:true,ride:'moto',rideT:15,invT:999});
+  e.K.KeyD=e.K.KeyJ=true;for(let i=0;i<18;i++)e.step();
+  assert.ok(e.G.p.motoPitch>.15);const dust=e.G.fx.filter(f=>f.k==='motoDust');assert.ok(dust.length>2);
+  assert.ok(dust.every(f=>f.x<e.G.p.x&&f.material==='soil'));
+  assert.ok(e.G.pb.filter(b=>!b.dead).every(b=>b.vx>0&&b.vy===0));
+  const before=e.G.p.motoPitch;e.K.KeyK=true;e.step();assert.equal(e.G.p.onGround,false);assert.ok(e.G.p.motoPitch>before);
+  const airborneDust=new Set(e.G.fx.filter(f=>f.k==='motoDust'));e.K.KeyK=false;
+  for(let i=0;i<12;i++)e.step();assert.equal(e.G.p.onGround,false);
+  assert.ok(e.G.fx.filter(f=>f.k==='motoDust').every(f=>airborneDust.has(f)),'空中没有新扬尘');
+  const angle=e.G.p.motoPitch,ages=e.G.fx.map(f=>f.t);e.G.mode='pause';e.step();
+  assert.equal(e.G.p.motoPitch,angle);assert.deepEqual(Array.from(e.G.fx,f=>f.t),Array.from(ages));
+  e.G.mode='play';e.K.KeyD=e.K.KeyJ=false;
+  for(let i=0;i<120;i++)e.step();assert.equal(e.G.p.onGround,true);assert.equal(e.G.p.motoPitch,0);
+  assert.equal(e.G.fx.some(f=>f.k==='motoDust'),false);
+});
+
+test('双人摩托抬头与尘土独立同步，雪地扬雪，离车后清除抬头状态',()=>{
+  const e=engine();e.play(1,true);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.camX=2750;
+  for(const [i,p]of [e.G.p,e.G.p2].entries())Object.assign(p,{x:2900+i*80,y:176,onGround:true,ride:'moto',rideT:15,invT:999});
+  e.K.KeyD=true;
+  for(let i=0;i<12;i++){e.coop.remote.push(encodeInput({}));e.step();}
+  assert.ok(e.G.p.motoPitch>.14);assert.equal(e.G.p2.motoPitch,0);
+  const restored=unpackWorld(packWorld(e.G));assert.equal(restored.p.motoPitch,e.G.p.motoPitch);assert.equal(restored.p2.motoPitch,0);
+  assert.ok(restored.fx.some(f=>f.k==='motoDust'));
+  e.G.p.rideT=.001;e.K.KeyD=false;e.step();assert.equal(e.G.p.ride,null);assert.equal(e.G.p.motoPitch,0);
+  const snow=engine();snow.play(5,false);snow.G.en=[];snow.G.podTrig=[];snow.G.spawnT=9999;
+  Object.assign(snow.G.p,{ride:'moto',rideT:15,invT:999});snow.K.KeyD=true;
+  for(let i=0;i<8;i++)snow.step();assert.ok(snow.G.fx.some(f=>f.k==='motoDust'&&f.material==='snow'));
+});
+
+test('要塞炮真实发射时触发后坐与炮口特效，两门独立，暂停和冰冻保持动作，摧毁后停火',()=>{
+  for(const index of [0,1]){
+    const e=engine();e.play(1,true);e.G.en=[];e.G.camX=2950;e.G.boss.active=true;
+    Object.assign(e.G.p,{x:3100,y:176,invT:999});Object.assign(e.G.p2,{x:3130,y:176,invT:999});
+    const gun=e.G.boss.parts[index],other=e.G.boss.parts[1-index];gun.fireT=0;other.fireT=999;
+    e.updateBoss();assert.equal(e.G.eb.length,1);assert.equal(gun.shotAge,0);assert.equal(gun.shotSerial,1);
+    assert.equal(other.shotAge,undefined,'另一门炮不会跟着抖动或冒烟');
+    const muzzle=fortressCannon.fortressCannonMuzzle(gun);
+    assert.deepEqual([e.G.eb[0].x,e.G.eb[0].y],[muzzle.x,muzzle.y]);
+    for(let i=0;i<3;i++)e.updateBoss();
+    const pose=fortressCannon.fortressCannonPose(gun);assert.ok(pose.recoil>3&&pose.flash>0);
+    const restored=unpackWorld(packWorld(e.G)).boss.parts[index];
+    assert.deepEqual(fortressCannon.fortressCannonPose(restored),pose,'联机快照保留当前后坐和火光相位');
+    const age=gun.shotAge;e.G.freezeT=2;for(let i=0;i<30;i++)e.updateBoss();assert.equal(gun.shotAge,age);
+    e.G.mode='pause';e.step();assert.equal(gun.shotAge,age);e.G.mode='play';e.G.freezeT=0;
+    for(let i=0;i<30;i++)e.updateBoss();assert.equal(fortressCannon.fortressCannonPose(gun).recoil,0);
+    assert.equal(fortressCannon.fortressCannonPose(gun).flash,0);assert.equal(e.G.eb.length,1);
+    e.hitBossPart(gun,999);const count=e.G.eb.length;
+    gun.fireT=0;for(let i=0;i<60;i++)e.updateBoss();assert.equal(e.G.eb.length,count);
+    assert.equal(fortressCannon.fortressCannonPose(gun).age,-1);
+  }
+});
+
+test('普通步枪斜下射击能击中实际跳跃的河鱼，继续向前可捡到奖励增加一条命',()=>{
+  const e=engine();e.play(1,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.time=5.6;
+  Object.assign(e.G.p,{x:40,y:112,invT:999});e.step();
+  e.K.KeyS=e.K.KeyD=e.K.KeyJ=true;
+  for(let frame=0;frame<120&&e.G.lives===3;frame++)e.step();
+  assert.equal(e.G.lives,4);assert.equal(e.G.deaths,0);
+  assert.equal(e.G.riverFishHits[0],0);assert.equal(e.G.p.weapon,'rifle');
+  assert.ok(e.G.fx.some(f=>f.k==='lifeUp'));
+});
+
+test('第一关河鱼可被全部弹种击中，每次跃起只掉一次生命奖励，接触鱼不会扣命',()=>{
+  for(const kind of ['b','sp','laser','fire','msl','heli']){
+    const e=engine();e.play(1,false);e.G.en=[];e.G.pods=[];e.G.podTrig=[];e.G.spawnT=9999;
+    e.G.time=6.65;Object.assign(e.G.p,{x:340,y:176,invT:0});
+    const fish=riverFish.riverFishJumps(e.G.time,0,e.solids)[0];assert.ok(fish?.airborne);
+    const bullet={k:kind==='heli'?'msl':kind,x:fish.x,y:fish.y,cx:fish.x,cy:fish.y,vx:270,vy:0,dmg:2,hits:new Set(),heliMissile:kind==='heli'};
+    e.G.pb=[bullet];e.collide();
+    assert.equal(e.G.riverFishHits[fish.tile],fish.cycle);
+    assert.equal(e.G.items.filter(i=>i.fromFish).length,1,kind);
+    assert.equal(e.G.items[0].kind,'life');assert.equal(e.G.lives,3,'命中后需要拾取，不直接加命');
+    e.G.pb=[{...bullet,dead:false,hits:new Set()}];e.collide();e.collide();
+    assert.equal(e.G.items.filter(i=>i.fromFish).length,1,'激光穿透、散弹或同帧双发不重复掉落');
+    assert.equal(riverFish.riverFishJumps(e.G.time,0,e.solids,undefined,e.G.riverFishHits).length,0,'命中后鱼立即消失');
+  }
+  const e=engine();e.play(1,false);e.G.en=[];e.G.time=6.65;
+  const fish=riverFish.riverFishJumps(e.G.time,0,e.solids)[0];
+  Object.assign(e.G.p,{x:fish.x,y:fish.y+12,invT:0,onGround:false});e.collide();
+  assert.equal(e.G.deaths,0);assert.equal(e.G.lives,3);assert.equal(e.G.items.length,0);
+});
+
+test('河鱼奖励落到岸边，拾取只加一条命，不占道具栏、不改变武器或触发积分加命',()=>{
+  const e=engine();e.play(1,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.time=6.65;
+  Object.assign(e.G.p,{x:340,y:176,weapon:'laser',rapid:true,invT:999});e.G.inv=['t'];
+  const fish=riverFish.riverFishJumps(e.G.time,0,e.solids)[0];
+  e.G.pb=[{k:'b',x:fish.x,y:fish.y,vx:270,vy:0,dmg:1}];e.collide();
+  const item=e.G.items[0];assert.ok(item.vy<0);
+  for(let i=0;i<180&&!item.rest;i++)e.updateEnemies();
+  assert.equal(item.rest,true);assert.equal(item.vy,0);assert.equal(item.dead,undefined);
+  assert.ok(e.solids.some(s=>!s.water&&!s.gone&&item.x>=s.x&&item.x<=s.x+s.w&&Math.abs(item.y-s.y)<.01));
+  e.G.score=19999;e.G.nextLife=20000;Object.assign(e.G.p,{x:item.x,y:item.y});
+  e.collide();assert.equal(e.G.lives,4);assert.equal(item.dead,true);assert.equal(e.G.p.weapon,'laser');
+  assert.equal(e.G.p.rapid,true);assert.deepEqual(Array.from(e.G.inv),['t']);
+  assert.equal(e.G.score,19999);assert.equal(e.G.nextLife,20000,'每份奖励恰好一条命');
+  assert.match(e.G.bannerText,/增加一条命/);assert.ok(e.G.fx.some(f=>f.k==='lifeUp'));
+  e.collide();assert.equal(e.G.lives,4);
+  const floating=riverFish.riverFishLifeReward(fish,[],0);
+  e.G.items=[floating];Object.assign(e.G.p,{x:floating.x,y:186,inWater:true});e.collide();
+  assert.equal(e.G.lives,5,'浮水奖励位于实际游泳碰撞高度，可以正常拾取');
+});
+
+test('双人同步保留河鱼命中和生命奖励，同一奖励两人同时接触只加一次命，重开与换关正确清理',()=>{
+  const e=engine();e.play(1,true);e.G.en=[];e.G.time=6.65;
+  Object.assign(e.G.p,{x:300,y:176,invT:999});Object.assign(e.G.p2,{x:330,y:176,invT:999});
+  const fish=riverFish.riverFishJumps(e.G.time,0,e.solids)[0];
+  e.G.pb=[{k:'b',x:fish.x,y:fish.y,vx:270,vy:0,dmg:1}];e.collide();
+  const restored=unpackWorld(packWorld(e.G));
+  assert.equal(restored.riverFishHits[fish.tile],fish.cycle);assert.equal(restored.items[0].kind,'life');
+  assert.equal(riverFish.riverFishJumps(restored.time,restored.camX,e.solids,undefined,restored.riverFishHits).length,0);
+  const item=e.G.items[0];item.rest=true;item.y=176;
+  for(const p of [e.G.p,e.G.p2])Object.assign(p,{x:item.x,y:item.y});
+  e.collide();assert.equal(e.G.lives,4);e.collide();assert.equal(e.G.lives,4);
+  e.reset(1);assert.equal(Object.keys(e.G.riverFishHits).length,0);assert.equal(e.G.items.length,0);
+  e.play(3,false);e.G.en=[];e.G.time=6.65;e.G.pb=[{k:'b',x:fish.x,y:fish.y,vx:270,vy:0,dmg:1}];
+  e.collide();assert.equal(e.G.items.length,0,'其他关卡不生成第一关河鱼奖励');
+});
+
+test('第一关屋顶潜伏兵在掩体后探身预警，再向下射击，离屏与冰冻时停手',()=>{
+  const e=engine();e.play(1,false);
+  const guard=e.G.en.find(u=>u.roofGuard);assert.ok(guard);
+  e.G.en=[guard];e.G.spawnT=9999;e.G.podTrig=[];
+  Object.assign(e.G.p,{x:3090,y:176,invT:999});
+  for(let i=0;i<180;i++)e.updateEnemies();
+  assert.equal(guard.phase,'hide');assert.equal(guard.peek,0);assert.equal(e.G.eb.length,0,'离屏不提前发动攻击');
+  e.G.camX=2950;
+  for(let i=0;i<90;i++)e.updateEnemies();
+  assert.equal(guard.phase,'aim');assert.equal(e.G.eb.length,0,'探头预警后才开火');
+  const frozen=JSON.stringify(guard);e.G.freezeT=1;
+  for(let i=0;i<90;i++)e.updateEnemies();
+  assert.equal(JSON.stringify(guard),frozen,'冰冻暂停动作与射击计时');
+  e.G.freezeT=0;
+  for(let i=0;i<45;i++)e.updateEnemies();
+  const shot=e.G.eb.find(b=>b.from==='roof-guard');assert.ok(shot);
+  assert.ok(shot.vx<0&&shot.vy>0,'从屋顶向地面玩家射击');
+  assert.ok(e.ebox(guard).h>10,'探身后露出可以攻击的头部和上身');
+  e.G.p.camoT=5;e.G.eb=[];
+  for(let i=0;i<240;i++)e.updateEnemies();
+  assert.equal(e.G.eb.length,0);assert.equal(guard.peek,0,'隐身玩家不会引发瞄准');
+  e.reset(3);assert.equal(e.G.en.some(u=>u.roofGuard),false);
+});
+
+test('空中射击可越过屋顶击杀潜伏兵，双人快照保留动作，核心摧毁清理敌兵',()=>{
+  const e=engine();e.play(1,true);const guard=e.G.en.find(u=>u.roofGuard);
+  e.G.en=[guard];e.G.spawnT=9999;e.G.camX=2950;e.G.podTrig=[];
+  Object.assign(e.G.p,{x:3060,y:176,invT:999});Object.assign(e.G.p2,{x:3170,y:176,invT:999});
+  guard.phase='aim';guard.phaseT=.3;guard.peek=1;
+  const restored=unpackWorld(packWorld(e.G)).en.find(u=>u.roofGuard);
+  assert.deepEqual([restored.phase,restored.peek,restored.hp],['aim',1,2]);
+  const box=e.ebox(guard),y=box.y+2;
+  assert.equal(e.inWall(guard.x,y),false,'头部上方没有矩形隐形墙');
+  assert.equal(e.inWall(guard.x,guard.coverY+5),true,'掩体下仍为实体建筑');
+  e.G.pb=[{x:guard.x-30,y,vx:270,vy:0,k:'rifle',dmg:2,owner:1}];
+  for(let i=0;i<10&&!guard.dead;i++){e.updateBullets();e.collide();}
+  assert.equal(guard.dead,true);assert.equal(e.G.score,300);
+  e.reset(1);const last=e.G.en.find(u=>u.roofGuard);
+  e.G.camX=2950;e.updateBoss();e.hitBossPart(e.G.boss.parts[2],999);
+  assert.equal(last.dead,true);assert.equal(e.G.eb.length,0);
+});
+
+test('直升机手雷键在横向和纵向关卡发射导弹，双人冷却独立，不挤占主武器，离机恢复手雷',()=>{
+  for(const stage of [1,3,5])for(const online of [false,true])for(const face of [-1,1]){
+    const e=engine();e.play(stage,online);e.G.en=[];e.G.pods=[];e.G.podTrig=[];e.G.spawnT=9999;
+    const actors=[e.G.p,...(online?[e.G.p2]:[])];
+    actors.forEach((p,i)=>Object.assign(p,{x:100+i*80,y:80,ride:'heli',rideT:12,face,onGround:false,invT:999,weapon:'laser'}));
+    e.step(); // Let the input buffer leave its start-of-game held-key guard.
+    e.K.KeyI=true;if(online)e.coop.remote.push(encodeInput({nade:true}));e.step();
+    const missiles=e.G.pb.filter(b=>b.heliMissile);
+    assert.equal(missiles.length,actors.length);assert.equal(e.G.gr.length,0);
+    for(const p of actors){const b=missiles.find(b=>b.owner===p.pid);assert.equal(b.k,'msl');assert.equal(Math.sign(b.vx),face);assert.ok(b.y>p.y);}
+    assert.equal(e.G.nadeCd,4);if(online)assert.equal(e.G.nadeCd2,4);
+    const restored=unpackWorld(packWorld(e.G));
+    assert.deepEqual(restored.pb.filter(b=>b.heliMissile).map(b=>b.owner),Array.from(missiles,b=>b.owner));
+    e.K.KeyI=false;e.K.KeyJ=true;if(online)e.coop.remote.push(encodeInput({fire:true}));e.step();
+    assert.ok(e.G.pb.some(b=>b.k==='laser'&&b.owner===1),'副武器导弹不占用激光的单发上限');
+    if(online)assert.ok(e.G.pb.some(b=>b.k==='laser'&&b.owner===2));
+    e.K.KeyI=true;if(online)e.coop.remote.push(encodeInput({nade:true}));e.step();
+    assert.equal(e.G.pb.filter(b=>b.heliMissile).length,missiles.length,'冷却内重复按键不能再次发射');
+    e.K.KeyI=e.K.KeyJ=false;actors.forEach(p=>p.ride=null);e.G.nadeCd=0;
+    if(online)e.coop.remote.push(encodeInput({}));e.step();e.K.KeyI=true;e.step();
+    assert.ok(e.G.gr.some(g=>!g.tnt),'离开直升机后同一按键恢复手雷');
+  }
+});
+
+test('机载导弹绕过空中补给追踪敌人，命中只爆炸一次并保留手雷范围伤害',()=>{
+  const e=engine();e.play(1,false);e.G.freezeT=999;e.G.spawnT=9999;e.G.podTrig=[];
+  Object.assign(e.G.p,{x:100,y:80,ride:'heli',rideT:12,face:1,onGround:false,invT:999});
+  const enemy={t:'snp',x:220,y:144,hp:40,fireT:999},nearby={t:'snp',x:245,y:144,hp:40,fireT:999};
+  e.G.en=[enemy,nearby,{t:'box',x:80,y:80,hp:4,open:false}];
+  e.G.pods=[{x:130,y:25,y0:25,t:0,kind:'M'}];
+  e.step();
+  e.K.KeyI=true;e.step();e.K.KeyI=false;
+  const missile=e.G.pb.find(b=>b.heliMissile);assert.ok(missile.vy>0,'目标在下方，不追逐上方更近的补给飞碟');
+  for(let i=0;i<90&&enemy.hp===40;i++)e.step();
+  assert.equal(enemy.hp,24);assert.equal(nearby.hp,24);assert.equal(missile.dead,true);
+  for(let i=0;i<10;i++)e.step();assert.equal(enemy.hp,24,'同一枚导弹不重复结算爆炸');
+});
+
+test('机载导弹能够锁定并炸毁要塞炮座，失去目标后重新寻找有效目标',()=>{
+  const e=engine();e.play(1,false);e.G.freezeT=999;e.G.spawnT=9999;e.G.podTrig=[];e.G.en=[];
+  Object.assign(e.G,{camX:2950});Object.assign(e.G.p,{x:3150,y:80,ride:'heli',rideT:12,face:1,onGround:false,invT:999});
+  e.G.boss.active=true;const gun=e.G.boss.parts[0],hp=gun.hp;
+  e.step();
+  e.K.KeyI=true;e.step();e.K.KeyI=false;
+  for(let i=0;i<90&&gun.hp===hp;i++)e.step();assert.ok(gun.hp<hp);
+  const moving=engine();moving.play(1,false);moving.G.freezeT=999;moving.G.spawnT=9999;moving.G.podTrig=[];moving.G.pods=[];
+  Object.assign(moving.G.p,{x:100,y:80,ride:'heli',rideT:12,face:1,onGround:false,invT:999});
+  const first={t:'snp',x:200,y:60,hp:40,fireT:999},next={t:'snp',x:250,y:144,hp:40,fireT:999};moving.G.en=[first,next];
+  moving.step();
+  moving.K.KeyI=true;moving.step();moving.K.KeyI=false;first.dead=true;
+  for(let i=0;i<100&&next.hp===40;i++)moving.step();assert.equal(next.hp,24);
+});
+
+test('主客机触屏按钮按各自载具显示导弹，离开直升机后显示手雷',()=>{
+  const e=engine();e.play(1,true);e.G.p.ride='heli';e.G.p2.ride=null;
+  e.updateHud();assert.equal(e.element('bNade').textContent,'导弹');
+  e.coop.role='guest';e.updateHud();assert.equal(e.element('bNade').textContent,'手雷');
+  e.G.p2.ride='heli';e.updateHud();assert.equal(e.element('bNade').textContent,'导弹');
+  e.G.p2.ride=null;e.updateHud();assert.equal(e.element('bNade').textContent,'手雷');
+});
+
+test('横向关卡的摩托骑乘射击使用坐姿枪口高度，红蓝双人分别发射',()=>{
+  for(const stage of [1,3,5])for(const online of [false,true])for(const face of [-1,1]){
+    const e=engine();e.play(stage,online);e.G.en=[];e.G.pods=[];e.G.podTrig=[];e.G.spawnT=9999;
+    Object.assign(e.G.p,{ride:'moto',rideT:15,face,invT:999});
+    e.K.KeyJ=true;e.step();
+    assert.ok(e.G.pb.some(b=>(b.owner||1)===1));
+    assert.ok(Math.abs(e.G.p.fy-motorcycle.motorcycleMuzzle(e.G.p).y)<1e-9);
+    assert.equal(Math.sign(e.G.p.fx-e.G.p.x),face);
+    if(online){
+      Object.assign(e.G.p2,{ride:'moto',rideT:15,face,invT:999});
+      e.coop.remote.push(encodeInput({fire:true}));e.step();
+      assert.ok(e.G.pb.some(b=>b.owner===2));
+      assert.ok(Math.abs(e.G.p2.fy-motorcycle.motorcycleMuzzle(e.G.p2).y)<1e-9);
+    }
+    e.render();
+  }
+});
+
+test('前五关道具栏的鼠标与触屏判定对齐实际三格位置，玩家二只操作右侧道具',()=>{
+  for (const stage of [1,2,3,4,5]) for (const role of ['solo','host','guest']) {
+    const e=engine();e.play(stage,role!=='solo');e.coop.role=role;
+    e.G.inv=['g','f','m'];e.G.inv2=['g','f','m'];
+    const actions=[];e.coop.action=(...args)=>actions.push(args);
+    const hudX=role==='guest'?248:8;
+    for(let slot=0;slot<3;slot++) {
+      const box=inventorySlotBounds(slot,hudX);
+      for(const [x,y]of [[box.x+.1,box.y+.1],[box.x+box.w/2,box.y+box.h/2],[box.x+box.w-.1,box.y+box.h-.1]]) {
+        e.G.sel=0;actions.length=0;
+        assert.equal(e.slotHit(x*2,y*2),true,`${stage}/${role}/${slot}`);
+        if(role==='guest') {assert.deepEqual(actions,[['select',slot]]);assert.equal(e.G.sel,0);}
+        else assert.equal(e.G.sel,slot);
+      }
+    }
+    const other=inventorySlotBounds(0,role==='guest'?8:248);actions.length=0;
+    assert.equal(e.slotHit((other.x+8)*2,20*2),false);assert.equal(actions.length,0);
+    assert.equal(e.slotHit(192*2,80*2),false);
+    e.G.mode='pause';assert.equal(e.slotHit((hudX+48)*2,20*2),false);
+  }
+});
 test('触屏开始、选关、加载及跨关均不自动请求全屏',async()=>{
   const e=engine({touch:true,previewStage5:true,coldResources:true});
   e.referenceMusic.prefetch=async()=>{};
@@ -124,7 +446,7 @@ test('触屏开始、选关、加载及跨关均不自动请求全屏',async()=>
 test('第五关战车是中途战斗，继续穿越雪林后击败空中堡垒才通关',async()=>{
   const e=engine({hostname:'games.tangletang.top',coldResources:true});assert.equal(e.element('btnSel5').hidden,false);
   const requested=[];e.referenceMusic.prefetch=async key=>requested.push(key);
-  assert.equal(await e.startStage(5),true);assert.equal(e.G.mode,'intro');assert.equal(e.inspect().resources.total,25);assert.equal(e.inspect().audio.resolved.track,'stage5');assert.deepEqual(requested,['stage5']);
+  assert.equal(await e.startStage(5),true);assert.equal(e.G.mode,'intro');assert.equal(e.inspect().resources.total,28);assert.equal(e.inspect().audio.resolved.track,'stage5');assert.deepEqual(requested,['stage5']);
   e.play(5,false);e.G.en=[];e.G.podTrig=[];e.G.p.invT=9999;
   const ice=e.solids.find(s=>s.g&&s.ice);Object.assign(e.G.p,{x:ice.x+20,y:176,onGround:true,support:ice,vx:60});
   e.step();assert.ok(e.G.p.vx>20,'ice retains momentum after releasing movement');
@@ -138,9 +460,785 @@ test('第五关战车是中途战斗，继续穿越雪林后击败空中堡垒�
   e.G.p.x=4770;e.updateCamera();e.step();assert.equal(e.G.fortress.active,true);assert.equal(e.bossParts().length,0,'entry animation cannot be skipped with damage');
   for(let i=0;i<125;i++)e.step();assert.equal(e.bossParts().length,3);assert.ok(e.G.fortress.y>50);
   e.hitBossPart(e.G.fortress.parts[0],99);assert.equal(e.G.fortress.dead,false);e.render();
+  const F=e.G.fortress;
+  for(let i=0;i<200&&!F.escortWarning;i++)e.step();
+  assert.ok(F.escortWarning,'the two bays warn before release');
+  const timer=F.escortT;e.G.freezeT=1;ticks(e,30);
+  assert.equal(F.escortT,timer);assert.ok(!e.G.en.some(o=>o.t==='fortressSaucer'));
+  e.G.freezeT=0;
+  for(let i=0;i<35&&!e.G.en.some(o=>o.t==='fortressSaucer');i++)e.step();
+  const [left,right]=e.G.en.filter(o=>o.t==='fortressSaucer');
+  assert.equal(left.x,F.x-61);assert.equal(right.x,F.x+61);
+  assert.ok(left.vx<0&&right.vx>0);
+  ticks(e,60);assert.ok(left.turning&&right.turning&&left.y>F.y+20);
+  e.G.pb=[{k:'b',x:left.x,y:left.y,vx:0,vy:0,dmg:1}];e.collide();
+  assert.equal(left.dead,true,'a normal player shot destroys a small saucer');e.render();
   e.hitBossPart(e.G.fortress.parts[2],99);for(let i=0;i<190&&e.G.mode!=='clear';i++)e.step();
-  assert.equal(e.G.mode,'clear');assert.equal(e.element('clearTitle').textContent,'前五关通关');assert.equal(e.element('btnNext').hidden,true);
+  assert.ok(!e.G.en.some(o=>o.t==='fortressSaucer'),'destroying the fortress clears the remaining escorts');
+  assert.equal(e.G.mode,'clear');assert.equal(e.element('clearTitle').textContent,'关卡完成');assert.equal(e.element('btnNext').hidden,false);assert.equal(e.element('btnNext').textContent,'进入第六关');
   e.coop.playing=true;assert.notEqual(e.startStage(5),false,'public fifth stage also opens multiplayer');assert.equal(e.G.stage,5);assert.equal(e.G.mode,'intro');
+});
+
+test('第六关喷火对两位玩家分别生效，防火服与液氮按实际机关计时',()=>{
+  const e=engine();e.play(6,true);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;
+  Object.assign(e.G.p,{x:40,y:176,invT:0});Object.assign(e.G.p2,{x:300,y:176,invT:0,fireproofT:15});
+  e.G.time=2.2;for(let i=0;i<18;i++)e.step();
+  assert.equal(e.G.p2.dead,false,'fire suit protects player two from an active jet');
+  e.G.p2.fireproofT=0;for(let i=0;i<8&&!e.G.p2.dead;i++)e.step();
+  assert.equal(e.G.p2.dead,true,'the same jet can hurt player two without protection');assert.equal(e.G.p.dead,false);
+  e.G.inv=['w'];e.G.sel=0;e.G.p.spCd=0;e.useSpecial();e.step();
+  assert.ok(e.G.s6.coolT>7);assert.ok(e.G.jets.every(j=>j.st==='cold'||j.boss),'liquid nitrogen suppresses active vents');
+  const copy=unpackWorld(packWorld([e.G,e.solids,e.BRIDGES,e.SET]));
+  assert.equal(copy[0].s6.coolT,e.G.s6.coolT);assert.equal(copy[0].p2.dead,true);assert.equal(copy[0].jets[0].st,'cold');
+});
+
+function stageSixRunnerScene(x,dir,playerX){
+  const e=engine();e.play(6,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.jets=[];
+  e.G.camX=Math.max(0,x-180);Object.assign(e.G.p,{x:playerX,y:176,onGround:true,invT:999});
+  const floor=e.solids.find(s=>s.g&&x>=s.x&&x<=s.x+s.w);
+  const soldier={t:'run',x,y:176,vx:dir*62,vy:0,hp:1,on:true,sup:floor,dec:false,anim:0,flash:0,fireT:999};e.G.en=[soldier];
+  return {e,soldier};
+}
+
+test('第六关持枪跑兵预瞄后射击，弹丸可真实击中玩家，冰冻暂停攻击',()=>{
+  const {e,soldier}=stageSixRunnerScene(220,-1,100);e.G.p.invT=0;soldier.fireT=0;
+  e.step();assert.equal(soldier.attack.phase,'aim');assert.ok(soldier.x<220,'the soldier continues walking while aiming');
+  e.G.freezeT=1;const time=soldier.attack.t;for(let i=0;i<20;i++)e.step();assert.equal(soldier.attack.t,time);assert.equal(e.G.eb.length,0);
+  e.G.freezeT=0;let fired=false;for(let i=0;i<140&&!e.G.p.dead;i++){e.step();fired ||=e.G.eb.some(b=>b.from==='runner');}
+  assert.ok(fired,'the soldier fires a real projectile');assert.equal(e.G.p.dead,true,'the projectile reaches the player');
+});
+
+test('第六关跑兵等待喷火时仍能射击，双人模式会寻找存活队友',()=>{
+  const {e,soldier}=stageSixRunnerScene(284,1,170);e.G.jets=[{x:300,v:1,per:3.2,off:0,st:'fire',k:1}];e.G.time=2.2;soldier.fireT=0;
+  let fired=false,held=false;for(let i=0;i<50;i++){e.step();held ||=soldier.hazardHold;fired ||=e.G.eb.some(b=>b.from==='runner');assert.ok(!soldier.dead);}
+  assert.ok(held&&fired,'the waiting soldier can shoot without entering the flame');
+  const co=stageSixRunnerScene(220,-1,100);co.e.play(6,true);co.e.G.en=[co.soldier];co.e.G.jets=[];co.e.G.spawnT=9999;
+  Object.assign(co.e.G.p2,{x:100,y:176,invT:999});beginDeath(co.e.G.p);co.soldier.fireT=0;
+  for(let i=0;i<25;i++)co.e.step();assert.ok(co.e.G.eb.some(b=>b.from==='runner'));assert.equal(co.soldier.fireFace,-1);
+});
+
+test('第六关跑兵靠近岩浆两侧时转向，不会随机跳进缺口',()=>{
+  for(const [left,right] of [[560,620],[1000,1060],[1400,1460],[1900,1960],[2400,2460]])for(const [x,dir] of [[left-12,1],[right+12,-1]]){
+    const {e,soldier}=stageSixRunnerScene(x,dir,x-100);let turned=false;
+    for(let i=0;i<60;i++){e.updateEnemies();turned ||=Math.sign(soldier.vx)===-dir;assert.ok(soldier.y<=176);assert.equal(soldier.dead,undefined);assert.ok(soldier.x<=left-5||soldier.x>=right+5);}
+    assert.ok(turned,'the runner turns around before leaving solid ground');
+  }
+});
+
+test('第六关跑兵等待地面与横向喷火安全后再通过，液氮冷却时不误等',()=>{
+  for(const [x,jetX,playerX,start] of [[270,300,170,2.2],[400,520,300,1]]){
+    const {e,soldier}=stageSixRunnerScene(x,1,playerX);const jet=e.G.jets=(jetX===300?[{x:300,v:1,per:3.2,off:0}]:[{x:520,dir:-1,per:3.4,off:1.2}]).map(j=>({...j,st:'off',k:0}));
+    e.G.time=start;let waited=false,passed=false;
+    for(let i=0;i<260;i++){
+      e.step();waited ||=!!soldier.hazardHold;passed ||=soldier.x>(jetX===300?320:532);
+      assert.ok(!soldier.dead,'runner does not enter an active flame');assert.ok(soldier.y<=176,'runner stays on solid ground');
+    }
+    assert.ok(waited,'runner waits before the flame');assert.ok(passed,'runner proceeds during a safe interval');
+    const copy=unpackWorld(packWorld(e.G));assert.equal(copy.en[0].hazardHold,soldier.hazardHold);
+  }
+  const {e,soldier}=stageSixRunnerScene(284,1,170);e.G.jets=[{x:300,v:1,per:3.2,off:0,st:'cold',k:0}];e.G.time=2.2;e.G.s6.coolT=8;
+  for(let i=0;i<35;i++)e.step();assert.ok(soldier.x>300);assert.equal(soldier.hazardHold,false);
+});
+
+test('第六关重炮手在真实平台上预警并连发，冻结时停火且可被正常弹丸击毁',()=>{
+  const e=engine();e.play(6,false);e.G.podTrig=[];e.G.spawnT=9999;
+  const all=e.G.en.filter(u=>u.t==='heavyGunner');assert.equal(all.length,5);
+  for(const gun of all)assert.ok(e.solids.some(s=>gun.x>=s.x&&gun.x<=s.x+s.w&&gun.y===s.y),'the tripod stands on its platform');
+  for(const gun of all)assert.ok(e.G.en.every(other=>other===gun||other.t!=='snp'||other.y!==gun.y||Math.abs(other.x-gun.x)>45),'soldiers do not overlap the gun emplacement');
+  const gun=all[0];e.G.en=[gun];e.G.camX=530;Object.assign(e.G.p,{x:650,y:176,invT:999});
+  const shotTimes=[];let previous=0;
+  for(let i=0;i<185;i++){e.step();const count=e.G.eb.filter(b=>b.from==='heavy-gunner').length;if(count>previous)shotTimes.push(e.G.time);previous=count;}
+  assert.ok(shotTimes.length>=2,'the gun fires a visible burst');assert.equal(gun.face,-1);
+  e.G.eb=[];e.G.freezeT=1;const phase=gun.phaseT;for(let i=0;i<30;i++)e.step();assert.equal(gun.phaseT,phase);assert.equal(e.G.eb.length,0);
+  e.G.freezeT=0;e.G.pb.push({k:'rifle',x:gun.x-8,y:gun.y-20,vx:0,vy:0,dmg:8});e.collide();assert.equal(gun.dead,true);
+});
+
+test('第六关三层喷火通道的喷口与平台对齐，液氮停止喷火并同步状态',()=>{
+  const e=engine();e.play(6,true);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;
+  const jets=e.G.jets.filter(j=>j.gallery);assert.equal(jets.length,12);
+  assert.deepEqual([...new Set(jets.map(j=>j.y))],[80,120,160]);
+  assert.deepEqual([...e.solids.filter(s=>s.gallery).map(s=>s.y)],[96,136,56,96,136]);
+  e.G.camX=2400;Object.assign(e.G.p,{x:2530,y:176,invT:999});Object.assign(e.G.p2,{x:2560,y:136,onGround:true,invT:0});
+  e.G.time=1.25;e.step();assert.equal(jets.find(j=>j.side==='ascent'&&j.y===120).st,'fire');assert.equal(e.G.p2.dead,true,'the middle outlet hits a player on its own tier');
+  e.play(6,true);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.camX=2400;e.G.s6.coolT=4;e.G.time=1.25;
+  Object.assign(e.G.p,{x:2530,y:176,invT:999});Object.assign(e.G.p2,{x:2560,y:136,onGround:true,invT:0});e.step();
+  assert.equal(e.G.p2.dead,false);assert.ok(e.G.jets.filter(j=>j.gallery).every(j=>j.st==='cold'));
+  const remote=unpackWorld(packWorld([e.G,e.solids,e.BRIDGES,e.SET]));assert.equal(remote[0].jets.filter(j=>j.gallery).length,12);assert.equal(remote[0].s6.coolT,e.G.s6.coolT);
+});
+
+test('第六关三层通道可从地面依次跳上中层和上层平台',()=>{
+  const e=engine();e.play(6,false);e.G.en=[];e.G.podTrig=[];e.G.jets=[];e.G.spawnT=9999;e.G.camX=2400;
+  Object.assign(e.G.p,{x:2580,y:176,vy:0,onGround:true,invT:999});
+  e.step(); // Release the menu's held-jump latch before simulating a new press.
+  const jumpTo=y=>{
+    e.K.KeyK=true;e.step();e.K.KeyK=false;
+    for(let i=0;i<90;i++){e.step();if(e.G.p.onGround&&e.G.p.y===y)return true;}
+    return false;
+  };
+  assert.ok(jumpTo(136),'the middle level is reachable from the ground');
+  assert.ok(jumpTo(96),'the upper level is reachable from the middle level');
+  assert.ok(jumpTo(56),'the crossing deck is reachable from the upper level');
+});
+
+test('第六关喷火通道立柱阻挡地面，沿两层平台攀爬后可从顶部越过',()=>{
+  const e=engine();e.play(6,false);e.G.en=[];e.G.podTrig=[];e.G.jets=[];e.G.spawnT=9999;e.G.camX=2400;
+  const wall=e.solids.find(s=>s.galleryWall),p=e.G.p;assert.ok(wall?.solid&&wall.wall);
+  assert.equal(wall.x,stageSixCombat.STAGE_SIX_GALLERY.right);assert.equal(wall.y,56);assert.equal(wall.h,120);
+  Object.assign(p,{x:wall.x-24,y:176,vy:0,onGround:true,support:e.solids.find(s=>s.g&&s.x===2460),invT:999});
+  e.K.KeyD=true;for(let i=0;i<40;i++)e.step();e.K.KeyD=false;
+  assert.ok(p.x<=wall.x-5,'the ground-level route is blocked');assert.equal(p.y,176);
+  e.K.KeyD=true;e.K.KeyK=true;e.step();e.K.KeyK=false;for(let i=0;i<22;i++)e.step();
+  e.K.KeyK=true;e.step();e.K.KeyK=false;
+  for(let i=0;i<90;i++){e.step();assert.ok(p.x<=wall.x-5,'a double jump from the ground cannot pass through the lower pillar');}
+  e.K.KeyD=false;Object.assign(p,{x:wall.x-5,y:176,vy:0,onGround:true,support:e.solids.find(s=>s.g&&s.x===2460),airJumps:1});e.step();
+  const jumpTo=y=>{e.K.KeyK=true;e.step();e.K.KeyK=false;for(let i=0;i<90;i++){e.step();if(p.onGround&&p.y===y)return true;}return false;};
+  assert.ok(jumpTo(136),'the lower railing is reachable');assert.ok(jumpTo(96),'the upper railing is reachable');
+  e.K.KeyD=true;for(let i=0;i<8;i++)e.step();assert.ok(p.x<=wall.x-5,'the upper railing meets the wall');
+  e.K.KeyK=true;e.step();e.K.KeyK=false;let cleared=false;
+  for(let i=0;i<90;i++){e.step();if(p.x>wall.x+wall.w+5){cleared=true;break;}}
+  assert.ok(cleared,'jumping from the upper railing clears the pillar');
+});
+
+test('第六关立柱在双人及直升机模式下阻挡下层，并允许飞过柱顶',()=>{
+  const e=engine();e.play(6,true);e.G.en=[];e.G.podTrig=[];e.G.jets=[];e.G.spawnT=9999;e.G.camX=2400;
+  const wall=stageSixCombat.STAGE_SIX_GALLERY;
+  Object.assign(e.G.p,{x:wall.right-64,y:176,invT:999});Object.assign(e.G.p2,{x:wall.right-24,y:176,onGround:true,invT:999});
+  e.coop.remote.push(encodeInput({right:true}));for(let i=0;i<40;i++)e.step();
+  assert.ok(e.G.p2.x<=wall.right-5,'the second player also meets the pillar');
+  const flight=engine();flight.play(6,false);flight.G.en=[];flight.G.podTrig=[];flight.G.jets=[];flight.G.spawnT=9999;flight.G.camX=2400;
+  Object.assign(flight.G.p,{x:wall.right-19,y:140,ride:'heli',rideT:30,invT:999});flight.K.KeyD=true;
+  for(let i=0;i<30;i++)flight.step();assert.ok(flight.G.p.x<=wall.right-12,'the helicopter cannot fly through the pillar');
+  flight.G.p.y=wall.rightTop-4;for(let i=0;i<40;i++){flight.step();if(flight.G.p.x>wall.right+wall.rightWidth+12)break;}
+  assert.ok(flight.G.p.x>wall.right+wall.rightWidth+12,'the helicopter can pass over the top');
+  flight.K.KeyD=false;Object.assign(flight.G.p,{x:wall.right+wall.rightWidth/2,y:wall.rightTop-6});flight.K.KeyS=true;
+  for(let i=0;i<12;i++)flight.step();assert.ok(flight.G.p.y<=wall.rightTop-4,'the helicopter cannot descend into the pillar');
+});
+
+test('第六关机器人跳跃时受击范围同步移动，击破后打开大门并等待玩家走入',()=>{
+  const e=engine();e.play(6,false);e.G.en=[];e.G.podTrig=[];e.G.jets=[];e.G.spawnT=9999;e.G.p.invT=9999;
+  e.G.camX=2916;e.G.p.x=3075;
+  const boss=e.G.golem,core=boss.parts[2];
+  e.step();assert.equal(boss.active,true);
+  let minY=boss.y, moved=false;
+  for(let i=0;i<180&&boss.phase!=='jump';i++)e.step();
+  assert.equal(boss.phase,'jump');const startX=boss.x;
+  for(let i=0;i<25;i++){e.step();minY=Math.min(minY,boss.y);moved ||= boss.x<startX;}
+  assert.ok(minY<150&&moved,'the robot rises and jumps towards the player');
+  assert.equal(core.x,boss.x-18);assert.equal(core.y,boss.y-75);
+  const synced=unpackWorld(packWorld(boss));assert.equal(synced.phase,'jump');assert.equal(synced.y,boss.y);assert.equal(synced.parts[2].y,core.y);
+  e.G.freezeT=2;const frozen=[boss.x,boss.y,boss.phaseT];for(let i=0;i<20;i++)e.step();assert.deepEqual([boss.x,boss.y,boss.phaseT],frozen);
+  e.G.freezeT=0;e.G.pb.push({k:'rifle',x:core.x+core.w/2,y:core.y+core.h/2,vx:0,vy:0,dmg:8});e.collide();assert.equal(core.hp,72,'ordinary bullets hit the airborne robot');
+  e.hitBossPart(core,40);assert.equal(boss.phase2,true);
+  e.render();e.hitBossPart(core,99);assert.equal(boss.dead,true);
+  for(let i=0;i<90&&boss.y<boss.ground;i++)e.step();assert.equal(boss.y,boss.ground,'an airborne destroyed boss falls to the floor');
+  for(let i=0;i<300&&!e.G.s6.exitReady;i++)e.step();
+  assert.equal(e.G.mode,'play');assert.equal(e.G.s6.exitReady,true);assert.equal(e.G.s6.doorProgress,1);
+  e.K.KeyD=true;for(let i=0;i<400&&e.G.mode==='play';i++)e.step();
+  assert.equal(e.G.mode,'intro');assert.equal(e.G.stage,7);assert.ok(e.G.gate&&e.G.s7.presses.length);
+});
+
+test('第六关大门在 Boss 倒下后逐步开启，暂停冻结，双人都走入后才过关',()=>{
+  const e=engine();e.play(6,true);e.G.en=[];e.G.podTrig=[];e.G.jets=[];e.G.spawnT=9999;e.G.camX=2916;
+  const boss=e.G.golem;boss.active=true;boss.phaseT=999;boss.shotT=999;
+  for(const p of [e.G.p,e.G.p2])Object.assign(p,{x:3200,y:176,invT:999,onGround:true,vy:0});
+  e.G.p.x=3290;e.step();assert.ok(e.G.p.x<stageSixExit.STAGE_SIX_EXIT.triggerX,'closed doorway blocks the player');
+  e.G.p.weapon='laser';e.G.p2.weapon='spread';e.G.inv=['g'];e.G.inv2=['g'];e.G.lives=4;
+  e.hitBossPart(boss.parts[2],999);assert.equal(boss.dead,true);
+  e.G.p.x=3200;for(let i=0;i<220;i++)e.step();
+  assert.equal(e.G.mode,'play');assert.ok(e.G.s6.doorProgress>0&&e.G.s6.doorProgress<1);
+  const before=e.G.s6.doorProgress;e.G.mode='pause';for(let i=0;i<90;i++)e.step();assert.equal(e.G.s6.doorProgress,before);
+  e.G.mode='play';for(let i=0;i<100&&!e.G.s6.exitReady;i++)e.step();assert.equal(e.G.s6.exitReady,true);
+  e.G.p.x=stageSixExit.STAGE_SIX_EXIT.triggerX-2;e.K.KeyD=true;
+  for(let i=0;i<100&&!e.G.p.exitEntered;i++){e.step();assert.doesNotThrow(()=>e.render());}
+  assert.equal(e.G.p.exitEntered,true);assert.equal(e.G.p2.exitEntered,undefined);assert.equal(e.G.mode,'play');
+  const snapshot=unpackWorld(packWorld(e.G));assert.equal(snapshot.p.exitEntered,true);assert.equal(snapshot.s6.exitReady,true);
+  const second=e.G.p2;e.G.p2.x=stageSixExit.STAGE_SIX_EXIT.triggerX-2;
+  for(let i=0;i<120&&e.G.mode==='play';i++){e.coop.remote.push(encodeInput({right:true}));e.step();}
+  assert.equal(e.G.mode,'intro');assert.equal(e.G.stage,7);assert.equal(second.exitEntered,true);assert.ok(e.G.p2);
+  assert.equal(e.G.lives,4);assert.equal(e.G.p.weapon,'laser');assert.equal(e.G.p2.weapon,'spread');assert.deepEqual([...e.G.inv],['g']);assert.deepEqual([...e.G.inv2],['g']);
+});
+
+test('第八关声波和抗酸道具在重开本关时保留给两位玩家',()=>{
+  const e=engine();e.play(8,true);e.G.inv=['p','z'];e.G.inv2=['z','p'];e.reset(8,true);
+  assert.deepEqual([...e.G.inv],['p','z']);assert.deepEqual([...e.G.inv2],['z','p']);
+});
+
+test('第七关机库尖刺在两层循环并伤害玩家，防御炮向上射击后分裂，击破核心进入第八关',()=>{
+  for(const online of [false,true]){
+    const e=engine();e.play(7,online);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;
+    assert.equal(e.G.hive,null);assert.ok(e.G.s7.presses.some(q=>q.floor===112));assert.ok(e.G.s7.presses.some(q=>q.floor===176));
+    const q=e.G.s7.presses[0],target=online?e.G.p2:e.G.p;
+    Object.assign(target,{x:q.x,y:q.floor,vy:0,onGround:true,dead:false,invT:0});if(online)Object.assign(e.G.p,{x:q.x-30,y:q.floor,invT:999});
+    e.G.time=1.95-q.off;e.step();assert.equal(target.dead,true,'extending spikes hit either player');
+    Object.assign(target,{dead:false,invT:999,x:3290,y:176,vy:0});if(online)Object.assign(e.G.p,{x:3260,y:176,invT:999});
+    e.G.camX=3116;e.G.s7.presses=[];e.G.eb=[];e.step();const gate=e.G.gate;assert.equal(gate.active,true);
+    for(let i=0;i<180&&!e.G.eb.some(b=>b.waterAmbush==='fall');i++)e.step();
+    assert.equal(e.G.eb.filter(b=>b.waterAmbush==='fall').length,3,'one shell splits into three descending rounds');
+    const core=gate.parts[2];e.G.freezeT=999;e.G.pb=[{k:'b',x:gate.x-24,y:core.y+core.h/2,vx:300,vy:0,dmg:1}];
+    for(let i=0;i<15&&core.hp===core.max;i++)e.step();assert.ok(core.hp<core.max,'a real projectile passes the wall opening and hits the core');
+    e.G.pb=[{k:'b',x:core.x+core.w/2,y:core.y+core.h/2,vx:0,vy:0,dmg:100}];e.collide();assert.equal(gate.dead,true);
+    for(let i=0;i<200&&e.G.mode==='play';i++)e.step();assert.equal(e.G.mode,'clear');assert.equal(e.element('btnNext').hidden,false);
+    e.G.p.weapon='laser';e.G.lives=4;if(online)e.G.p2.weapon='spread';e.element('btnNext').onclick();
+    assert.equal(e.G.stage,8);assert.ok(e.G.hive&&e.G.en.some(en=>en.t==='alienHead'));assert.equal(e.G.lives,4);assert.equal(e.G.p.weapon,'laser');if(online)assert.equal(e.G.p2.weapon,'spread');
+  }
+});
+
+test('第七关压柱的柱身、停住和回收中的压头可接触，只有下压扫中乘员时致命',()=>{
+  for(const online of [false,true])for(const phase of ['hold','rise','shaft','crush','frozen']){
+    const e=engine();e.play(7,online);e.G.en=[];e.G.spawnT=9999;e.G.podTrig=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;
+    const q={...hangarRoute.HANGAR_PRESSES[0]},time=phase==='hold'?2.2:phase==='rise'?2.55:1.95;
+    Object.assign(q,hangarRoute.hangarPressState(q,time-1/60));e.G.s7.presses=[q];e.G.time=time-1/60;
+    const target=online?e.G.p2:e.G.p;
+    Object.assign(target,{x:q.x,y:phase==='shaft'?60:q.floor,vy:0,onGround:phase!=='shaft',invT:0});
+    if(online)Object.assign(e.G.p,{x:q.x-60,y:q.floor,invT:999});
+    if(phase==='frozen')e.G.freezeT=1;
+    e.step();assert.equal(target.dead,phase==='crush',`${online?'双人':'单人'} ${phase}`);
+  }
+});
+
+test('第七关尖刺墙靠近时从地面升起，可用普通子弹击碎并在冻结时停止',()=>{
+  const e=engine();e.play(7,false);const wall=e.G.en.find(o=>o.t==='spikeWall');assert.ok(wall);e.G.en=[wall];e.G.spawnT=9999;e.G.p.invT=999;e.G.camX=wall.x-250;Object.assign(e.G.p,{x:wall.x-120,y:152});
+  for(let i=0;i<20;i++)e.step();assert.ok(wall.rise>0&&wall.rise<1);const rise=wall.rise;e.G.freezeT=2;for(let i=0;i<20;i++)e.step();assert.equal(wall.rise,rise);
+  e.G.freezeT=0;for(let i=0;i<60;i++)e.step();assert.equal(wall.rise,1);
+  e.G.pb=[{k:'b',x:wall.x,y:wall.y-30,vx:0,vy:0,dmg:30}];e.collide();assert.equal(wall.dead,true);
+});
+
+test('第七关大铁板挡住上下通道与二段跳，真实射击击毁后双人可继续通过',()=>{
+  const e=engine();e.play(7,true);const wall=e.G.en.find(o=>o.t==='spikeWall');wall.rise=1;e.G.en=[wall];e.G.spawnT=9999;e.G.podTrig=[];e.G.s7.presses=[];e.G.s7.cartT=9999;
+  const body=hangarObstacles.hangarPlateBox(wall,true);e.G.camX=wall.x-230;
+  Object.assign(e.G.p,{x:body.x-35,y:176,vy:0,onGround:true,invT:999});Object.assign(e.G.p2,{x:body.x-35,y:128,vy:0,onGround:true,invT:999});e.K.KeyD=true;
+  for(let i=0;i<70;i++){e.coop.remote.push(encodeInput({right:true}));e.step();}
+  assert.ok(e.G.p.x<=body.x-5);assert.ok(e.G.p2.x<=body.x-5,'both floor levels are blocked');
+  Object.assign(e.G.p,{x:body.x-7,y:128,vy:0,onGround:true});for(let i=0;i<100;i++){e.K.KeyK=i===0||i===18;e.step();}e.K.KeyK=false;
+  assert.ok(e.G.p.x<body.x,'a normal double jump cannot bypass the plate');
+  const copy=unpackWorld(packWorld(e.G));assert.deepEqual(hangarObstacles.hangarPlateBox(copy.en[0]),hangarObstacles.hangarPlateBox(wall));assert.equal(copy.en[0].hp,wall.max);
+  e.K.KeyD=false;Object.assign(e.G.p,{x:body.x-55,y:176,vy:0,onGround:true});e.K.KeyJ=true;
+  for(let i=0;i<600&&!wall.dead;i++)e.step();assert.equal(wall.dead,true);assert.ok(e.G.fx.some(f=>f.k==='debris'),'destroyed armor sheds metal fragments');assert.equal(e.inWall(wall.x,150),false);
+  e.K.KeyJ=false;e.K.KeyD=true;for(let i=0;i<150;i++){e.coop.remote.push(encodeInput({right:true}));e.step();}
+  assert.ok(e.G.p.x>body.x+body.w);assert.ok(e.G.p2.x>body.x+body.w);
+});
+
+test('第七关实体铁板在冻结时仍阻挡行走、摩托和直升机，护盾不会直接撞碎它',()=>{
+  for(const mode of ['walk','moto','heli']){
+    const e=engine();e.play(7,false);const wall=e.G.en.find(o=>o.t==='spikeWall');wall.rise=1;e.G.en=[wall];e.G.spawnT=9999;e.G.podTrig=[];e.G.s7.presses=[];e.G.s7.cartT=9999;e.G.freezeT=999;
+    const body=hangarObstacles.hangarPlateBox(wall,true);e.G.camX=wall.x-230;Object.assign(e.G.p,{x:body.x-40,y:mode==='heli'?90:176,invT:999,shieldT:999,ride:mode==='walk'?null:mode,rideT:999});e.K.KeyD=true;
+    for(let i=0;i<80;i++)e.step();assert.ok(e.G.p.x<body.x,mode+' cannot pass through steel');assert.equal(wall.hp,wall.max);
+    e.G.freezeT=0;for(let i=0;i<15;i++)e.step();assert.equal(wall.hp,wall.max,'shielded contact does not remove the plate');
+    if(mode==='walk'){e.G.p.x=body.x+body.w+35;e.K.KeyD=false;e.K.KeyA=true;for(let i=0;i<70;i++)e.step();assert.ok(e.G.p.x>=body.x+body.w+5,'the rear face also blocks travel');}
+  }
+});
+
+test('第七关装卸区和阶梯哨站不能贴地平跑，需要真实跳跃越过不同高度的台阶',()=>{
+  const e=engine();e.play(7,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.cartT=9999;e.G.p.invT=9999;
+  e.G.s7.encounters=[];e.step();e.K.KeyD=true;for(let i=0;i<150;i++)e.step();assert.equal(e.G.p.x,175,'raised loading slab stops flat running');
+  const heights=new Set([176]);let previous=e.G.p.x,jumps=0;
+  for(let i=0;i<4000&&e.G.p.x<1640;i++){
+    e.K.KeyK=e.G.p.onGround&&Math.abs(e.G.p.x-previous)<.1&&!e.K.KeyK;if(e.K.KeyK)jumps++;
+    previous=e.G.p.x;e.step();if(e.G.p.onGround)heights.add(e.G.p.y);
+  }
+  assert.equal(e.G.p.dead,false);assert.ok(e.G.p.x>=1640,JSON.stringify({x:e.G.p.x,y:e.G.p.y,heights:[...heights]}));
+  assert.ok(heights.size>=3);assert.ok(jumps>=4,'different stepped bays require repeated deliberate jumps');
+});
+
+test('第七关跳入小车后随原车速移动，侧面接触车体也不会受伤',()=>{
+  const e=engine();e.play(7,false);e.G.s7.presses=[];e.G.s7.cartT=9999;e.G.spawnT=9999;e.G.podTrig=[];
+  const cart={t:'cart',x:100,y:176,vx:40,vy:0,hp:4,on:false,sup:null,flash:0,wheel:0};e.G.en=[cart];
+  Object.assign(e.G.p,{x:100,y:151,vy:100,onGround:false,invT:0});for(let i=0;i<30;i++)e.step();
+  assert.equal(e.G.p.dead,false);assert.equal(e.G.p.cart,cart);assert.ok(e.G.p.x>115,'the seated player travels with the cart');assert.equal(e.G.p.y,154);assert.equal(cart.driveVX,40);
+  Object.assign(e.G.p,{cart:null,x:cart.x,y:176,vy:0,onGround:true,invT:0});e.collidePlayer();assert.equal(e.G.p.dead,false);
+});
+
+test('第七关可从地面真实起跳落上左右行驶的小车，随车移动和射击后再跳离',()=>{
+  for(const speed of [-28,40]){
+    const e=engine();e.play(7,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;
+    const cart={t:'cart',x:speed<0?142:95,y:176,vx:speed,vy:0,hp:4,on:true,sup:null,flash:0,wheel:0};e.G.en=[cart];
+    Object.assign(e.G.p,{x:60,y:176,onGround:true,invT:0});e.step();e.K.KeyD=e.K.KeyK=e.K.KeyJ=true;e.step();e.K.KeyK=false;
+    for(let i=0;i<60&&!e.G.p.cart;i++)e.step();assert.equal(e.G.p.cart,cart,`jump lands on cart moving at ${speed}`);
+    e.K.KeyD=false;const before=cart.x;for(let i=0;i<20;i++)e.step();
+    assert.equal(e.G.p.dead,false);assert.equal(cart.driveVX,speed);assert.ok(Math.abs(cart.x-before-speed/3)<.001);assert.equal(e.G.p.x,cart.x);assert.equal(e.G.p.y,154);assert.ok(e.G.pb.length>0);assert.equal(cart.hp,4);
+    e.K.KeyK=true;e.step();assert.equal(e.G.p.cart,null);assert.ok(e.G.p.vy<0);assert.equal(e.G.p.dead,false);
+  }
+});
+
+function cartBattle(online=false){
+  const e=engine();e.play(7,online);e.G.s7.presses=[];e.G.s7.cartT=9999;e.G.spawnT=9999;e.G.podTrig=[];
+  const cart={t:'cart',x:380,y:176,vx:0,vy:0,hp:4,on:true,sup:null,flash:0,wheel:0};e.G.en=[cart];e.G.camX=230;e.G.s7.encounters=[];
+  Object.assign(e.G.p,{x:380,y:152,vy:100,onGround:false,invT:999});
+  if(online)Object.assign(e.G.p2,{x:382,y:152,vy:100,onGround:false,invT:999});
+  e.step();assert.equal(e.G.p.cart,cart);return {e,cart};
+}
+
+test('矿车内可伏低、抬枪射击，跳跃离车时保留武器且不会立即重新搭乘',()=>{
+  const {e,cart}=cartBattle();const standing=e.pBox(e.G.p);e.K.KeyS=e.K.KeyJ=true;e.step();
+  assert.equal(e.G.p.cartDuck,true);assert.ok(e.pBox(e.G.p).h<standing.h);assert.equal(e.G.p.fy,e.G.p.y-4);
+  e.K.KeyS=false;e.K.KeyW=true;e.G.p.cool=0;e.step();assert.equal(e.G.p.ay,-1);assert.equal(e.G.p.fy,e.G.p.y-19);
+  e.K.KeyW=false;e.K.KeyJ=false;e.G.p.weapon='spread';e.K.KeyK=true;e.step();
+  assert.equal(e.G.p.cart,null);assert.ok(e.G.p.vy<0);assert.equal(e.G.p.weapon,'spread');assert.ok(e.G.p.cartCooldown>0);
+  assert.ok(cart.x>110);assert.notEqual(e.G.p.y,154);e.K.KeyK=false;e.step();assert.equal(e.G.p.cart,null);
+});
+
+test('矿车搭乘时各种枪械从坐姿枪口发射，并可击中地面敌人且不会打坏自己的小车',()=>{
+  for(const weapon of ['rifle','machine','spread','laser','fire','homing']){
+    const {e,cart}=cartBattle();e.G.p.weapon=weapon;const target={t:'snp',x:440,y:176,hp:20,fireT:999,face:-1,flash:0};e.G.en.push(target);e.K.KeyJ=true;
+    let shot=false;for(let i=0;i<65;i++){const cool=e.G.p.cool;e.step();if(e.G.p.cool>cool){shot=true;const muzzle=minecart.minecartMuzzle(e.G.p);assert.equal(e.G.p.fx,muzzle.x);assert.equal(e.G.p.fy,muzzle.y);}}
+    assert.ok(shot,weapon);assert.ok(target.hp<20||target.dead,weapon+' hits from the cart');assert.equal(cart.hp,4,weapon+' does not hit the occupied cart');assert.equal(e.G.p.cart,cart);
+  }
+});
+
+test('双人坐车保持独立武器、枪口和座位，联机快照保留同一辆小车的引用，暂停冻结车轮和乘员',()=>{
+  const {e,cart}=cartBattle(true);assert.equal(e.G.p2.cart,cart);e.G.p.weapon='spread';e.G.p2.weapon='laser';e.K.KeyJ=true;
+  e.coop.remote.push(encodeInput({fire:true,up:true}));e.step();
+  assert.ok(e.G.p.x<e.G.p2.x);assert.ok(e.G.pb.some(b=>b.owner===1&&b.k==='sp'));assert.ok(e.G.pb.some(b=>b.owner===2&&b.k==='laser'));
+  assert.equal(e.G.p.fy,150);assert.equal(e.G.p2.fy,135);assert.equal(cart.hp,4);
+  const copy=unpackWorld(packWorld(e.G));assert.equal(copy.p.cart,copy.en[0]);assert.equal(copy.p2.cart,copy.en[0]);
+  const frozen=[cart.x,cart.wheel,e.G.p.x,e.G.p2.x,e.G.p.fx,e.G.p2.fx];e.G.mode='pause';for(let i=0;i<90;i++)e.step();
+  assert.deepEqual([cart.x,cart.wheel,e.G.p.x,e.G.p2.x,e.G.p.fx,e.G.p2.fx],frozen);
+  e.G.mode='play';e.damageEnemy(cart,99,cart.x,cart.y);assert.equal(cart.dead,true);assert.equal(e.G.p.cart,null);assert.equal(e.G.p2.cart,null);assert.ok(e.G.p.invT>=1);assert.equal(e.G.p.weapon,'spread');
+});
+
+test('坐车遇到升起的铁板停下，可继续射击击毁铁板后驶过，冻结期间车身与枪口一致',()=>{
+  const {e,cart}=cartBattle();const wall={...hangarObstacles.createHangarPlates()[0],x:420,rise:1};e.G.en.push(wall);
+  for(let i=0;i<130;i++)e.step();assert.equal(e.G.p.dead,false);assert.equal(e.G.p.cart,cart);assert.ok(cart.x<wall.x-25);assert.equal(cart.vx,0);
+  e.G.freezeT=10;e.K.KeyJ=true;const stopped=cart.x;for(let i=0;i<450&&!wall.dead;i++)e.step();
+  assert.equal(wall.dead,true);assert.equal(cart.x,stopped);assert.equal(e.G.p.x,cart.x);assert.equal(cart.hp,4);
+  e.G.freezeT=0;for(let i=0;i<70;i++)e.step();assert.ok(cart.x>wall.x+35);assert.equal(e.G.p.cart,cart);
+});
+
+test('第七关背景机械与车轮随游戏推进，暂停期间保持同一画面相位',()=>{
+  const e=engine();e.play(7,false);e.G.s7.presses=[];e.G.s7.cartT=9999;e.G.spawnT=9999;e.G.p.invT=999;
+  const cart={t:'cart',x:400,y:176,vx:-40,vy:0,hp:4,on:false,sup:null,flash:0,wheel:0};e.G.en=[cart];
+  for(let i=0;i<30;i++)e.step();const before=hangarMachinery(e.G.camX,e.G.time),wheel=cart.wheel;
+  e.G.mode='pause';for(let i=0;i<90;i++)e.step();assert.deepEqual(hangarMachinery(e.G.camX,e.G.time),before);assert.equal(cart.wheel,wheel);
+  e.G.mode='play';for(let i=0;i<20;i++)e.step();assert.notDeepEqual(hangarMachinery(e.G.camX,e.G.time),before);assert.notEqual(cart.wheel,wheel);
+});
+
+test('第七关矿车只在装卸区和运输廊出现，空车轮组着地且玩家射击不会打坏它',()=>{
+  const e=engine();e.play(7,false);e.G.en=[];e.G.spawnT=9999;e.G.s7.encounters=[];e.G.p.invT=999;e.G.p.x=80;e.K.KeyJ=true;
+  for(let i=0;i<250;i++)e.step();const cart=e.G.en.find(enemy=>enemy.t==='cart');assert.ok(cart);assert.ok(cart.x<480&&cart.x>330);assert.equal(cart.y,176);assert.notEqual(cart.wheel,0);
+  e.G.pb=[{k:'b',x:cart.x,y:cart.y-8,vx:0,vy:0,dmg:99}];e.collide();assert.equal(cart.hp,4);assert.equal(e.findTarget(cart.x,cart.y),null);
+  e.G.en=[];e.G.p.x=1300;e.G.camX=1150;for(let i=0;i<200;i++)e.step();assert.equal(e.G.en.some(c=>c.t==='cart'),false,'the whole press line does not spawn repeated carts');
+  e.G.p.x=1500;e.G.camX=1350;for(let i=0;i<45;i++)e.step();const tunnel=e.G.en.find(c=>c.t==='cart');assert.ok(tunnel);assert.equal(tunnel.depot,'tunnel-cart');assert.equal(tunnel.x,1716);assert.equal(tunnel.y,176);
+});
+
+test('第七关运输廊的低梁会挡住坐直的乘员，双人都伏低后才能继续坐车射击通过',()=>{
+  const e=engine();e.play(7,true);e.G.en=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;e.G.podTrig=[];
+  const cart={t:'cart',x:1750,y:176,vx:100,driveVX:100,vy:0,hp:4,on:true,wheel:0};e.G.en=[cart];e.G.camX=1600;
+  for(const p of [e.G.p,e.G.p2])Object.assign(p,{x:1750,y:154,cart,cartDuck:false,invT:999});
+  e.K.KeyJ=true;for(let i=0;i<90;i++){e.coop.remote.push(encodeInput({fire:true}));e.step();}
+  assert.equal(cart.x,1800);assert.equal(cart.vx,0);assert.equal(e.G.s7.duckHint,true);
+  e.K.KeyS=true;for(let i=0;i<30;i++){e.coop.remote.push(encodeInput({fire:true}));e.step();}assert.equal(cart.x,1800,'one upright passenger still blocks the low beam');
+  for(let i=0;i<245;i++){e.coop.remote.push(encodeInput({fire:true,down:true}));e.step();}
+  assert.ok(cart.x>2130);assert.equal(e.G.p.cart,cart);assert.equal(e.G.p2.cart,cart);assert.equal(cart.hp,4);assert.ok(e.G.pb.some(b=>b.owner===1));assert.ok(e.G.pb.some(b=>b.owner===2));
+  assert.equal(e.G.p.cartDuck,true);assert.equal(e.G.p2.cartDuck,true);assert.equal(e.G.p.fy,150);assert.equal(e.G.p2.fy,150);
+});
+
+test('第七关实心横梁的下表面挡住起跳，不能从底部穿进金属块',()=>{
+  const e=engine();e.play(7,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;e.G.camX=1700;
+  // Isolate the physical ceiling from the independent live-track damage.
+  Object.assign(e.G.p,{x:1850,y:176,onGround:true,invT:999});e.updateActor({jumpEdge:true});let minY=e.G.p.y;
+  for(let i=0;i<60;i++){e.updateActor({});minY=Math.min(minY,e.G.p.y);}
+  assert.ok(minY>=165,`head does not penetrate the underside (minY=${minY})`);assert.equal(e.G.p.y,176);assert.equal(e.G.p.onGround,true);
+});
+
+test('第七关低顶内松开下键或按跳跃不会穿顶和瞬移，驶出横梁后才可起身跳离',()=>{
+  const e=engine();e.play(7,false);e.G.en=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;e.G.podTrig=[];e.G.camX=1700;
+  const cart={t:'cart',depot:'tunnel-cart',x:1850,y:176,vx:100,driveVX:100,vy:0,hp:4,on:true,wheel:0};e.G.en=[cart];
+  Object.assign(e.G.p,{x:1850,y:154,cart,cartDuck:true,invT:0});e.step();
+  for(let i=0;i<25;i++){e.K.KeyK=i%2===0;e.K.KeyW=e.K.KeyJ=true;e.step();assert.equal(e.G.p.cart,cart);assert.equal(e.G.p.cartDuck,true);assert.equal(e.G.p.y,154);assert.equal(e.G.p.ay,0);}
+  assert.ok(cart.x>1890&&cart.x<1900,'releasing down does not teleport back to the entrance');assert.equal(e.G.p.dead,false);
+  e.K.KeyK=e.K.KeyW=false;while(cart.x<1950)e.step();assert.equal(e.G.p.cartDuck,false);
+  e.K.KeyK=true;e.step();assert.equal(e.G.p.cart,null);assert.ok(e.G.p.vy<0);
+});
+
+test('第七关低顶的带电轨道不能步行、趴地或靠起跳穿越，两位玩家都必须乘车',()=>{
+  for(const slot of [1,2])for(const pose of ['standing','prone','jump']){
+    const e=engine();e.play(7,slot===2);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;e.G.freezeT=999;e.G.camX=1700;
+    const p=slot===1?e.G.p:e.G.p2;Object.assign(p,{x:1850,y:176,onGround:true,invT:0});
+    if(slot===2)Object.assign(e.G.p,{x:1760,y:176,invT:999});
+    if(slot===1){e.K.KeyS=pose==='prone';e.K.KeyK=pose==='jump';}
+    else e.coop.remote.push(encodeInput({down:pose==='prone',jump:pose==='jump'}));
+    e.step();assert.equal(p.dead,true,`${slot}, ${pose}: direct contact is lethal`);
+  }
+  const e=engine();e.play(7,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;e.G.camX=1700;
+  Object.assign(e.G.p,{x:1780,y:176,onGround:true,invT:0});e.step();e.K.KeyD=e.K.KeyK=true;e.step();e.K.KeyK=false;
+  let crossed=false;for(let i=0;i<120&&!e.G.p.dead;i++){e.step();crossed ||= e.G.p.x>1925;}
+  assert.equal(crossed,false);assert.ok(e.G.p.dead||e.G.p.x<=1805,'jumping cannot reach the top of a full-height bulkhead');
+});
+
+test('第七关运输廊内死亡会恢复到安全伏低的矿车，空车不会自行驶走造成卡关',()=>{
+  const e=engine();e.play(7,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;e.G.camX=1700;
+  Object.assign(e.G.p,{x:1850,y:176,onGround:true,invT:0});e.step();assert.equal(e.G.p.dead,true);
+  for(let i=0;i<240&&e.G.p.dead;i++)e.step();assert.equal(e.G.p.dead,false);assert.ok(e.G.p.cart);assert.equal(e.G.p.cartDuck,true);assert.equal(e.G.deaths,1);
+  e.K.KeyS=e.K.KeyJ=true;for(let i=0;i<220;i++)e.step();assert.ok(e.G.p.x>2140);assert.equal(e.G.deaths,1);assert.ok(e.G.pb.length>0);
+  e.K.KeyS=e.K.KeyJ=false;e.K.KeyK=true;e.step();const cart=e.G.en.find(c=>c.depot==='tunnel-recovery'),x=cart.x;assert.equal(e.G.p.cart,null);
+  for(let i=0;i<12;i++)e.step();assert.equal(cart.x,x,'an empty tunnel cart stays available for boarding again');
+});
+
+test('第七关入口矿车损毁后会补回可搭乘的空车，不会因一次损毁永久封路',()=>{
+  const e=engine();e.play(7,false);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.camX=1600;
+  Object.assign(e.G.p,{x:1760,y:176,onGround:true,invT:999});for(let i=0;i<75;i++)e.step();
+  const first=e.G.en.find(c=>c.depot==='tunnel-cart');assert.ok(first);e.damageEnemy(first,99,first.x,first.y);assert.equal(first.dead,true);
+  for(let i=0;i<40;i++)e.step();const replacement=e.G.en.find(c=>c.depot==='tunnel-cart'&&!c.dead);
+  assert.ok(replacement);assert.notEqual(replacement,first);assert.equal(replacement.x,1716);assert.equal(replacement.vx,0);
+});
+
+test('第七关高架封锁区必须越过实心挡墙，两位玩家均能逐层上跳后再沿另一侧下降',()=>{
+  for(const slot of [1,2]){
+    const e=engine();e.play(7,slot===2);e.G.en=[];e.G.spawnT=9999;e.G.podTrig=[];e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;e.G.camX=2300;
+    const p=slot===1?e.G.p:e.G.p2,q=hangarRoute.HANGAR_CLIMB;
+    Object.assign(p,{x:q.wall-24,y:176,vy:0,onGround:true,invT:0});if(slot===2)Object.assign(e.G.p,{x:2390,y:176,onGround:true,invT:999});
+    const move=({jump=false,right=false,down=false}={})=>{if(slot===1){e.K.KeyK=jump;e.K.KeyD=right;e.K.KeyS=down;}else e.coop.remote.push(encodeInput({jump,right,down}));e.step();};move();
+    for(let i=0;i<50;i++)move({right:true});assert.ok(p.x<=q.wall-5);assert.equal(p.y,176);
+    move({jump:true,right:true});for(let i=0;i<20;i++)move({right:true});move({jump:true,right:true});for(let i=0;i<90;i++)move({right:true});assert.ok(p.x<=q.wall-5,'a ground double jump cannot clear the wall');
+    // Return by ordinary down+jump inputs if the attempted bypass landed on a shelf.
+    for(let i=0;i<120&&p.y!==176;i++)move({jump:i%30===0,down:true});
+    const visited=[176];for(const y of [136,96,56]){move({jump:true});let landed=false;for(let i=0;i<90;i++){move();if(p.onGround&&p.y===y){landed=true;visited.push(y);break;}}assert.ok(landed,'ascending '+y);}
+    assert.equal(p.support.oneWayTop,true);move({jump:true,down:true});assert.ok(p.vy<0,'the crown does not allow dropping into the solid wall');
+    for(let i=0;i<90&&!p.onGround;i++)move();
+    for(let i=0;i<180;i++){move({right:true});if(p.onGround&&visited.at(-1)!==p.y)visited.push(p.y);if(p.x>2605&&p.onGround&&p.y===176)break;}
+    assert.deepEqual(visited,[176,136,96,56,96,136,176]);assert.equal(p.dead,false);assert.ok(p.x>2605);
+    e.reset(7);assert.equal(e.solids.filter(s=>s.hangarClimb).length,5);assert.ok(e.solids.some(s=>s.climbWall&&s.solid));
+  }
+});
+
+test('第七关重排路线可从入口用真实移动与射击击毁两块铁板并完成防御大门战',()=>{
+  const e=engine();e.play(7,false);e.G.p.invT=9999;e.G.p.weapon='laser';e.step();
+  const sections=new Set(),duckedPassages=new Set(),plates=e.G.en.filter(o=>o.t==='spikeWall');let lastX=e.G.p.x,stalled=0,jumpClock=0,climbedTop=false;
+  e.K.KeyD=e.K.KeyJ=true;
+  for(let i=0;i<14000&&e.G.mode==='play';i++){
+    const p=e.G.p;sections.add(hangarRoute.hangarSectionAt(p.x).id);stalled=Math.abs(p.x-lastX)<.1?stalled+1:0;lastX=p.x;
+    if(p.cart&&p.cartDuck)for(const r of hangarRoute.HANGAR_CART_TUNNEL.roofs)if(p.x>r.x+20&&p.x<r.x+r.w-10)duckedPassages.add(r.x);
+    climbedTop ||= !!(p.support?.hangarClimb&&p.support.side==='crown');
+    const plate=plates.find(o=>!o.dead&&o.x>p.x&&o.x-p.x<85),atGate=p.x>3320;
+    e.K.KeyD=!(p.x>=1712&&p.x<1730&&!p.cart&&p.y<154);e.K.KeyS=!!p.cart;e.K.KeyK=false;
+    const boarding=p.x>=1645&&p.x<1660&&!p.cart,leaveCart=p.cart&&p.x>2170;
+    if(p.onGround&&!plate&&(boarding||leaveCart||stalled>10||atGate)&&jumpClock<=0){e.K.KeyK=true;jumpClock=45;}
+    jumpClock--;e.step();
+  }
+  assert.equal(e.G.mode,'clear',JSON.stringify({x:e.G.p.x,y:e.G.p.y,sections:[...sections],plates:plates.map(p=>({x:p.x,hp:p.hp})),core:e.G.gate.parts[2].hp}));
+  assert.equal(sections.size,8);assert.equal(duckedPassages.size,2);assert.equal(climbedTop,true);assert.ok(plates.every(p=>p.dead));assert.equal(e.G.gate.dead,true);assert.equal(e.G.deaths,0);
+});
+
+test('第七关无人机独立跟随两位玩家，炮管朝目标瞄准且弹丸从真实枪口发出，暂停与过关保留正确状态',()=>{
+  const e=engine();e.play(7,true);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s7.presses=[];e.G.s7.encounters=[];e.G.s7.cartT=9999;
+  Object.assign(e.G.p,{x:100,y:176,invT:999});Object.assign(e.G.p2,{x:120,y:176,invT:999});e.G.inv=['a'];e.G.inv2=['a'];e.useSpecial();e.withPlayer2(()=>e.useSpecial());
+  const target={t:'snp',x:340,y:176,hp:50,fireT:999,face:-1,flash:0};e.G.en=[target];
+  for(const p of [e.G.p,e.G.p2]){assert.equal(p.droneT,12);p.droneCd=0;}
+  e.step();for(const p of [e.G.p,e.G.p2]){
+    const bullet=e.G.pb.find(b=>b.drone&&b.owner===p.pid),m=escortDroneMuzzle(p);assert.ok(bullet);assert.ok(Math.abs(bullet.x-bullet.vx/60-m.x)<1e-8);assert.ok(Math.abs(bullet.y-bullet.vy/60-m.y)<1e-8);assert.equal(p.droneFace,1);assert.ok(p.droneShotT>0);
+  }
+  for(let i=0;i<60;i++)e.step();assert.ok(target.hp<50,'drone bullets still damage enemies');
+  e.G.en=[{...target,x:20,hp:50}];for(const p of [e.G.p,e.G.p2])p.droneCd=0;e.step();assert.equal(e.G.p.droneFace,-1);assert.equal(e.G.p2.droneFace,-1);
+  const frozen=[e.G.time,e.G.p.dx2,e.G.p.dy2,e.G.p.droneAim,e.G.p.droneShotT,e.G.p.droneT,e.G.p2.droneT];e.G.mode='pause';for(let i=0;i<60;i++)e.step();assert.deepEqual([e.G.time,e.G.p.dx2,e.G.p.dy2,e.G.p.droneAim,e.G.p.droneShotT,e.G.p.droneT,e.G.p2.droneT],frozen);
+  const copy=unpackWorld(packWorld(e.G));assert.equal(copy.p.droneAim,e.G.p.droneAim);assert.equal(copy.p2.droneFace,-1);
+  e.reset(8,true);assert.equal(e.G.p.droneT,0);assert.equal(e.G.p2.droneT,0,'the hangar-only drone does not leak into the alien stage');
+});
+
+test('第八关跳跃幼体依次屈腿蓄力、蹬地、空中收腿、伸脚和落地缓冲，停跳不翻身且暂停冰冻同步定格',()=>{
+  const e=engine();e.play(8,false);e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.p.x=350;
+  const larva={t:'larva',x:220,y:176,vx:0,vy:0,hp:1,on:true,hopT:.4,face:1,anim:0,flash:0};e.G.en=[larva];
+  const phases=[larvaHopFrame(larva)];let landed=false;
+  for(let i=0;i<150;i++){
+    e.updateEnemies();const frame=larvaHopFrame(larva);if(phases.at(-1)!==frame)phases.push(frame);
+    if(frame===5)landed=true;if(landed&&frame===0)break;
+  }
+  assert.deepEqual(phases,[0,1,2,3,4,5,0]);assert.equal(larva.y,176);assert.equal(larva.vx,0);assert.equal(larva.face,1,'landing does not flip a right-facing creature back to the left');
+  assert.ok(larva.x>220);const copy=unpackWorld(packWorld(e.G));assert.equal(larvaHopFrame(copy.en[0]),larvaHopFrame(larva));assert.equal(copy.en[0].face,1);
+  larva.hopT=.1;e.updateEnemies();assert.equal(larvaHopFrame(larva),1);
+  e.G.freezeT=8;const frozen=JSON.stringify(larva);for(let i=0;i<60;i++)e.updateEnemies();assert.equal(JSON.stringify(larva),frozen);
+  e.G.mode='pause';for(let i=0;i<60;i++)e.step();assert.equal(JSON.stringify(larva),frozen);
+  e.G.mode='play';e.G.freezeT=0;for(let i=0;i<10;i++)e.updateEnemies();assert.equal(larva.on,false);assert.equal(larvaHopFrame(larva),2);
+});
+
+test('第八关卵囊实际孵出的幼体从蹬腿姿态开始，不从空中收腿倒播到起跳',()=>{
+  const e=engine();e.play(8,false);e.G.spawnT=9999;e.G.podTrig=[];
+  e.G.en=[{t:'sac',x:250,y:176,hp:8,spawnT:.001,puls:0,flash:0}];e.updateEnemies();
+  const baby=e.G.en.find(q=>q.t==='larva');assert.ok(baby);assert.equal(larvaHopFrame(baby),2);assert.ok(baby.hopAirT<.075);assert.equal(baby.face,-1);
+});
+
+test('第八关怪兽六帧爬行随实际位移推进，暂停冰冻和停步定格，腾空收肢且联机保留步态',()=>{
+  const run=speed=>{
+    const e=engine();e.play(8,false);e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];
+    const crawler={t:'run',x:200,y:176,vx:speed,vy:0,on:true,hp:1,anim:0,flash:0};e.G.en=[crawler];return {e,crawler};
+  };
+  const {e,crawler}=run(62),frames=new Set();
+  for(let i=0;i<60;i++){e.updateEnemies();frames.add(alienCrawlerFrame(crawler));}
+  assert.equal(frames.size,6);assert.ok(Math.abs(crawler.crawlDistance-62)<1e-8);
+  const slow=run(31);for(let i=0;i<60;i++)slow.e.updateEnemies();assert.ok(Math.abs(crawler.crawlDistance-slow.crawler.crawlDistance*2)<1e-8);
+  const distance=crawler.crawlDistance;assert.equal(alienCrawlerFrame({...crawler,crawlDistance:distance+ALIEN_CRAWLER_ART.stride}),alienCrawlerFrame(crawler));
+  crawler.vx=0;for(let i=0;i<20;i++)e.updateEnemies();assert.equal(crawler.crawlDistance,distance,'no sliding legs while stationary');
+  crawler.vx=-62;e.G.freezeT=8;const frozen=JSON.stringify(crawler);for(let i=0;i<60;i++)e.updateEnemies();assert.equal(JSON.stringify(crawler),frozen);
+  e.G.mode='pause';for(let i=0;i<60;i++)e.step();assert.equal(JSON.stringify(crawler),frozen);
+  e.G.mode='play';e.G.freezeT=0;e.updateEnemies();assert.ok(crawler.crawlDistance>distance);assert.ok(crawler.x<262,'the gait also advances when travelling left');
+  const remote=unpackWorld(packWorld(e.G));assert.equal(remote.en[0].crawlDistance,crawler.crawlDistance);assert.equal(alienCrawlerFrame(remote.en[0]),alienCrawlerFrame(crawler));
+  Object.assign(crawler,{y:130,vy:-80,on:false});const airborne=crawler.crawlDistance;
+  for(let i=0;i<8;i++)e.updateEnemies();assert.equal(crawler.on,false);assert.equal(crawler.crawlDistance,airborne);assert.equal(alienCrawlerFrame(crawler),4);
+});
+
+test('第八关顶部怪物实际爬行、蓄力后扑下，支持躲避、冻结、快照与击破，重玩恢复',()=>{
+  for(const online of [false,true]){
+    const e=engine();e.play(8,online);const stalkers=e.G.en.filter(q=>q.t==='ceilingStalker');assert.equal(stalkers.length,6);const mob=stalkers[0];
+    e.G.en=[mob];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.camX=320;Object.assign(e.G.p,{x:480,y:176,invT:999});if(online)Object.assign(e.G.p2,{x:460,y:176,invT:999});
+    const start=mob.x;for(let i=0;i<100&&mob.phase==='cling';i++)e.updateEnemies();assert.equal(mob.phase,'windup');assert.ok(mob.x<start-30);assert.equal(mob.y-mob.roofY,8.5);
+    e.G.freezeT=3;const pose=JSON.stringify(mob);ticks(e,25);assert.equal(JSON.stringify(mob),pose);e.G.mode='pause';ticks(e,20);assert.equal(JSON.stringify(mob),pose);
+    const copy=unpackWorld(packWorld(e.G));assert.equal(JSON.stringify(copy.en[0]),pose);e.G.mode='play';e.G.freezeT=0;e.G.p.invT=0;e.K.KeyD=true;
+    const phases=new Set();let landedOnSolid=false;for(let i=0;i<85;i++){
+      e.step();phases.add(mob.phase);if(mob.phase==='land'&&e.solids.some(s=>!s.gone&&mob.x+6>s.x&&mob.x-6<s.x+s.w&&Math.abs(mob.y+8.5-s.y)<.01))landedOnSolid=true;
+    }
+    assert.ok(phases.has('pounce'));assert.ok(phases.has('land'));assert.equal(e.G.p.dead,false,'moving during the warning evades the committed pounce');
+    assert.ok(landedOnSolid,'landing claws rest on an actual platform or floor');
+    const score=e.G.score;e.G.pb=[{k:'b',x:mob.x,y:mob.y,vx:0,vy:0,dmg:2}];e.collide();assert.equal(mob.dead,true);assert.equal(e.G.score,score+150);
+    e.reset(8);assert.equal(e.G.en.filter(q=>q.t==='ceilingStalker'&&q.phase==='cling'&&q.hp===2).length,6);
+  }
+});
+
+test('第八关扑击怪物能伤害本机和队友，冻结期间接触安全',()=>{
+  for(const slot of [1,2]){
+    const e=engine();e.play(8,true);const mob=e.G.en.find(q=>q.t==='ceilingStalker');Object.assign(mob,{x:430,y:160,phase:'pounce'});e.G.en=[mob];
+    const p=slot===1?e.G.p:e.G.p2;Object.assign(p,{x:430,y:176,invT:0,shieldT:0,dead:false});(slot===1?e.G.p2:e.G.p).x=200;
+    const contact=()=>slot===1?e.collidePlayer():e.withPlayer2(()=>e.collidePlayer());e.G.freezeT=1;contact();assert.equal(p.dead,false);e.G.freezeT=0;contact();assert.equal(p.dead,true);
+  }
+});
+
+test('第八关半墙拦住地面，头颈拦住空中，双人、跳跃、摩托和直升机不能穿过守卫',()=>{
+  for(const slot of [1,2])for(const mode of ['walk','jump','moto','heli']){
+    const e=engine();e.play(8,slot===2);const guardian=e.G.en.find(q=>q.t==='alienHead'),b=stageEightGuardian.alienGuardianWallBox(guardian);
+    e.G.en=[guardian];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.freezeT=999;e.G.camX=b.x-200;
+    const p=slot===1?e.G.p:e.G.p2;Object.assign(p,{x:b.x-35,y:mode==='heli'?32:176,onGround:true,invT:999,shieldT:999,ride:mode==='moto'?'moto':mode==='heli'?'heli':null,rideT:999});
+    if(slot===2)Object.assign(e.G.p,{x:b.x-70,y:176,onGround:true,invT:999});
+    const move=jump=>{const input={right:true,up:mode==='heli',jump};if(slot===1){e.K.KeyD=true;e.K.KeyW=input.up;e.K.KeyK=jump;}else e.coop.remote.push(encodeInput(input));e.step();};move(false);
+    for(let i=0;i<100;i++){move(mode==='jump'&&(i===1||i===19));assert.ok(p.x<guardian.x+62,`${slot} ${mode}: cannot pass the visible head and neck`);}
+    if(mode==='walk'||mode==='moto')assert.ok(p.x<=b.x-12,'ground travel is stopped by the low wall');
+    if(mode==='heli')assert.ok(p.x>b.x+15,'air above the left edge of the half-wall is no longer an invisible full-height barrier');
+    assert.ok(e.G.camX<=856,'the guardian neck stays beyond the upper-right edge during the encounter');
+    assert.equal(p.dead,false);assert.equal(guardian.hp,guardian.max);
+    const copy=unpackWorld(packWorld({...e.G,platforms:e.solids}));assert.equal(stageEightGuardian.alienGuardianLimit(copy.en,3490,10,e.pBox(e.G.p)),e.xMax(10));assert.equal(copy.s8.guardianWall.h,72);assert.equal(copy.s8.guardianWall,copy.platforms.find(s=>s.guardianWall));
+  }
+});
+
+test('第八关平射被半墙挡住，登上左侧高台可射击头部，击败后墙体消失并可越过缺口',()=>{
+  const e=engine();e.play(8,false);const guardian=e.G.en.find(q=>q.t==='alienHead'),b=stageEightGuardian.alienGuardianWallBox(guardian);
+  e.G.en=[guardian];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.freezeT=999;e.G.camX=b.x-200;
+  assert.equal(e.G.s8.guardianWall.y,104);assert.equal(e.G.s8.guardianWall.y+e.G.s8.guardianWall.h,176);
+  Object.assign(e.G.p,{x:b.x-25,y:176,onGround:true,invT:999});e.step();e.K.KeyJ=true;ticks(e,90);assert.equal(guardian.hp,guardian.max,'the low wall does not share the head hit box');
+  assert.ok(e.solids.some(s=>s.x===900&&s.y===96&&s.w===80));Object.assign(e.G.p,{x:940,y:96,onGround:true});
+  for(let i=0;i<460&&!guardian.dead;i++)e.step();assert.equal(guardian.dead,true);assert.ok(e.xMax(10)>b.x+b.w);assert.ok(e.G.bannerText.includes('通路开启'));
+  assert.equal(e.G.s8.guardianWall.gone,true);e.K.KeyJ=false;e.K.KeyD=true;
+  let jumped=-1;for(let i=0;i<230&&e.G.p.x<1210;i++){
+    e.K.KeyK=false;if(e.G.p.onGround&&e.G.p.x>1080){e.K.KeyK=true;jumped=i;}
+    if(i===jumped+15&&!e.G.p.onGround)e.K.KeyK=true;e.step();
+  }
+  assert.ok(e.G.p.x>=1210,`reached ${e.G.p.x}, y=${e.G.p.y}`);assert.equal(e.G.p.dead,false);
+  e.reset(8);const fresh=e.G.en.find(q=>q.t==='alienHead');assert.notEqual(fresh,guardian);assert.equal(fresh.hp,28);assert.ok(e.xMax(10)<b.x);
+});
+
+test('第八关中途守卫不会被护盾、摩托或巨大化的接触直接秒杀',()=>{
+  for(const mode of ['shield','moto','giant']){
+    const e=engine();e.play(8,false);const guardian=e.G.en.find(q=>q.t==='alienHead');e.G.en=[guardian];const b=e.ebox(guardian);
+    Object.assign(e.G.p,{x:b.x+3,y:b.y+b.h-1,onGround:false,invT:0,shieldT:mode==='shield'?10:0,ride:mode==='moto'?'moto':null,rideT:10,giantT:mode==='giant'?10:0,giantHits:3});
+    e.collidePlayer();assert.equal(guardian.hp,28);assert.ok(!guardian.dead);
+  }
+});
+
+test('第八关守卫实际吐出可被击落的飞虫，暂停和冻结保持飞行及吐怪进度，击败守卫清理幼虫',()=>{
+  const e=engine();e.play(8,true);const guardian=e.G.en.find(q=>q.t==='alienHead');e.G.en=[guardian];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.camX=856;
+  Object.assign(e.G.p,{x:982,y:176,invT:999});Object.assign(e.G.p2,{x:950,y:176,invT:999});
+  for(let i=0;i<105;i++)e.updateEnemies();const brood=e.G.en.filter(q=>q.t==='guardianFlyer');assert.equal(brood.length,2);assert.equal(e.G.eb.some(b=>b.from==='alienHead'),false);
+  assert.ok(brood.every(q=>q.x<stageEightGuardian.alienGuardianMouth(guardian).x&&q.y<104));assert.ok(brood[0].age>brood[1].age);
+  e.G.freezeT=3;const before=JSON.stringify([guardian,...brood]);ticks(e,30);assert.equal(JSON.stringify([guardian,...brood]),before);
+  e.G.mode='pause';ticks(e,20);assert.equal(JSON.stringify([guardian,...brood]),before);
+  const copy=unpackWorld(packWorld(e.G));assert.equal(JSON.stringify(copy.en.filter(q=>q.t==='guardianFlyer')),JSON.stringify(brood));
+  e.G.mode='play';e.G.freezeT=0;e.updateEnemies();assert.notEqual(JSON.stringify(brood),JSON.stringify(copy.en.filter(q=>q.t==='guardianFlyer')));
+  const child=brood[0],score=e.G.score;e.G.pb=[{k:'b',x:child.x,y:child.y,vx:0,vy:0,dmg:2}];e.collide();assert.equal(child.dead,true);assert.equal(e.G.score,score+100);
+  e.damageEnemy(guardian,999,guardian.x,guardian.y);assert.ok(brood.every(q=>q.dead));assert.equal(e.G.s8.guardianWall.gone,true);
+});
+
+test('第八关飞虫实体能击中本机及队友，冻结后接触安全',()=>{
+  for(const slot of [1,2]){
+    const e=engine();e.play(8,true);const flyer=guardianFlyers.createGuardianFlyer(e.G.en.find(q=>q.t==='alienHead'));Object.assign(flyer,{x:940,y:160});e.G.en=[flyer];
+    const p=slot===1?e.G.p:e.G.p2;Object.assign(p,{x:940,y:176,invT:0,shieldT:0,dead:false});const other=slot===1?e.G.p2:e.G.p;other.x=700;
+    const contact=()=>slot===1?e.collidePlayer():e.withPlayer2(()=>e.collidePlayer());
+    e.G.freezeT=1;contact();assert.equal(p.dead,false);e.G.freezeT=0;contact();assert.equal(p.dead,true);
+  }
+});
+
+test('第八关顶部寄生怪实际张嘴吐出白色漂浮敌人，可分别击破并在重玩时恢复',()=>{
+  const e=engine();e.play(8,true);const nests=e.G.en.filter(q=>q.t==='ceilingParasite'&&q.mount==='ceiling');assert.equal(nests.length,8);assert.ok(nests.every(q=>q.y<=48));
+  const parent=nests[0];e.G.en=[parent];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.camX=320;Object.assign(e.G.p,{x:430,y:176,invT:999});Object.assign(e.G.p2,{x:400,y:176,invT:999});
+  parent.fireT=.001;e.updateEnemies();assert.equal(parent.phase,'opening');assert.equal(e.G.en.length,1,'the mouth warns before emitting');
+  e.G.freezeT=5;const warned=JSON.stringify(parent);for(let i=0;i<45;i++)e.updateEnemies();assert.equal(JSON.stringify(parent),warned);
+  e.G.mode='pause';ticks(e,30);assert.equal(JSON.stringify(parent),warned);e.G.mode='play';e.G.freezeT=0;
+  for(let i=0;i<75;i++)e.updateEnemies();const child=e.G.en.find(q=>q.t==='whiteFloater');assert.ok(child);assert.ok(child.y>parent.y+20);assert.equal(child.from,parent.id);
+  const copy=unpackWorld(packWorld(e.G));assert.equal(JSON.stringify(copy.en),JSON.stringify(e.G.en));
+  e.G.freezeT=3;const pose=JSON.stringify(child);for(let i=0;i<25;i++)e.updateEnemies();assert.equal(JSON.stringify(child),pose);
+  e.G.freezeT=0;const score=e.G.score;e.G.pb=[{k:'b',x:child.x,y:child.y,vx:0,vy:0,dmg:1}];e.collide();assert.equal(child.dead,true);assert.equal(e.G.score,score+50);
+  e.G.pb=[{k:'b',x:parent.x,y:parent.y,vx:0,vy:0,dmg:6}];e.collide();assert.equal(parent.dead,true);assert.equal(e.G.score,score+350);
+  for(let i=0;i<400;i++)e.updateEnemies();assert.equal(e.G.en.filter(q=>q.t==='whiteFloater'&&!q.dead).length,0,'a destroyed parasite cannot keep emitting');
+  e.reset(8);assert.equal(e.G.en.filter(q=>q.t==='ceilingParasite'&&q.mount==='ceiling'&&q.hp===6&&q.phase==='idle').length,8);assert.equal(e.G.en.some(q=>q.t==='whiteFloater'),false);
+});
+
+test('第八关底部寄生怪嵌在实地组织内，向上吐怪可冻结、同步和击破，重玩恢复',()=>{
+  const e=engine();e.play(8,true);const nests=e.G.en.filter(q=>q.t==='ceilingParasite'&&q.mount==='floor');assert.equal(nests.length,8);
+  for(const p of nests)assert.ok(e.solids.some(s=>s.g&&!s.gone&&p.x-13>=s.x&&p.x+13<=s.x+s.w&&p.y-15>=s.y&&p.y+13<=s.y+s.h),'the whole mouth lies inside a supported ground section');
+  const parent=nests[0];e.G.en=[parent];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.camX=600;Object.assign(e.G.p,{x:710,y:176,invT:999});Object.assign(e.G.p2,{x:690,y:176,invT:999});
+  parent.fireT=.001;for(let i=0;i<50&&!e.G.en.some(q=>q.t==='whiteFloater');i++)e.updateEnemies();const child=e.G.en.find(q=>q.t==='whiteFloater');assert.ok(child);assert.ok(child.y>176&&child.vy<0);assert.equal(child.emerged,false);
+  e.G.freezeT=5;const still=JSON.stringify([parent,child]);ticks(e,25);assert.equal(JSON.stringify([parent,child]),still);e.G.mode='pause';ticks(e,20);assert.equal(JSON.stringify([parent,child]),still);
+  const copy=unpackWorld(packWorld(e.G));assert.equal(copy.en[1].mount,'floor');assert.equal(copy.en[1].emerged,false);assert.equal(copy.en[1].launchY,188);
+  e.G.mode='play';e.G.freezeT=0;for(let i=0;i<65;i++)e.updateEnemies();assert.ok(child.y<176);assert.equal(child.emerged,true);
+  const score=e.G.score;e.G.pb=[{k:'b',x:child.x,y:child.y,vx:0,vy:0,dmg:1}];e.collide();assert.equal(child.dead,true);assert.equal(e.G.score,score+50);
+  e.G.pb=[{k:'b',x:parent.x,y:parent.y,vx:0,vy:0,dmg:6}];e.collide();assert.equal(parent.dead,true);assert.equal(e.G.score,score+350);
+  e.reset(8);assert.equal(e.G.en.filter(q=>q.t==='ceilingParasite'&&q.mount==='floor'&&q.hp===6&&q.phase==='idle').length,8);assert.equal(e.G.en.filter(q=>q.t==='ceilingParasite'&&q.mount==='ceiling').length,8);assert.equal(e.G.en.some(q=>q.t==='whiteFloater'),false);
+});
+
+test('第八关白色漂浮怪能伤害本机及队友，冻结期间接触安全',()=>{
+  for(const slot of [1,2]){
+    const e=engine();e.play(8,true);const child=ceilingParasites.createWhiteFloater(e.G.en.find(q=>q.t==='ceilingParasite'));Object.assign(child,{x:430,y:160});e.G.en=[child];
+    const p=slot===1?e.G.p:e.G.p2;Object.assign(p,{x:430,y:176,invT:0,shieldT:0,dead:false});const other=slot===1?e.G.p2:e.G.p;other.x=200;
+    const contact=()=>slot===1?e.collidePlayer():e.withPlayer2(()=>e.collidePlayer());e.G.freezeT=1;contact();assert.equal(p.dead,false);e.G.freezeT=0;contact();assert.equal(p.dead,true);
+  }
+});
+
+test('第八关关底四个嘴独立吐出粉色幼体，冻结、暂停及联机同步保持机关和幼体进度',()=>{
+  const e=engine();e.play(8,true);e.G.en=[];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.camX=3116;Object.assign(e.G.p,{x:3280,y:176,invT:999});Object.assign(e.G.p2,{x:3250,y:176,invT:999});
+  ticks(e,270);const H=e.G.hive,children=e.G.en.filter(q=>q.t==='hiveHatchling');assert.equal(new Set(children.map(q=>q.from)).size,4);assert.ok(children.every(q=>q.hp===1&&!q.dead));
+  e.G.freezeT=8;const pose=JSON.stringify([H,children]);ticks(e,30);assert.equal(JSON.stringify([H,children]),pose);e.G.mode='pause';ticks(e,20);assert.equal(JSON.stringify([H,children]),pose);
+  const copy=unpackWorld(packWorld(e.G));assert.equal(JSON.stringify(copy.hive),JSON.stringify(H));assert.equal(JSON.stringify(copy.en.filter(q=>q.t==='hiveHatchling')),JSON.stringify(children));
+  e.G.mode='play';e.G.freezeT=0;e.step();assert.notEqual(JSON.stringify(children),JSON.stringify(copy.en.filter(q=>q.t==='hiveHatchling')));
+  const child=children[0],score=e.G.score;e.G.pb=[{k:'b',x:child.x,y:child.y,vx:0,vy:0,dmg:1}];e.collide();assert.equal(child.dead,true);assert.equal(e.G.score,score+100);
+  const port=hiveBrood.hiveBroodParts(H)[0];e.hitBossPart(port,99);const sequence=port.spawnSequence;ticks(e,360);assert.equal(port.spawnSequence,sequence);assert.equal(H.open,false);
+  e.reset(8);assert.equal(hiveBrood.hiveBroodRemaining(e.G.hive),4);assert.equal(e.G.en.some(q=>q.t==='hiveHatchling'),false);
+});
+
+test('第八关四个孵化机关都能用实际步枪击破，上方机关可跳射，后排机关不会被装饰墙挡弹',()=>{
+  const e=engine();e.play(8,false);e.G.en=[];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.camX=3116;e.G.freezeT=999;
+  Object.assign(e.G.p,{x:3328,y:176,onGround:true,invT:999,weapon:'rifle',face:1});const H=e.G.hive,ports=hiveBrood.hiveBroodParts(H);e.K.KeyJ=true;
+  for(let i=0;i<500&&ports.some(q=>q.row==='bottom'&&q.hp>0);i++)e.step();assert.ok(ports.filter(q=>q.row==='bottom').every(q=>q.hp<=0),JSON.stringify(ports));assert.equal(H.open,false);
+  e.K.KeyW=e.K.KeyD=true;
+  e.K.KeyJ=false;ticks(e,30);
+  for(let attempt=0;attempt<16&&ports.find(q=>q.k==='broodTR').hp>0;attempt++)for(let i=0;i<65;i++){e.K.KeyK=i===1;e.K.KeyJ=i>=6&&i<12;e.step();}
+  assert.ok(ports.find(q=>q.k==='broodTR').hp<=0,'a diagonal jump shot passes over the closed brain to the rear ceiling mouth');e.K.KeyJ=true;
+  for(let i=0;i<1000&&!H.open;i++){e.K.KeyK=i%107===1||i%107===15;e.step();}
+  assert.equal(H.open,true,JSON.stringify(ports));assert.ok(ports.every(q=>q.hp<=0));assert.equal(H.parts[2].hp,80);assert.equal(e.G.p.dead,false);
+});
+
+test('第八关粉色幼体能伤害本机与队友，冰冻期间接触安全',()=>{
+  for(const slot of [1,2]){
+    const e=engine();e.play(8,true);const child=hiveBrood.createHiveHatchling(hiveBrood.hiveBroodParts(e.G.hive)[0]);Object.assign(child,{x:3280,y:160});e.G.en=[child];
+    const p=slot===1?e.G.p:e.G.p2;Object.assign(p,{x:3280,y:176,invT:0,shieldT:0,dead:false});const other=slot===1?e.G.p2:e.G.p;other.x=3000;
+    const contact=()=>slot===1?e.collidePlayer():e.withPlayer2(()=>e.collidePlayer());e.G.freezeT=1;contact();assert.equal(p.dead,false);e.G.freezeT=0;contact();assert.equal(p.dead,true);
+  }
+});
+
+test('第八关大脑组织时钟跟随战斗，暂停和冰冻保留脉动姿态，联机快照可同步恢复',()=>{
+  const e=engine();e.play(8,false);e.G.en=[];e.G.spawnT=9999;e.G.podTrig=[];e.G.s8.drips=[];e.G.p.invT=999;
+  ticks(e,30);const time=e.G.hive.tissueTime;assert.ok(time>0);
+  e.G.hive.beatK=.6;e.G.hive.mawK=.5;e.G.freezeT=8;const pose=[time,e.G.hive.beatK,e.G.hive.mawK];ticks(e,60);assert.deepEqual([e.G.hive.tissueTime,e.G.hive.beatK,e.G.hive.mawK],pose);
+  e.G.mode='pause';ticks(e,60);assert.deepEqual([e.G.hive.tissueTime,e.G.hive.beatK,e.G.hive.mawK],pose);
+  const copy=unpackWorld(packWorld(e.G));assert.equal(copy.hive.tissueTime,time);e.G.mode='play';e.G.freezeT=0;e.step();assert.ok(e.G.hive.tissueTime>time);
+});
+
+test('第八关异形巢穴包含可射击守卫、孵化巢与关底母巢，并能完成 Boss 战',()=>{
+  for(const online of [false,true]){
+    const e=engine();e.play(8,online);e.G.p.invT=999;if(online)e.G.p2.invT=999;
+    assert.equal(e.G.stage,8);assert.ok(e.G.en.some(o=>o.t==='sac'));assert.ok(e.G.s8.drips.length>0);
+    const guardian=e.G.en.find(o=>o.t==='alienHead');assert.ok(guardian);e.G.camX=guardian.x-260;e.G.p.x=guardian.x-100;
+    if(online)e.G.p2.x=guardian.x-120;
+    for(let i=0;i<130&&!e.G.en.some(b=>b.t==='guardianFlyer');i++)e.step();
+    assert.ok(e.G.en.some(b=>b.t==='guardianFlyer'),'guardian emits shootable flying larvae');
+    const hitbox={x:guardian.x,y:guardian.y};e.G.pb=[{k:'b',x:hitbox.x,y:hitbox.y,vx:0,vy:0,dmg:30}];e.collide();assert.ok(guardian.dead,'guardian can be destroyed by normal shots');
+    e.G.en=[];e.G.eb=[];e.G.camX=3116;e.G.p.x=3280;if(online)e.G.p2.x=3255;e.G.p.invT=999;if(online)e.G.p2.invT=999;
+    e.step();const hive=e.G.hive;assert.equal(hive.active,true);e.G.freezeT=999;
+    const heart=hive.parts[2],ports=hiveBrood.hiveBroodParts(hive);assert.equal(ports.length,4);e.hitBossPart(heart,999);assert.equal(heart.hp,heart.max,'closed ribs protect the heart');
+    for(const [i,part]of ports.entries()){
+      e.G.pb=[{k:'b',x:part.x+part.w/2,y:part.y+part.h/2,vx:0,vy:0,dmg:100}];e.collide();assert.ok(part.hp<=0);if(i<3)assert.equal(hive.open,false,'all four organs must be destroyed');
+    }
+    assert.equal(hive.open,true);
+    e.G.pb=[{k:'b',x:heart.x+heart.w/2,y:heart.y+heart.h/2,vx:0,vy:0,dmg:100}];e.collide();assert.equal(hive.dead,true);
+    assert.doesNotThrow(()=>e.render());for(let i=0;i<310&&e.G.mode==='play';i++)e.step();
+    assert.equal(e.G.mode,'cine');assert.equal(e.G.cine.kind,'end');
+    const stats=[e.G.score,e.G.time,e.G.deaths,e.G.lives];
+    for(let i=0;i<2642&&e.G.mode==='cine';i++){e.step();if(i%240===0)assert.doesNotThrow(()=>e.render());}
+    assert.equal(e.G.mode,'clear');assert.equal(e.G.cine,null);assert.deepEqual([e.G.score,e.G.time,e.G.deaths,e.G.lives],stats);
+    assert.equal(e.element('clearTitle').textContent,'前八关通关');
+  }
+});
+
+test('第八关黏液按凝结、脱落和落地扩散推进，暂停及冻结保留状态',()=>{
+  const e=engine();e.play(8,true);e.G.en=[];e.G.spawnT=9999;e.G.p.invT=e.G.p2.invT=999;
+  e.G.s8.drips=[{x:200,per:2,off:0,k:0,forming:false}];e.G.s8.tissueTime=1.7;
+  e.step();assert.equal(e.G.s8.drips[0].forming,true);assert.ok(e.G.s8.drips[0].k>.6);
+  ticks(e,20);assert.ok(e.G.s8.drops.length>0);const drop=e.G.s8.drops[0];assert.ok(drop.age>0);
+  const pose=JSON.stringify(e.G.s8);e.G.mode='pause';ticks(e,20);assert.equal(JSON.stringify(e.G.s8),pose);
+  e.G.mode='play';e.G.freezeT=9;ticks(e,30);assert.equal(JSON.stringify(e.G.s8),pose);
+  const copy=unpackWorld(packWorld(e.G));assert.deepEqual(JSON.parse(JSON.stringify(copy.s8)),JSON.parse(pose));
+  e.G.freezeT=0;e.G.s8.drips=[];ticks(e,65);assert.equal(e.G.s8.drops.length,0);assert.ok(e.G.fx.some(f=>f.k==='slimeSplash'));
+  e.G.s8.drops=[{x:40,y:160,vy:100,age:.4}];e.G.p2.x=40;e.G.p2.y=176;e.G.p2.invT=0;e.G.freezeT=3;
+  e.collidePartnerHazards();assert.equal(e.G.p2.dead,false);assert.equal(e.G.s8.drops[0].dead,undefined);
+  e.G.freezeT=0;e.collidePartnerHazards();assert.equal(e.G.p2.dead,true);
+});
+
+test('第八关结尾可由本机或队友跳过，联机快照保留播放进度且不重置成绩',()=>{
+  for(const partner of [false,true]){
+    const e=engine();e.play(8,partner);e.G.score=123450;e.G.time=180.5;e.G.deaths=2;e.G.lives=4;e.G.p.weapon='spread';
+    e.stageClear();assert.equal(e.G.mode,'cine');assert.equal(e.G.cine.kind,'end');
+    e.K.KeyJ=true;e.step();assert.equal(e.G.mode,'cine','initial held shot cannot immediately skip');e.K.KeyJ=false;
+    ticks(e,80);const snapshot=unpackWorld(packWorld(e.G));assert.equal(snapshot.mode,'cine');assert.equal(snapshot.cine.kind,'end');assert.equal(snapshot.cine.t,e.G.cine.t);assert.equal(e.inspect().audio.resolved.track,'synth');
+    if(partner)e.coop.remote.push(encodeInput({fire:true}));else e.K.Enter=true;e.step();
+    assert.equal(e.G.mode,'clear');assert.deepEqual([e.G.score,e.G.time,e.G.deaths,e.G.lives,e.G.p.weapon],[123450,180.5,2,4,'spread']);assert.equal(e.element('btnNext').hidden,true);
+  }
+});
+
+test('第八关地形可从入口通过跳跃和二段跳到达母巢前',()=>{
+  const e=engine();e.play(8,false);const guardian=e.G.en.find(e=>e.t==='alienHead');e.damageEnemy(guardian,999,guardian.x,guardian.y);e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.s8.drips=[];e.G.p.invT=9999;e.K.KeyD=true;
+  const gaps=[[640,700],[1100,1160],[1500,1580],[2000,2060],[2500,2580]],used=new Set();let secondJumpAt=-1;
+  for(let tick=0;tick<5000&&e.G.p.x<3180&&!e.G.p.dead;tick++){
+    e.K.KeyK=false;
+    for(const [i,[left]] of gaps.entries())if(!used.has(i)&&e.G.p.onGround&&e.G.p.x>=left-31&&e.G.p.x<left-3){
+      used.add(i);e.K.KeyK=true;secondJumpAt=tick+15;break;
+    }
+    if(tick===secondJumpAt&&!e.G.p.onGround)e.K.KeyK=true;
+    e.step();
+  }
+  assert.equal(e.G.p.dead,false);assert.ok(e.G.p.x>=3180,`reached x=${e.G.p.x}`);assert.equal(used.size,gaps.length);
+});
+
+test('第六关机器人脚部接触安全，躯干碰撞对双人有效且冻结时无伤害',()=>{
+  const e=engine();e.play(6,true);e.G.en=[];e.G.jets=[];e.G.s6.waves=[];
+  const b=e.G.golem,p=e.G.p2;Object.assign(p,{x:b.x,y:b.y,invT:0,dead:false});
+  e.collidePartnerHazards();assert.equal(p.dead,false);
+  b.active=true;e.G.freezeT=1;e.collidePartnerHazards();assert.equal(p.dead,false);
+  e.G.freezeT=0;e.collidePartnerHazards();assert.equal(p.dead,false,'touching the feet does not kill');
+  p.y=b.y-40;e.G.freezeT=1;e.collidePartnerHazards();assert.equal(p.dead,false);
+  e.G.freezeT=0;e.collidePartnerHazards();assert.equal(p.dead,true,'torso contact still hurts');
+  Object.assign(p,{dead:false,invT:0});b.dead=true;e.collidePartnerHazards();assert.equal(p.dead,false);
+  for(const online of [false,true]){
+    const f=engine();f.play(6,online);f.G.en=[];f.G.jets=[];f.G.podTrig=[];f.G.spawnT=9999;f.G.camX=2916;
+    const boss=f.G.golem;boss.active=true;boss.phaseT=999;boss.shotT=999;
+    Object.assign(f.G.p,{x:boss.x,y:boss.y,onGround:true,invT:0});if(online)Object.assign(f.G.p2,{x:boss.x+8,y:boss.y,onGround:true,invT:0});
+    f.step();assert.equal(f.G.p.dead,false);if(online)assert.equal(f.G.p2.dead,false);
+    Object.assign(f.G.p,{y:boss.y-40,onGround:false,vy:0,invT:0});f.step();assert.equal(f.G.p.dead,true);
+  }
+});
+
+test('第六关机器人使用独立起跳动作帧，站立与落地贴合地面且不拉伸',()=>{
+  const b=stageSixBoss.createStageSixBoss(100),idle=stageSixBoss.stageSixBossSpritePose(b);
+  const sole=(x,y)=>idle.offsetY+Math.sin(idle.rotation)*idle.width*(x/600-.5)+Math.cos(idle.rotation)*idle.height*(y/506-1);
+  assert.ok(Math.abs(sole(84,478))<1e-8);assert.ok(Math.abs(sole(526,493))<1e-8);
+  const seen=[];
+  for(const [phase,vy,y,frame]of [['windup',0,176,'crouch'],['jump',-220,165,'launch'],['jump',-100,125,'tuck'],['jump',0,120,'air'],['jump',90,160,'land'],['land',0,176,'land']]){
+    Object.assign(b,{phase,vy,y});const pose=stageSixBoss.stageSixBossSpritePose(b);seen.push(pose.frame);assert.equal(pose.frame,frame);
+    if(pose.source){assert.equal(pose.width/pose.source[2],.16);assert.equal(pose.height/pose.source[3],.16);assert.equal(pose.rotation,0);assert.equal(pose.offsetY,0);}
+  }
+  assert.deepEqual(seen,['crouch','launch','tuck','air','land','land']);
+  const bytes=fs.readFileSync(new URL('../../games/contra2026/assets/stage6/humanoid-robot-jump-frames-v1.webp',import.meta.url));
+  assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(bytes[20]&0x10,'frame sheet preserves transparency');
+});
+
+test('第五关结算可带着双方武器和生命进入第六关',()=>{
+  const e=engine();e.play(5,true);e.G.lives=4;e.G.score=18000;e.G.p.weapon='laser';e.G.p2.weapon='spread';
+  e.stageClear();assert.equal(e.G.mode,'clear');assert.equal(e.element('btnNext').hidden,false);
+  e.element('btnNext').onclick();assert.equal(e.G.stage,6);assert.equal(e.G.mode,'intro');assert.equal(e.G.lives,4);
+  assert.equal(e.G.score,18000);assert.equal(e.G.p.weapon,'laser');assert.equal(e.G.p2.weapon,'spread');
 });
 
 test('第五关固定炮位有人操作、树后敌人投雷，离屏不攻击且冰冻停止装填',()=>{
@@ -300,7 +1398,7 @@ test('第四关投影冻结时不移动、不发弹；快照保留实体状态�
   const copy=unpackWorld(JSON.parse(JSON.stringify(packWorld(e.G))));assert.equal(copy.base.bossPhase,'twins');assert.equal(copy.base.targets.at(-1).solid,twins.at(-1).solid);
   e.G.freezeT=0;for(const twin of twins){twin.solid=true;e.hitTarget(twin,99);}ticks(e,100);
   e.G.p.x=28;e.step();ticks(e,180);assert.equal(e.G.p.liftDone,true);assert.equal(e.G.mode,'play');
-  e.G.p2.x=356;e.step();for(let i=0;i<200&&e.G.mode==='play';i++)e.step();assert.equal(e.G.stage,5);assert.equal(e.G.mode,'intro');
+  e.G.p2.x=356;e.step();for(let i=0;i<280&&e.G.mode==='play';i++)e.step();assert.equal(e.G.stage,5);assert.equal(e.G.mode,'intro');
   const guest=engine();guest.play(4,true);guest.coop.role='guest';guest.coop.callbacks.state(JSON.parse(JSON.stringify(packWorld([e.G,e.solids,e.BRIDGES,e.SET]))));
   assert.equal(guest.G.stage,5);assert.equal(guest.G.mode,'intro');
 });
@@ -312,18 +1410,19 @@ test('第四关手柄上方向和射击组合使用举枪姿势并发射顶部�
   e.step();assert.equal(e.G.p.aimUp,true);assert.ok(e.G.pb.some(b=>b.upward&&b.ye<80));
 });
 
-test('公开入口开放前五关，旧秘籍与隐藏按钮不能启动后续关卡',()=>{
+test('公开入口开放前八关，旧秘籍与隐藏按钮不能启动后续关卡',()=>{
   const e=engine();e.play(1,false);e.G.p.weapon='laser';const player=e.G.p;
-  for(const stage of [0,6,8,9,16,17,'2',1.5]){
+  for(const stage of [0,9,16,17,'2',1.5]){
     assert.equal(e.startStage(stage),false);assert.equal(e.G.stage,1);assert.equal(e.G.mode,'play');assert.equal(e.G.p,player);
   }
   assert.equal(e.startUWOpening(false),false);e.unlockUW('old cheat');
   assert.equal(e.G.stage,1);assert.equal(e.G.p.weapon,'laser');
-  for(let stage=6;stage<=16;stage++){
+  for(let stage=9;stage<=16;stage++){
     const button=e.element(stage<=8?'btnSel'+stage:'btnSelW'+(stage-8));
     assert.equal(button.hidden,true);assert.equal(button.disabled,true);
   }
   assert.equal(e.SET.stageMusic,undefined,'old soundtrack preferences are removed');
+  assert.equal(e.element('btnSel7').hidden,false);assert.equal(e.element('btnSel7').disabled,false);
   assert.equal(e.element('btnSel3').hidden,false);assert.equal(e.element('btnSel3').disabled,false);assert.equal(e.element('btnSel5').hidden,false);assert.equal(e.element('btnSel5').disabled,false);
 });
 
@@ -345,13 +1444,29 @@ test('真实引擎通过手柄移动、射击、跳跃、扔雷、切换道具�
 });
 
 const enterLifeCode=e=>{for(const code of ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','KeyB','KeyA','KeyB','KeyA'])e.dispatchDocument('keydown',{code});};
-test('默认有限生命会扣命；旧默认无限设置迁移，用户新选择的无限模式保留',()=>{
+
+test('第三关红蓝双人都使用新头盔精灵，停止效果后不再绘制',()=>{
+  const e=engine();e.play(3,true);
+  const helmet={naturalWidth:512,naturalHeight:331},calls=[];
+  e.stageThreeArt.images.impactHelmet=helmet;
+  e.stageOneArt.images.actorRed={naturalWidth:1086,naturalHeight:1448};
+  e.stageOneArt.images.actorBlue={naturalWidth:1086,naturalHeight:1448};
+  e.stageThreeArt.g.drawImage=image=>{if(image===helmet)calls.push(image);};
+  for(const p of [e.G.p,e.G.p2]){p.helmT=10;p.invT=0;}
+  e.G.p2.face=-1;e.render();assert.equal(calls.length,2);
+  calls.length=0;e.G.p.helmT=e.G.p2.helmT=0;e.render();assert.equal(calls.length,0);
+});
+test('正式网站默认有限生命，本机测试默认无限生命，各自保存的选择仍然生效',()=>{
   for(const savedSettings of [null,{v:2,inf:'on'},{v:2,inf:'off'}]){
-    const e=engine({savedSettings});e.play(1,false);assert.equal(e.infiniteLives(),false);assert.equal(e.G.lives,3);
+    const e=engine({hostname:'example.github.io',savedSettings});e.play(1,false);assert.equal(e.infiniteLives(),false);assert.equal(e.G.lives,3);
     e.G.p.invT=0;e.killPlayer();assert.equal(e.G.lives,2);assert.equal(e.SET.v,3);
   }
-  const chosen=engine({savedSettings:{v:3,inf:'on'}});chosen.play(1,false);assert.equal(chosen.infiniteLives(),true);
-  const easy=engine({savedSettings:{v:3,inf:'off',diff:'easy'}});easy.play(1,false);assert.equal(easy.G.lives,5);
+  for(const hostname of ['localhost','127.0.0.1','[::1]','::1']){
+    const e=engine({hostname});e.play(1,false);e.G.p.invT=0;e.killPlayer();assert.equal(e.infiniteLives(),true);assert.equal(e.G.lives,3);
+  }
+  const chosen=engine({hostname:'example.github.io',savedSettings:{v:3,inf:'on'}});chosen.play(1,false);assert.equal(chosen.infiniteLives(),true);
+  const localFinite=engine({savedSettings:{v:3,inf:'off'}});localFinite.play(1,false);assert.equal(localFinite.infiniteLives(),false);
+  const easy=engine({hostname:'example.github.io',savedSettings:{v:3,inf:'off',diff:'easy'}});easy.play(1,false);assert.equal(easy.G.lives,5);
 });
 
 test('首关不下载旧跑步图集，单人及双人仍用共享肢体绘制跑步',async()=>{
@@ -389,7 +1504,7 @@ test('游玩中不能输入秘籍补命，生命用完仍会结束；回到标�
   e.toTitle();enterLifeCode(e);e.play(1,false);e.G.lives=1;e.G.en=[];e.G.podTrig=[];e.G.spawnT=9999;e.G.p.invT=0;e.killPlayer();
   assert.equal(e.G.lives,0);for(let i=0;i<180&&e.G.mode==='play';i++)e.step();assert.equal(e.G.mode,'over');
   e.toTitle();assert.equal(e.inspect().lives.armed,false);assert.equal(e.element('btnStart').textContent,'单人闯关');
-  for(let stage=6;stage<=16;stage++)assert.equal(e.startStage(stage),false);assert.equal(e.G.stage,1);
+  for(let stage=9;stage<=16;stage++)assert.equal(e.startStage(stage),false);assert.equal(e.G.stage,1);
 });
 test('双人快照传递 30 命模式，客机 HUD 使用相同有限生命规则',()=>{
   const host=engine(),guest=engine();enterLifeCode(host);host.play(2,true);guest.play(2,true);guest.coop.role='guest';
@@ -453,8 +1568,8 @@ test('第三关三处浮石是上行必经落脚点，移除后任意二段跳�
 });
 
 test('第三关喷火桥有熄灭与预警窗口，火柱按世界坐标伤害两名玩家',()=>{
-  assert.equal(waterfall.flameJetBoxes(1.9).length,0);
-  const bridge=waterfall.FLAME_BRIDGES[0],x=bridge.x+bridge.w*.23;
+  const bridge=waterfall.FLAME_BRIDGES[0],x=waterfall.flameJetPositions(bridge,2.7)[0];
+  assert.equal(waterfall.flameJetBoxes(1.9).filter(b=>b.y+b.h===bridge.y).length,0);
   assert.equal(waterfall.flameJetState(1.9).phase,'warning');assert.equal(waterfall.flameJetState(2.7).phase,'fire');
   for(const slot of [1,2]){
     const e=engine();e.play(3,true);e.G.en=[];e.G.time=2.7;e.G.freezeT=0;
@@ -521,20 +1636,27 @@ test('第三关入场步兵随闪光冻结，双人快照保留走入阶段，Bo
   const count=e.G.en.length;e.updateStage3();assert.equal(e.G.en.length,count);
 });
 
-test('第三关落石接近角色身高，降低频率并限制同屏数量，双人快照保留尺寸与翻滚状态',()=>{
-  const e=engine();e.play(3,true);e.G.en=[];e.G.s3.runT=999;
-  for(let i=0;i<12;i++){
-    e.G.en=[];e.G.s3.rockT=0;e.updateStage3();
-    const rock=e.G.en.find(q=>q.t==='rock');assert.ok(rock);
-    assert.ok(rock.r>=13&&rock.r<=16);assert.equal(rock.hp,3);assert.equal(rock.waterfallRock,true);
-    assert.ok(rock.x-rock.r>0&&rock.x+rock.r<384);assert.ok(e.G.s3.rockT>=3.6&&e.G.s3.rockT<=5.2);
-    assert.equal(rock.spinDir,rock.vx<0?-1:1);
+test('第三关石块预先嵌在岩台侧面，触发后摇晃预警再脱落，冻结与双人快照保持状态',()=>{
+  const e=engine();e.play(3,true);e.G.s3.runT=999;
+  const rocks=e.G.en.filter(q=>q.t==='rock'&&q.waterfallRock);assert.ok(rocks.length>5);
+  for(const rock of rocks){
+    const ledge=e.solids.find(s=>s.id===rock.sourceId);assert.ok(ledge?.cliff);
+    assert.ok(rock.x-rock.r>=ledge.x&&rock.x+rock.r<=ledge.x+ledge.w);
+    assert.ok(Math.abs(rock.y-2*rock.r-ledge.y-1)<1e-8);assert.equal(rock.phase,'embedded');
+    assert.ok(rock.r>=13&&rock.r<=16);assert.equal(rock.hp,wallRock.WALL_ROCK_HP);
   }
-  const rock=e.G.en[0];e.G.en.push({...rock,x:rock.x+34});e.G.s3.rockT=0;e.updateStage3();
-  assert.equal(e.G.en.filter(q=>q.t==='rock'&&!q.dead).length,2);
-  const [world]=unpackWorld(JSON.parse(JSON.stringify(packWorld([e.G,e.solids]))));
-  for(let i=0;i<2;i++)for(const key of ['r','rot','spinDir','vx','vy','waterfallRock'])assert.equal(world.en[i][key],e.G.en[i][key]);
-  const timer=e.G.s3.rockT;e.G.freezeT=1;e.updateStage3();assert.equal(e.G.s3.rockT,timer);
+  e.G.s3.rockT=0;e.updateStage3();const rock=rocks.find(q=>q.phase==='warning');assert.ok(rock);
+  assert.equal(rock.warnT,wallRock.WALL_ROCK_WARNING);assert.ok(e.G.s3.rockT>=3.6&&e.G.s3.rockT<=5.2);
+  const anchor=[rock.x,rock.y];for(let i=0;i<60;i++)e.updateEnemies();
+  assert.equal(rock.phase,'warning');assert.deepEqual([rock.x,rock.y],anchor);assert.ok(rock.warnT>.45);
+  const wobble=wallRock.stageThreeRockWobble(rock);assert.ok(Math.abs(wobble.x)+Math.abs(wobble.y)+Math.abs(wobble.angle)>0);
+  e.G.freezeT=1;const before=[rock.phase,rock.warnT,rock.x,rock.y];e.updateEnemies();e.updateStage3();assert.deepEqual([rock.phase,rock.warnT,rock.x,rock.y],before);
+  const copy=unpackWorld(packWorld(e.G)).en.find(q=>q.sourceId===rock.sourceId);
+  assert.equal(copy.phase,'warning');assert.equal(copy.warnT,rock.warnT);assert.equal(copy.sourceId,rock.sourceId);
+  e.G.freezeT=0;for(let i=0;i<60&&rock.phase==='warning';i++)e.updateEnemies();assert.equal(rock.phase,'fall');
+  assert.deepEqual([rock.x,rock.y],anchor);e.updateEnemies();assert.ok(rock.y>anchor[1]);
+  e.G.en.push({...rock,phase:'fall',x:rock.x+34});e.G.s3.rockT=0;e.updateStage3();
+  assert.equal(e.G.en.filter(q=>q.t==='rock'&&!q.dead&&(q.phase==='warning'||q.phase==='fall')).length,2,'at most two active rocks');
 });
 
 test('第三关大落石在垂直下落时仍翻滚，朝运动方向旋转并随闪光冻结，反弹后腾出路线',()=>{
@@ -552,12 +1674,24 @@ test('第三关大落石在垂直下落时仍翻滚，朝运动方向旋转并�
   Object.assign(rock,{x:383,vx:12});e.updateEnemies();assert.equal(rock.x,364);assert.equal(rock.vx,-12);assert.equal(rock.spinDir,-1);
 });
 
-test('第三关大落石的外缘可被子弹命中，三发击碎，防落石头盔仍保护两名玩家',()=>{
+test('第三关岩壁石块松动预警期间可接触、可提前击碎，脱落后才会伤害玩家',()=>{
+  for(const phase of ['embedded','warning','fall']){
+    const e=engine();e.play(3,false);e.G.pb=[];e.G.eb=[];
+    const rock=e.G.en.find(q=>q.t==='rock');Object.assign(rock,{phase,warnT:1,dead:false});e.G.en=[rock];
+    Object.assign(e.G.p,{x:rock.x,y:rock.y,invT:0,helmT:0});e.collide();
+    assert.equal(e.G.p.dead,phase==='fall',phase);
+  }
+  const e=engine();e.play(3,false);e.G.eb=[];const rock=e.G.en.find(q=>q.t==='rock');rock.phase='warning';rock.warnT=1;e.G.en=[rock];
+  for(let i=0;i<wallRock.WALL_ROCK_HP;i++){e.G.pb=[{k:'b',x:rock.x,y:rock.y-rock.r,vx:0,vy:0,dmg:1}];e.collide();}
+  assert.equal(rock.dead,true,'warning-phase rocks can be shot down before falling');
+});
+
+test('第三关大落石的外缘可被子弹命中，需要多发击碎，防落石头盔仍保护两名玩家',()=>{
   const e=engine();e.play(3,false);e.G.en=[];e.G.eb=[];
-  const rock={t:'rock',waterfallRock:true,x:220,y:120,r:16,vx:0,vy:0,rot:0,spinDir:1,hp:3,bounce:0,flash:0};e.G.en=[rock];
-  for(let hit=1;hit<=3;hit++){
+  const rock={t:'rock',waterfallRock:true,phase:'fall',x:220,y:120,r:16,vx:0,vy:0,rot:0,spinDir:1,hp:wallRock.WALL_ROCK_HP,bounce:0,flash:0};e.G.en=[rock];
+  for(let hit=1;hit<=wallRock.WALL_ROCK_HP;hit++){
     e.G.pb=[{k:'b',x:rock.x+rock.r-1,y:rock.y-rock.r,vx:-270,vy:0,dmg:1}];e.collide();
-    assert.equal(rock.hp,3-hit);assert.equal(!!rock.dead,hit===3);
+    assert.equal(rock.hp,wallRock.WALL_ROCK_HP-hit);assert.equal(!!rock.dead,hit===wallRock.WALL_ROCK_HP);
   }
   for(const slot of [1,2]){
     const team=engine();team.play(3,true);team.G.en=[];team.G.eb=[];team.G.pb=[];
@@ -855,7 +1989,7 @@ test('双人中一号阵亡后跑兵仍会瞄准并射击存活的二号角色',
   assert.ok(y>e.G.p2.y-28&&y<e.G.p2.y,'bullet aims at surviving partner body');
 });
 
-test('前五关全屏与高像素密度不生成 4K 旧背景，其他关卡按对应分辨率恢复背景', () => {
+test('前七关全屏与高像素密度不生成未使用的旧背景', () => {
   const e = engine(); e.play(1, false); e.resizeWindow(1920, 1100); e.render();
   assert.deepEqual([...e.resolution().canvas], [1920, 1080]);
   e.resizeWindow(1920, 1100, 2); e.render();
@@ -873,8 +2007,8 @@ test('前五关全屏与高像素密度不生成 4K 旧背景，其他关卡按�
   e.play(3, false); e.render();
   assert.equal(e.resolution().backgrounds,0);
   e.play(5,false);e.render();assert.equal(e.resolution().backgrounds,0);
-  e.play(6,false);e.render();assert.equal(e.resolution().backgrounds,2);
-  assert.deepEqual([...e.resolution().sky],[768,432]);
+  e.play(6,false);e.render();assert.equal(e.resolution().backgrounds,0);
+  e.play(7,false);e.render();assert.equal(e.resolution().backgrounds,0);
 });
 
 test('2P 拾取武器、受伤和过关继承独立于 1P；同屏镜头保留后方玩家', () => {
@@ -947,9 +2081,11 @@ test('第一关新岩台与出生点、炮台和补给箱的支撑面一致', ()
   assert.equal(e.solids.find(s=>s.g&&s.x===240).y,144);
   assert.ok(!e.solids.some(s=>!s.g&&!s.bridge&&s.x<500),'开局的高岸与低岸不再叠加悬浮草台');
   assert.equal(e.G.en.find(e=>e.t==='snp'&&e.x===410).y,144);
-  for (const box of e.G.en.filter(e => e.t === 'box')) {
-    const floor = e.solids.find(s => s.g && !s.water && box.x >= s.x && box.x < s.x + s.w);
-    assert.equal(box.y, floor.y);
+  for (const [x,y] of [[560,128],[1660,128],[2470,128],[2880,176]]) {
+    const box = e.G.en.find(e => e.t === 'box' && e.x === x);
+    assert.equal(box.y, y, '补给设施落在上层草台，未被草台覆盖的设施继续落在地面');
+    assert.ok(e.solids.some(s=>!s.gone&&!s.water&&box.x-10>=s.x&&box.x+10<=s.x+s.w&&s.y===box.y),'箱体底座完整落在草地支撑面');
+    assert.equal(e.ebox(box).y+e.ebox(box).h,box.y,'命中范围随箱体移到草台上');
   }
   const turret = e.G.en.find(e => e.t === 'tur' && e.x === 888);
   assert.equal(turret.y + 16, 152);
@@ -1144,19 +2280,34 @@ test('第二、四关高清敌兵枪口与命中范围同步',()=>{
   }
 });
 
+test('第二、四关真实出场的敌兵横向跑动、跳跃并射击，冰冻暂停，双人瞄准存活队友',()=>{
+  for(const stage of [2,4]){
+    const e=engine();e.play(stage,true);const B=e.G.base;B.spawned=1;B.spawnT=0;B.rolled=B.def.rol;B.sol=[];B.targets.forEach(t=>t.fireT=999);
+    e.G.p.invT=999;e.G.p2.invT=999;e.step();const s=B.sol[0];assert.ok(s?.patrolArmed&&s.dropKind);
+    const before=s.u;s.jumpT=0;s.fireT=0;beginDeath(e.G.p);e.G.p2.x=260;e.step();
+    assert.notEqual(s.u,before,'soldier moves sideways');assert.ok(s.jumpY>0,'soldier starts an actual jump');
+    const shot=e.G.eb.find(b=>b.from==='base-soldier');assert.ok(shot);assert.equal(shot.x1,260);
+    assert.ok(Math.abs(shot.y0-(204-64*s.z-baseSoldierJumpOffset(s)-BASE_SOLDIER.muzzleHeight*baseSoldierScale(s.z)))<.001,'shot originates at the airborne soldier');
+    assert.ok(Math.abs(shot.x0-baseSoldierMuzzle(s,192+s.u*(1-.5*s.z),204-64*s.z).x)<.001,'the shot follows the visible forward-facing muzzle');
+    e.G.freezeT=2;const frozen=[s.u,s.z,s.jumpY,s.jumpV,s.fireT,shot.t];ticks(e,30);
+    assert.deepEqual([s.u,s.z,s.jumpY,s.jumpV,s.fireT,shot.t],frozen);
+    const copy=unpackWorld(packWorld(e.G));assert.equal(copy.base.sol[0].jumpY,s.jumpY);assert.equal(copy.eb.find(b=>b.from==='base-soldier').t,shot.t);
+  }
+});
+
 test('第二关真实投射射击保留核心防护、炮台拆除、开门推进和 Boss 摧毁流程',()=>{
   for(const online of [false,true]){
     const e=engine();e.play(2,online);const B=e.G.base;
     e.G.p.invT=999;if(e.G.p2)e.G.p2.invT=999;
     B.spawned=B.def.sol;B.rolled=B.def.rol;B.sol=[];B.rol=[];
-    const fire=(target,dmg,ye=129)=>{
+    const fire=(target,dmg,ye=117)=>{
       e.G.fx=[];e.G.pb=[{k:'b',owner:1,t:.99,spd:1.8,x0:192,y0:166,xe:target.x+target.w/2,ye,x:192,y:166,dmg}];e.step();
     };
-    const core=B.targets.find(t=>t.k==='core');fire(core,12);assert.equal(core.hp,12);assert.ok(e.G.fx.some(f=>f.material==='shield'));
-    for(const gun of B.targets.filter(t=>t.k==='gun')){fire(gun,4);assert.ok(gun.hp<=0);}
-    fire(core,12);assert.equal(core.hp,12);assert.equal(B.cleared,false);
+    const core=B.targets.find(t=>t.k==='core');fire(core,12,134);assert.equal(core.hp,12);assert.ok(e.G.fx.some(f=>f.material==='shield'));
+    for(const gun of B.targets.filter(t=>t.k==='gun')){fire(gun,4,117);assert.ok(gun.hp<=0);}
+    fire(core,12,134);assert.equal(core.hp,12);assert.equal(B.cleared,false);
     const upper=B.targets.find(t=>t.k==='switch');fire(upper,4,upper.y+upper.h/2);assert.ok(upper.hp<=0);
-    fire(core,12);assert.ok(B.cleared);assert.equal(B.trans,0);
+    fire(core,12,134);assert.ok(B.cleared);assert.equal(B.trans,0);
     const before=JSON.stringify(packWorld([e.G]));e.render();assert.equal(JSON.stringify(packWorld([e.G])),before,'art does not change simulation');
     e.K.KeyW=true;e.step();e.K.KeyW=false;assert.ok(B.trans>0);
     for(let i=0;i<85;i++)e.step();assert.equal(B.room,1);assert.equal(B.cleared,false);
@@ -1167,7 +2318,7 @@ test('第二关真实投射射击保留核心防护、炮台拆除、开门推�
     fire(boss,50,boss.y+boss.h/2);assert.ok(B.dead);
     ticks(e,190);assert.equal(e.G.mode,'play');assert.equal(B.exitReady,true);
     e.K.KeyA=true;
-    for(let i=0;i<280&&e.G.stage===2;i++){
+    for(let i=0;i<360&&e.G.stage===2;i++){
       if(online)e.coop.remote.push(encodeInput({right:true}));
       e.step();
     }
@@ -1187,8 +2338,9 @@ test('第二关跟踪导弹先清除两侧设施，跳跃后打掉高位机关�
     let coreHit=false;
     if(!online)e.K.KeyJ=true;
     for(let tick=0;tick<1400&&!B.cleared&&!B.dead;tick++){
+      const down=sides.every(t=>t.hp<=0)&&(!upper||upper.hp<=0);
       const jump=!!upper&&upper.hp>0&&sides.every(t=>t.hp<=0)&&tick%55===0;
-      if(online)e.coop.remote.push(encodeInput({fire:true,jump}));else e.K.KeyK=jump;
+      if(online)e.coop.remote.push(encodeInput({fire:true,jump,down}));else{e.K.KeyK=jump;e.K.KeyS=down;}
       const hp=core.hp;e.step();
       if(core.hp<hp){
         coreHit=true;assert.ok(sides.every(t=>t.hp<=0),`room ${room}, player ${shooter.pid}: core hit before side targets cleared`);
@@ -1216,6 +2368,29 @@ function activateMovingBoss(e){
   for(const target of e.G.base.targets.filter(t=>t.k==='device'))shootBaseTarget(e,target);
   ticks(e,75);return e.G.base.targets.find(t=>t.mover);
 }
+
+test('第二、四关手动或自动前进时清掉所有敌兵与滚雷，冻结和双人快照不残留，新房间恢复出兵',()=>{
+  for(const stage of [2,4])for(const room of stage===2?[0,1,2]:[0,1,2,3])for(const online of [false,true])for(const automatic of [false,true])for(const frozen of [false,true]){
+    const e=engine();e.play(stage,online);e.loadRoom(room);const B=e.G.base;
+    for(const p of [e.G.p,...(online?[e.G.p2]:[])])p.invT=999;
+    e.step();e.G.freezeT=frozen?999:0;
+    B.sol=[{u:-20,z:.8,st:'walk',tu:40,tz:.6,t:2,anim:0},{u:35,z:.1,st:'aim',t:2,anim:0,dropKind:'L'}];
+    B.rol=[{u0:-160,ut:0,z:.5,a:0,spd:.4}];
+    for(const target of B.targets.filter(t=>t.k!=='core')){target.aperture=1;e.hitTarget(target,999);}
+    const core=B.targets.find(t=>t.k==='core');core.aperture=1;e.hitTarget(core,999);
+    assert.equal(B.cleared,true);assert.ok(B.sol.length>0,'先复现仍在撤离的士兵');
+    e.G.items=[{x:50,y:204,rest:true,kind:'S'}];const score=e.G.score;
+    if(automatic)B.clearT=0;else if(online)e.coop.remote.push(encodeInput({up:true}));else e.K.KeyW=true;
+    e.step();assert.ok(B.trans>0);
+    assert.equal(B.sol.length+B.rol.length+(B.gallery?.length||0),0,'推进第一帧清空前后景敌人和滚雷');
+    assert.equal(e.G.score,score,'清场不额外计入击杀');assert.equal(e.G.items.length,1,'已掉落补给继续保留');
+    const copy=unpackWorld(packWorld(e.G));assert.equal(copy.base.sol.length+copy.base.rol.length+(copy.base.gallery?.length||0),0);
+    e.K.KeyW=false;
+    for(let i=0;i<90&&B.room===room;i++){e.step();if(B.room===room)assert.equal(B.sol.length+B.rol.length+(B.gallery?.length||0),0);}
+    assert.equal(B.room,room+1);
+    if(!B.def.boss){e.G.freezeT=0;ticks(e,100);assert.ok(B.sol.length>0,'新房间正常生成守军');}
+  }
+});
 
 test('第二关开枪前进会清除两人的弹丸、手雷和枪口光；自动与手动过门后均可继续射击',()=>{
   for(const online of [false,true])for(const automatic of [false,true])for(const weapon of ['rifle','machine','spread','laser','fire','homing']){
@@ -1257,6 +2432,19 @@ test('第二关关底依次摧毁两排六个独立装置，再延迟启动顶�
   e.G.freezeT=0;ticks(e,75);const boss=B.targets.find(t=>t.mover);assert.ok(boss);assert.equal(B.bossPhase,'mover');
   const start=boss.x;ticks(e,30);assert.notEqual(boss.x,start);assert.ok(boss.x>=111&&boss.x<=243);
   e.G.freezeT=10;const frozen=boss.x,shots=B.bubbleShots;ticks(e,100);assert.equal(boss.x,frozen);assert.equal(B.bubbleShots,shots);
+});
+
+test('第二关六个炮塔独立开启下方炮口，每次从三个位置齐射',()=>{
+  const e=engine();e.play(2,false);e.loadRoom(3);e.G.p.invT=999;const B=e.G.base;assert.equal(B.targets.length,6);
+  assert.ok(new Set(B.targets.map(t=>t.fireT)).size>1,'initial opening times differ');
+  B.targets.forEach(t=>t.fireT=999);const turret=B.targets[2];turret.fireT=0;e.G.eb=[];
+  e.step();assert.equal(turret.shutterPhase,'opening');assert.equal(e.G.eb.length,0);
+  e.G.freezeT=2;const frozen=[turret.aperture,turret.fireT,turret.shutterPhase];ticks(e,20);assert.deepEqual([turret.aperture,turret.fireT,turret.shutterPhase],frozen);
+  e.G.freezeT=0;for(let i=0;i<80&&!e.G.eb.some(b=>b.from==='boss-turret');i++)e.step();
+  const shots=e.G.eb.filter(b=>b.from==='boss-turret');assert.equal(shots.length,3);assert.equal(turret.aperture,1);
+  assert.deepEqual(Array.from(shots,b=>b.muzzle),[-8,0,8]);
+  for(const shot of shots){assert.equal(shot.turretId,turret.id);assert.equal(shot.x0,turret.x+turret.w/2+shot.muzzle);assert.equal(shot.y0,turret.y+turret.h+1);}
+  turret.hp=0;e.G.eb=[];ticks(e,220);assert.equal(e.G.eb.filter(b=>b.turretId===turret.id).length,0,'destroyed turret no longer fires');
 });
 
 test('真实跳跃和跟踪弹能依次清掉六装置及移动核心，普通平射不能直接锁定顶部核心',()=>{
@@ -1302,7 +2490,7 @@ test('顶部核心出现后两人均可站立举枪，六种武器向上命中�
 test('普通走廊保持原瞄准方式，关底移动和跳跃举枪时枪口仍与姿势对齐',()=>{
   for(const room of [0,1,2]){
     const e=quietBaseRoom(room);e.G.p.cool=0;e.K.KeyW=e.K.KeyJ=true;e.step();
-    assert.equal(e.G.p.aimUp,false);assert.ok(e.G.pb.every(b=>!b.upward&&b.ye===129));
+    assert.equal(e.G.p.aimUp,false);assert.ok(e.G.pb.every(b=>!b.upward&&b.ye===117));
   }
   for(const online of [false,true])for(const giant of [false,true]){
     const e=quietBaseRoom(3,online);activateMovingBoss(e);e.G.freezeT=999;
@@ -1344,21 +2532,48 @@ test('第四关关底装置阶段举枪可直接命中高位装置，关闭护�
   upper.aperture=1;ticks(e,90);assert.ok(upper.hp<999);assert.equal(e.G.p.y,204);
 });
 
-test('移动核心每次发出一个蓝色气泡，气泡逐渐变大，冻结暂停，卧倒、跳跃和护盾均有效',()=>{
+test('移动核心每次发出的蓝色气泡与核心一样大，冻结暂停，卧倒、跳跃和护盾均有效',()=>{
   const e=quietBaseRoom(3),B=e.G.base,boss=activateMovingBoss(e);boss.fireT=0;e.step();
   assert.equal(B.bubbleShots,1);assert.equal(e.G.eb.filter(b=>b.bubble).length,1);
-  const bubble=e.G.eb.find(b=>b.bubble),radius=bubble.r;ticks(e,25);assert.ok(bubble.r>radius);assert.equal(B.bubbleShots,1);
+  const bubble=e.G.eb.find(b=>b.bubble),radius=bubble.r;assert.equal(bubble.rx,boss.w/2);assert.equal(bubble.ry,boss.h/2);ticks(e,25);assert.equal(bubble.r,radius);assert.equal(B.bubbleShots,1);
   e.G.freezeT=10;const frozen=[bubble.x,bubble.y,bubble.r,bubble.t];ticks(e,60);
   assert.deepEqual([bubble.x,bubble.y,bubble.r,bubble.t],frozen);
   for(const defense of ['standing','prone','jump','shield','giant']){
     const scene=quietBaseRoom(3),p=scene.G.p;
     Object.assign(p,{invT:0,prone:defense==='prone',y:defense==='jump'?154:204,shieldT:defense==='shield'?10:0});
     if(defense==='giant')startGiant(p);
-    scene.G.eb=[{base:true,bubble:true,t:.99,x:p.x,y:186,r:6.5,x0:192,y0:71,x1:192,y1:186}];scene.collideBasePlayer();
+    scene.G.eb=[{base:true,bubble:true,t:.99,x:p.x,y:186,r:15,rx:15,ry:9,x0:192,y0:71,x1:192,y1:186}];scene.collideBasePlayer();
     assert.equal(p.dead,defense==='standing',defense);
     if(defense==='shield')assert.equal(scene.G.eb[0].dead,true);
   }
   e.G.freezeT=0;boss.fireT=999;ticks(e,160);assert.equal(e.G.eb.filter(b=>b.bubble).length,0);
+});
+
+test('第二关核心气泡可被红蓝玩家的各种武器击碎，产生破碎效果且不影响普通敌弹',()=>{
+  for(const weapon of ['rifle','spread','laser','fire','homing'])for(const online of [false,true]){
+    const e=quietBaseRoom(3,online),boss=activateMovingBoss(e),p=online?e.G.p2:e.G.p;
+    boss.fireT=999;e.G.freezeT=999;Object.assign(p,{x:192,y:204,weapon,cool:0});
+    const bubble={base:true,bubble:true,x:192,y:145,x0:192,y0:145,x1:192,y1:145,t:.5,dur:1.6,r:15,rx:15,ry:9,phase:0};
+    const ordinary={base:true,x:240,y:145,x0:240,y0:145,x1:240,y1:145,t:.5,dur:1.6,r:2};
+    e.G.eb=[bubble,ordinary];if(!online)e.K.KeyJ=true;
+    for(let i=0;i<45&&e.G.eb.includes(bubble);i++){
+      if(online)e.coop.remote.push(encodeInput({fire:true}));e.step();
+    }
+    assert.ok(!e.G.eb.includes(bubble),`${weapon} player ${p.pid}`);
+    assert.ok(e.G.eb.includes(ordinary),'ordinary enemy shots are unaffected');
+    assert.equal(e.G.fx.filter(f=>f.k==='baseBubblePop').length,1,'one shatter per bubble');
+    assert.equal(p.dead,false);
+  }
+});
+
+test('快速子弹与移动气泡之间采用连续碰撞，打碎后不会再伤害玩家，未命中则继续飞行',()=>{
+  const e=quietBaseRoom(3),boss=activateMovingBoss(e);boss.fireT=999;e.G.freezeT=999;e.G.p.invT=0;
+  const bubble={base:true,bubble:true,x:192,y:180,x0:192,y0:180,x1:192,y1:180,t:.99,dur:1.6,r:15,rx:15,ry:9,phase:0};
+  e.G.eb=[bubble];e.G.pb=[{k:'laser',hits:new Set(),x0:192,y0:195,x:192,y:195,xe:192,ye:100,t:0,spd:20,dmg:2}];
+  e.step();assert.ok(!e.G.eb.includes(bubble));assert.equal(e.G.p.dead,false);
+  const missed={...bubble,dead:false,x:260,x0:260,x1:260,y:145,y0:145,y1:145,t:.5};
+  e.G.eb=[missed];e.G.pb=[{k:'b',x0:192,y0:165,x:192,y:165,xe:192,ye:100,t:0,spd:20,dmg:1}];
+  e.step();assert.ok(e.G.eb.includes(missed));assert.equal(missed.dead,false);
 });
 
 test('中枢摧毁后等待角色进入任意一侧升降梯，全尺寸升到顶部后进入第三关',()=>{
@@ -1396,12 +2611,13 @@ test('双人升降梯等待存活队友，已乘梯角色不会被输入拉回�
   const e=quietBaseRoom(3,true),B=e.G.base,boss=activateMovingBoss(e);boss.fireT=0;e.step();
   let snapshot=unpackWorld(JSON.parse(JSON.stringify(packWorld(e.G))));
   assert.equal(snapshot.base.bossPhase,'mover');assert.equal(snapshot.base.bossTime,B.bossTime);assert.equal(snapshot.eb[0].bubble,true);
-  shootBaseTarget(e,boss);ticks(e,100);e.K.KeyA=true;
+  shootBaseTarget(e,boss);assert.equal(e.G.eb.filter(b=>b.bubble).length,0,'the bubble intercepts the shot');
+  shootBaseTarget(e,boss);assert.equal(B.dead,true);ticks(e,100);e.K.KeyA=true;
   for(let i=0;i<300;i++)e.step();assert.equal(e.G.stage,2);assert.equal(e.G.p.liftDone,true);assert.ok(!e.G.p2.liftDone);
   const before=[e.G.p.x,e.G.p.y];e.K.KeyA=false;e.K.KeyD=true;ticks(e,40);assert.deepEqual([e.G.p.x,e.G.p.y],before);
   snapshot=unpackWorld(JSON.parse(JSON.stringify(packWorld(e.G))));assert.equal(snapshot.p.liftDone,true);assert.equal(snapshot.p.liftSide,-1);
   const world=JSON.stringify(packWorld(e.G));e.render();assert.equal(JSON.stringify(packWorld(e.G)),world);
-  for(let i=0;i<300&&e.G.stage===2;i++){e.coop.remote.push(encodeInput({right:true}));e.step();}
+  for(let i=0;i<380&&e.G.stage===2;i++){e.coop.remote.push(encodeInput({right:true}));e.step();}
   assert.equal(e.G.stage,3);assert.equal(e.G.mode,'intro');assert.ok(e.G.p2);assert.equal(e.G.p2.y,waterfall.STAGE_THREE.bottom);
 });
 
@@ -1483,6 +2699,71 @@ test('第二关三个普通房间都有高位机关，站立时所有武器和�
   const fourth=engine();fourth.play(4,false);assert.ok(fourth.G.base.targets.some(t=>t.k==='switch'));
 });
 
+test('第二、四关中层炮台与下层核心由站立和卧倒分别命中',()=>{
+  for(const stage of [2,4])for(const online of [false,true])for(const weapon of ['rifle','machine','spread','laser','fire','homing'])for(const tier of ['middle','low'])for(const down of [false,true]){
+    const e=engine();e.play(stage,online);e.SET.autofire='on';const B=e.G.base,p=online?e.G.p2:e.G.p;
+    const target=B.targets.find(t=>tier==='low'?t.k==='core':t.k==='gun');
+    assert.ok(B.targets.some(t=>t.k==='switch'));assert.ok(target);target.hp=target.max=100;
+    B.spawned=B.def.sol;B.rolled=999;B.sol=[];B.rol=[];B.targets.forEach(t=>{t.fireT=999;if(t.armored)t.aperture=1;if(tier==='low'&&t!==target)t.hp=0;});
+    e.G.freezeT=999;Object.assign(p,{x:192+2*(target.x+target.w/2-192),y:204,weapon,cool:0,invT:999,onGround:true});
+    for(let i=0;i<90;i++){
+      if(online)e.coop.remote.push(encodeInput({fire:true,down}));else{e.K.KeyJ=true;e.K.KeyS=down;}
+      e.step();
+    }
+    const shouldHit=(tier==='low')===down;
+    assert.equal(target.hp<100,shouldHit,`${stage} ${p.pid}P ${weapon} ${tier} down=${down}`);
+  }
+});
+
+test('第二、四关普通房间的墙面装置及其外框全部位于墙内，炮台层级互不遮挡',()=>{
+  for(const stage of [2,4])for(const room of stage===2?[0,1,2]:[0,1,2,3]){
+    const e=engine();e.play(stage,false);e.loadRoom(room);const targets=e.G.base.targets;
+    for(const t of targets.filter(t=>['gun','rail','core'].includes(t.k))){
+      assert.ok(t.y-1>=40&&t.y+t.h+1<=140,`${stage} room ${room} ${t.k} ${t.tier||'middle'} lies within the visible wall`);
+    }
+    const middle=targets.find(t=>t.k==='gun'),low=targets.find(t=>t.tier==='low');
+    assert.equal(low.k,'core');assert.ok(targets.filter(t=>t.tier==='low').every(t=>t.k==='core'));
+    assert.ok(middle.x+middle.w+1<low.x-1||low.x+low.w+1<middle.x-1,'side cannon and central core housings do not overlap');
+    assert.ok(baseTargetAtHeight(middle,117));assert.ok(!baseTargetAtHeight(middle,134));
+    assert.ok(baseTargetAtHeight(low,134));assert.ok(!baseTargetAtHeight(low,117));
+  }
+});
+
+test('底层核心不发射子弹，滚雷从有机关的房间墙底两侧发射并受冻结与清场控制',()=>{
+  for(const stage of [2,4]){
+    const e=engine();e.play(stage,false);if(stage===2)e.loadRoom(1);const B=e.G.base;
+    B.spawned=B.def.sol;B.sol=[];B.rolled=0;B.rol=[];B.rollT=.25;B.targets.forEach(t=>t.fireT=999);
+    const low=B.targets.find(t=>t.tier==='low');low.fireT=0;e.G.p.invT=999;e.step();
+    assert.ok(!e.G.eb.some(b=>b.x0===low.x+low.w/2&&b.y0===low.y+low.h/2));
+    const outlet=B.rollSide;assert.ok([-1,1].includes(outlet));assert.equal(B.rol.length,0);
+    e.G.freezeT=2;ticks(e,30);assert.equal(B.rollSide,outlet);assert.equal(B.rol.length,0);
+    e.G.freezeT=0;e.G.p.x=222;ticks(e,16);
+    const mine=B.rol[0];assert.ok(mine);assert.ok([-160,160].includes(mine.u0));
+    assert.equal(Math.sign(mine.u0),outlet,'the selected outlet releases the drum');
+    assert.equal(mine.ut,30,'the drum aims at the player position at release');
+    assert.ok(Math.abs((192+mine.u0*.5)-(mine.u0<0?112:272))<.01,'launch aligns with the visible outlet');
+    const z=mine.z,rollT=B.rollT;e.G.freezeT=2;ticks(e,30);assert.equal(mine.z,z);assert.equal(B.rollT,rollT);
+    e.G.freezeT=0;e.hitTarget(B.targets.find(t=>t.k==='core'),999);
+    B.targets.filter(t=>t.k!=='core').forEach(t=>{t.hp=0;});e.hitTarget(B.targets.find(t=>t.k==='core'),999);
+    assert.equal(B.cleared,true);assert.equal(mine.dead,true);
+  }
+  const e=engine();e.play(2,false);assert.equal(e.G.base.def.rol,0);e.G.base.rollT=0;ticks(e,30);assert.equal(e.G.base.rol.length,0);
+});
+
+test('第二、四关玩家跳起后可用真实弹道射中上层机关',()=>{
+  for(const stage of [2,4])for(const online of [false,true]){
+    const e=engine();e.play(stage,online);e.SET.autofire='on';const B=e.G.base,p=online?e.G.p2:e.G.p;
+    const upper=B.targets.find(t=>t.k==='switch');assert.ok(upper);e.G.freezeT=999;
+    Object.assign(p,{x:192,y:204,weapon:'rifle',cool:0,onGround:true,invT:999});
+    for(let tick=0;tick<500&&upper.hp>0;tick++){
+      const jump=tick%55===0;
+      if(online)e.coop.remote.push(encodeInput({fire:true,jump}));else{e.K.KeyJ=true;e.K.KeyK=jump;}
+      e.step();
+    }
+    assert.ok(upper.hp<=0,`${stage} ${p.pid}P can reach the top tier`);
+  }
+});
+
 test('实际跳跃射击能用六种武器命中高位机关，单人和二号玩家均能独立完成',()=>{
   for(const online of [false,true])for(const weapon of ['rifle','machine','spread','laser','fire','homing']){
     const e=quietBaseRoom(0,online),p=online?e.G.p2:e.G.p,upper=e.G.base.targets.find(t=>t.k==='switch');p.weapon=weapon;
@@ -1523,6 +2804,27 @@ function mineScene(online=false){
   return e;
 }
 
+test('第二、四关卧倒躲避炮弹、敌兵子弹及能量弹，但仍会被炸弹与滚雷击中',()=>{
+  for(const stage of [2,4])for(const player2 of [false,true]){
+    for(const kind of ['turret','base-soldier','boss-turret','ring','bubble','bomb','mine']){
+      const e=engine();e.play(stage,true);const p=player2?e.G.p2:e.G.p;
+      Object.assign(p,{x:192,y:204,invT:0,shieldT:0,riot:0,prone:true,onGround:true});
+      e.G.base.sol=[];e.G.base.rol=[];e.G.eb=[];e.G.fx=[];
+      if(kind==='mine')e.G.base.rol=[{u0:0,ut:0,z:.02,a:0,spd:.42}];
+      else e.G.eb=[{base:true,t:.95,x:192,y:199,x0:192,y0:100,x1:192,y1:199,r:3,
+        ...(kind==='bubble'?{bubble:true,rx:15,ry:9}:kind==='ring'?{ring:true}:kind==='bomb'?{bomb:true}:{from:kind})}];
+      if(player2)e.withPlayer2(e.collideBasePlayer);else e.collideBasePlayer();
+      assert.equal(p.dead,kind==='mine'||kind==='bomb',`${stage} ${player2?'2P':'1P'} ${kind}`);
+      if(kind!=='mine'&&kind!=='bomb')assert.ok(!e.G.eb[0].dead,'dodged projectiles remain available to hit the teammate');
+    }
+    const e=engine();e.play(stage,true);Object.assign(e.G.p,{x:192,y:204,invT:0,prone:true});
+    Object.assign(e.G.p2,{x:192,y:204,invT:0,prone:false});
+    e.G.eb=[{base:true,t:.95,x:192,y:199,x0:192,y0:100,x1:192,y1:199,r:3}];
+    e.collideBasePlayer();e.withPlayer2(e.collideBasePlayer);
+    assert.equal(e.G.p.dead,false);assert.equal(e.G.p2.dead,true,'standing teammate remains vulnerable');
+  }
+});
+
 test('敌方手雷到前沿必定爆炸一次，出现火焰烟尘，联机快照保留爆炸',()=>{
   const e=mineScene(),r={u0:0,ut:110,z:.001,a:0,spd:.42};e.G.base.rol=[r];
   e.step();assert.ok(r.dead);assert.ok(e.G.fx.some(f=>f.k==='boom'));assert.equal(e.G.fx.filter(f=>f.k==='smoke').length,3);
@@ -1560,6 +2862,16 @@ function giantScene(stage=1,online=false){
   return e;
 }
 function ticks(e,n){for(let i=0;i<n;i++)e.step();}
+
+test('暂停时震动和过门画面保持冻结，恢复后继续推进',()=>{
+  for(const stage of [2,4])for(const online of [false,true]){
+    const e=engine();e.play(stage,online);e.G.shake=9;e.G.base.trans=.8;
+    e.G.mode='pause';const before={t:e.G.t,time:e.G.time,shake:e.G.shake,trans:e.G.base.trans};
+    ticks(e,180);
+    assert.deepEqual({t:e.G.t,time:e.G.time,shake:e.G.shake,trans:e.G.base.trans},before);
+    e.G.mode='play';e.step();assert.equal(e.G.t,before.t+1);assert.ok(e.G.base.trans<before.trans);
+  }
+});
 function playerShot(e,p=e.G.p){
   const b={x:p.x,y:p.y-18,r:1,vx:-90,vy:0};e.G.eb=[b];e.collide();return b;
 }
@@ -1655,4 +2967,364 @@ test('巨大化仍会在掉出场景时死亡，复活不继承巨大化或旧�
   assert.ok(old.dead);assert.equal(old.giantT,0);assert.equal(old.giantHits,0);assert.equal(old.giantGraceT,0);
   for(let i=0;i<200&&e.G.p.dead;i++)e.step();
   assert.equal(e.G.p.dead,false);assert.notEqual(e.G.p,old);assert.equal(e.G.p.giantT,0);assert.equal(e.G.p.giantHits,0);
+});
+
+test('第一关抬高岩台从两侧挡住行走和卧倒，跳上台面后才能越过',()=>{
+  for(const side of [-1,1])for(const prone of [false,true]){
+    const e=engine();e.play(1,false);e.G.en=[];e.G.pods=[];e.G.camX=400;
+    const ledge=e.solids.find(s=>s.x===520&&!s.g),floor=e.solids.find(s=>s.x===240&&s.g),p=e.G.p;
+    Object.assign(p,{x:side<0?ledge.x-18:ledge.x+ledge.w+18,y:floor.y,vx:0,vy:0,onGround:true,support:floor,invT:999});
+    e.K[side<0?'KeyD':'KeyA']=true;e.K.KeyS=prone;ticks(e,35);
+    assert.equal(p.x,side<0?ledge.x-5:ledge.x+ledge.w+5);assert.equal(p.y,floor.y);assert.equal(p.dead,false);
+  }
+  const e=engine();e.play(1,false);e.G.en=[];e.G.pods=[];e.G.camX=400;
+  const ledge=e.solids.find(s=>s.x===520&&!s.g),floor=e.solids.find(s=>s.x===240&&s.g),p=e.G.p;
+  Object.assign(p,{x:ledge.x-5,y:floor.y,vx:0,vy:0,onGround:true,support:floor,invT:999});
+  e.step(); // Release the menu's held-jump latch before a new press.
+  e.K.KeyD=e.K.KeyK=true;e.step();e.K.KeyK=false;ticks(e,24);e.K.KeyD=false;
+  for(let i=0;i<100&&!p.onGround;i++)e.step();
+  assert.equal(p.support,ledge);assert.equal(p.y,ledge.y);
+  e.K.KeyD=true;for(let i=0;i<70&&p.x<ledge.x+ledge.w+6;i++)e.step();e.K.KeyD=false;
+  for(let i=0;i<60&&!p.onGround;i++)e.step();
+  assert.ok(p.x>ledge.x+ledge.w);assert.equal(p.y,floor.y);
+});
+
+test('第一关实体岩台挡住从下方顶穿，站在台面不能用下加跳穿过岩层',()=>{
+  const e=engine();e.play(1,false);e.G.en=[];e.G.pods=[];e.G.camX=800;
+  const ledge=e.solids.find(s=>s.x===960&&!s.g),floor=e.solids.find(s=>s.x===876&&s.g),p=e.G.p;
+  Object.assign(p,{x:ledge.x+ledge.w/2,y:floor.y,vx:0,vy:0,onGround:true,support:floor,invT:999});
+  e.step();
+  e.K.KeyK=true;e.step();e.K.KeyK=false;let peak=p.y;
+  for(let i=0;i<70;i++){e.step();peak=Math.min(peak,p.y);}
+  assert.ok(peak>=ledge.y+ledge.h+22-.001);assert.equal(p.y,floor.y);assert.equal(p.support,floor);
+  Object.assign(p,{x:ledge.x+ledge.w/2,y:ledge.y,vx:0,vy:0,onGround:true,support:ledge});
+  e.K.KeyS=e.K.KeyK=true;e.step();assert.ok(p.vy<0);assert.ok(p.y<ledge.y);assert.equal(p.dropT,0);
+});
+
+test('第三关水中伏兵先预警、向上发射，并在弹道顶点分裂为三颗下落弹',()=>{
+  const e=engine();e.play(3,false);e.G.camY=0;e.G.eb=[];e.G.pb=[];
+  const guards=e.G.en.filter(q=>q.t==='waterAmbush');assert.ok(guards.length>=6);
+  const guard=guards[0];e.G.en=[guard];Object.assign(e.G.p,{x:190,y:176,invT:99});guard.fireT=0;
+  e.updateEnemies();assert.ok(guard.warning>.6);assert.equal(e.G.eb.length,0);
+  for(let i=0;i<45&&!e.G.eb.length;i++)e.updateEnemies();
+  const shot=e.G.eb[0];assert.equal(shot.waterAmbush,'rise');assert.ok(shot.vy<0);const startY=shot.y;
+  for(let i=0;i<100&&!shot.dead;i++)e.updateBullets();
+  assert.ok(shot.dead);assert.ok(shot.y<startY-50);
+  const parts=e.G.eb.filter(b=>!b.dead&&b.waterAmbush==='fall');assert.equal(parts.length,3);
+  assert.ok(parts[0].vx<0&&parts[1].vx===0&&parts[2].vx>0);assert.ok(parts.every(b=>b.vy>0));
+  const frozen=parts.map(b=>[b.x,b.y,b.vy]);e.G.freezeT=1;e.updateBullets();assert.deepEqual(parts.map(b=>[b.x,b.y,b.vy]),frozen);
+  e.G.freezeT=0;e.updateBullets();assert.ok(parts.every((b,i)=>b.y>frozen[i][1]));
+  const copy=unpackWorld(packWorld(e.G));assert.equal(copy.en[0].t,'waterAmbush');assert.equal(copy.eb.filter(b=>!b.dead&&b.waterAmbush==='fall').length,3);
+});
+
+test('第三关水中伏兵可被击败，分裂弹可以命中任一玩家',()=>{
+  const e=engine();e.play(3,false);const guard=e.G.en.find(q=>q.t==='waterAmbush');e.G.en=[guard];e.G.eb=[];
+  e.G.pb=[{k:'b',x:guard.x,y:guard.y-8,vx:0,vy:0,dmg:1}];e.collide();assert.equal(guard.dead,true);
+  for(const slot of [1,2]){
+    const team=engine();team.play(3,true);team.G.en=[];team.G.pb=[];
+    const p=slot===1?team.G.p:team.G.p2,other=slot===1?team.G.p2:team.G.p;
+    Object.assign(p,{x:200,y:160,invT:0,shieldT:0});Object.assign(other,{x:280,y:160});
+    team.G.eb=[{waterAmbush:'fall',x:p.x,y:p.y-14,r:2.8,vx:0,vy:42,g:175}];team.collide();
+    assert.equal(p.dead,true);assert.equal(other.dead,false);
+  }
+});
+
+test('第三关两团火在桥面相向交叉并往返，伤害范围始终跟随火焰',()=>{
+  for(const bridge of waterfall.FLAME_BRIDGES){
+    const times=[2.55,3.3,4.3,5.3,6.05].map(t=>t-bridge.phase);
+    const positions=times.map(t=>waterfall.flameJetPositions(bridge,t));
+    assert.ok(positions[0][0]<positions[0][1]);
+    assert.ok(Math.abs(positions[1][0]-positions[1][1])<1e-8);
+    assert.ok(positions[2][0]>positions[2][1]);
+    assert.ok(Math.abs(positions[3][0]-positions[3][1])<1e-8);
+    assert.ok(positions[4][0]<positions[4][1]);
+    for(let i=0;i<times.length;i++){
+      const boxes=waterfall.flameJetBoxes(times[i]).filter(b=>Math.abs(b.y+b.h-bridge.y)<1e-8);
+      assert.equal(boxes.length,2);
+      for(let j=0;j<2;j++){
+        assert.ok(Math.abs(boxes[j].x+boxes[j].w/2-positions[i][j])<1e-8);
+        assert.ok(positions[i][j]>bridge.x+5&&positions[i][j]<bridge.x+bridge.w-5);
+      }
+    }
+  }
+  for(const slot of [1,2])for(const time of [2.55,4.3,6.05]){
+    const e=engine();e.play(3,true);e.G.en=[];e.G.time=time;e.G.freezeT=0;
+    const bridge=waterfall.FLAME_BRIDGES[0],p=slot===1?e.G.p:e.G.p2,other=slot===1?e.G.p2:e.G.p;
+    Object.assign(p,{x:waterfall.flameJetPositions(bridge,time)[0],y:bridge.y,onGround:true,invT:0});
+    Object.assign(other,{x:30,y:bridge.y,invT:0});e.updateStage3();
+    assert.equal(p.dead,true);assert.equal(other.dead,false);
+  }
+});
+
+test('第六关实际刷出的巡逻兵会迅速边行走边开枪',()=>{
+  const e=engine();e.play(6,false);e.G.en=[];e.G.podTrig=[];e.G.eb=[];e.G.jets=[];e.G.camX=0;e.G.spawnT=0;
+  Object.assign(e.G.p,{x:120,y:176,onGround:true,invT:999});
+  e.updateEnemies();const soldier=e.G.en.find(q=>q.t==='run');assert.ok(soldier,'real spawner creates a runner');
+  assert.ok(soldier.fireT>=.45&&soldier.fireT<=.8);e.G.spawnT=9999;
+  let aimX=null,shot=null;
+  for(let i=0;i<150&&!shot;i++){
+    e.updateEnemies();if(soldier.attack?.phase==='aim'&&aimX===null)aimX=soldier.x;
+    shot=e.G.eb.find(b=>b.from==='runner');
+  }
+  assert.ok(shot,'the naturally spawned runner fires');assert.ok(soldier.x<aimX-5,'keeps moving during aim');
+  assert.ok(shot.vx<0,'fires towards the player');assert.equal(shot.vy,0);
+});
+
+test('第六关跑兵穿过已冷却喷火区时不会取消开枪',()=>{
+  const {e,soldier}=stageSixRunnerScene(288,1,170);e.G.eb=[];e.G.jets=[{x:300,v:1,per:3.2,off:0,st:'cold',k:0}];
+  e.G.s6.coolT=8;soldier.fireT=0;let insideShot=false;
+  for(let i=0;i<28;i++){
+    e.updateEnemies();if(e.G.eb.some(b=>b.from==='runner')){insideShot=soldier.x<315;break;}
+  }
+  assert.ok(insideShot,'a safe crossing retains and completes the attack');assert.ok(soldier.x>288);
+});
+
+test('第六关喷火通道缩短且两侧各层的火焰覆盖整个横向路径',()=>{
+  const q=stageSixCombat.STAGE_SIX_GALLERY,e=engine();e.play(6,false);const jets=e.G.jets.filter(j=>j.gallery);
+  const corridors=[{side:'ascent',left:q.left+q.leftWidth,right:q.right},{side:'descent',left:q.right+q.rightWidth,right:q.end}];
+  for(const c of corridors){
+    assert.ok(c.right-c.left<150,'the horizontal corridor is shorter than the previous 198-pixel section');
+    for(const y of [80,120,160]){
+      const pair=jets.filter(j=>j.side===c.side&&j.y===y);assert.equal(pair.length,2);
+      assert.deepEqual(Array.from(pair,j=>j.dir).sort(),[-1,1]);
+      for(const j of pair){
+        j.k=1;const box=e.jetBox(j);
+        if(j.dir>0){assert.ok(box.x<=c.left+6);assert.ok(box.x+box.w>=c.right);}
+        else {assert.ok(box.x<=c.left);assert.ok(box.x+box.w>=c.right-6);}
+      }
+      assert.equal(pair[0].off,pair[1].off,'opposing fire shares an escape window');
+    }
+  }
+  for(const c of corridors)for(const dir of [-1,1])for(const slot of [1,2]){
+    const f=engine();f.play(6,true);f.G.en=[];f.G.podTrig=[];f.G.spawnT=9999;f.G.camX=2400;
+    const j={...f.G.jets.find(v=>v.side===c.side&&v.y===120&&v.dir===dir),k:0,st:'off'};f.G.jets=[j];
+    f.G.time=j.per-1.3-j.off+.45;
+    const p=slot===1?f.G.p:f.G.p2,other=slot===1?f.G.p2:f.G.p;
+    Object.assign(p,{x:dir>0?c.right-10:c.left+10,y:136,onGround:true,invT:0,shieldT:0});
+    Object.assign(other,{x:2450,y:176,onGround:true,invT:999});f.step();
+    assert.equal(p.dead,true,`${c.side}, direction ${dir}, player ${slot}: flame reaches far end`);
+  }
+});
+
+test('第六关翻过立柱后，另一侧可以沿上、中平台逐层下降',()=>{
+  const e=engine();e.play(6,false);e.G.en=[];e.G.podTrig=[];e.G.jets=[];e.G.spawnT=9999;e.G.camX=2400;
+  const q=stageSixCombat.STAGE_SIX_GALLERY,p=e.G.p;
+  Object.assign(p,{x:q.right+q.rightWidth+9,y:72,vy:0,onGround:false,invT:999});
+  e.K.KeyD=true;const landings=[];
+  for(let i=0;i<170;i++){
+    e.step();if(p.onGround&&landings.at(-1)!==p.y)landings.push(p.y);
+    if(p.x>=q.end+5&&p.onGround&&p.y===176)break;
+  }
+  assert.deepEqual(landings,[96,136,176]);assert.ok(p.x>=q.end+5,'the descending side rejoins the ground');
+});
+
+test('第六关完整喷火攀爬路线可依次上到顶部，越过实心隔柱，再沿右侧平台回到地面',()=>{
+  for(const slot of [1,2]){
+  const e=engine();e.play(6,slot===2);e.G.en=[];e.G.podTrig=[];e.G.jets=[];e.G.spawnT=9999;e.G.camX=2400;
+  const q=stageSixCombat.STAGE_SIX_GALLERY,p=slot===1?e.G.p:e.G.p2;Object.assign(p,{x:2580,y:176,vy:0,onGround:true,invT:999});
+  if(slot===2)Object.assign(e.G.p,{x:2550,y:176,onGround:true,invT:999});
+  const move=({jump=false,right=false}={})=>{if(slot===1){e.K.KeyK=jump;e.K.KeyD=right;}else e.coop.remote.push(encodeInput({jump,right}));e.step();};move();
+  const visited=[176];
+  for(const y of [136,96,q.crownTop]){
+    move({jump:true});let landed=false;
+    for(let i=0;i<90;i++){move();if(p.onGround&&p.y===y){landed=true;visited.push(y);break;}}
+    assert.ok(landed,'ascending tier '+y);
+  }
+  assert.equal(p.support.galleryCrown,true);
+  for(let i=0;i<180;i++){move({right:true});if(p.onGround&&visited.at(-1)!==p.y)visited.push(p.y);if(p.x>q.end+10&&p.onGround&&p.y===176)break;}
+  assert.deepEqual(visited,[176,136,96,56,96,136,176]);assert.ok(p.x>q.end+10);assert.equal(p.dead,false);
+  }
+});
+
+test('第六关重新进入和跨关返回都会创建完整的新地形，顶部平台不会继承上一局的消失状态',()=>{
+  const e=engine();e.play(6,false);const crown=e.solids.find(s=>s.galleryCrown);assert.ok(crown?.solid);crown.gone=true;
+  e.reset(6);const again=e.solids.find(s=>s.galleryCrown);assert.notEqual(again,crown);assert.equal(again.gone,undefined);assert.equal(e.solids.filter(s=>s.gallery).length,5);
+  e.play(7,false);e.play(6,false);assert.equal(e.solids.filter(s=>s.gallery).length,5);assert.ok(e.solids.some(s=>s.galleryCrown&&s.solid&&!s.gone));assert.ok(e.solids.some(s=>s.galleryWall&&s.solid));assert.equal(e.G.jets.filter(j=>j.gallery).length,12);
+});
+
+test('第六关通道喷火画面长度与实际伤害范围一致',()=>{
+  const q=stageSixCombat.STAGE_SIX_GALLERY,jets=q.outlets.map(j=>({...j,st:'fire',k:1})),flames=[];
+  const gradient={addColorStop(){}};
+  const g=new Proxy({createLinearGradient:()=>gradient},{get:(o,k)=>k in o?o[k]:()=>{},set:(o,k,v)=>(o[k]=v,true)});
+  const art={g,state:{time:2},rect(){},disc(){},light(){},line(){},flame:(...args)=>flames.push(args)};
+  StageSixArt.prototype.jets.call(art,jets,[],2400);assert.equal(flames.length,jets.length);
+  for(let i=0;i<jets.length;i++){
+    const j=jets[i],f=flames[i];assert.equal(f[0],j.x+j.dir*6);assert.equal(f[1],j.y);
+    assert.equal(f[2],j.dir);assert.equal(f[4],j.range);
+  }
+});
+
+test('第六关机器人落下或着地时踩中两位玩家均致命，静止、上升或冰冻不造成踩踏',()=>{
+  for(const slot of [1,2])for(const foot of [-30,30]){
+    const e=engine();e.play(6,true);e.G.en=[];e.G.podTrig=[];e.G.jets=[];e.G.eb=[];e.G.spawnT=9999;e.G.camX=2916;
+    const b=e.G.golem,p=slot===1?e.G.p:e.G.p2,other=slot===1?e.G.p2:e.G.p;
+    Object.assign(b,{active:true,x:3160,y:174,ground:176,phase:'jump',vy:150,vx:0,stompT:0,shotT:999});
+    Object.assign(p,{x:b.x+foot,y:176,vy:0,onGround:true,invT:0,shieldT:0});
+    Object.assign(other,{x:3040,y:176,vy:0,onGround:true,invT:999});e.step();
+    assert.equal(b.phase,'land');assert.equal(p.dead,true,`player ${slot}, foot ${foot}`);assert.equal(other.dead,false);
+    assert.ok(b.stompT>0);const copy=unpackWorld(packWorld(e.G));assert.equal(copy.golem.stompT,b.stompT);
+  }
+  for(const state of ['idle','rising','frozen','dead','inactive']){
+    const e=engine();e.play(6,true);e.G.en=[];e.G.jets=[];e.G.s6.waves=[];
+    const b=e.G.golem,p=e.G.p2;Object.assign(b,{active:state!=='inactive',dead:state==='dead',phase:state==='rising'?'jump':'idle',vy:state==='rising'?-100:0});
+    e.G.freezeT=state==='frozen'?1:0;Object.assign(p,{x:b.x+30,y:b.y,invT:0,shieldT:0});e.collidePartnerHazards();
+    assert.equal(p.dead,false,state);
+  }
+});
+
+test('第三关落石脱落或击碎后按间隔在原岩壁循环补充，冻结和双人快照保留倒计时',()=>{
+  const e=engine();e.play(3,true);e.G.s3.rockT=9999;e.G.s3.runT=9999;e.G.spawnT=9999;e.G.p.invT=9999;e.G.p2.invT=9999;
+  const rock=e.G.en.find(q=>q.waterfallRock&&q.y<150),slot=e.G.s3.rockSlots.find(q=>q.sourceId===rock.sourceId);
+  assert.ok(slot);e.G.en=[rock];e.G.s3.rockSlots=[slot];
+  Object.assign(rock,{phase:'warning',warnT:wallRock.WALL_ROCK_WARNING});
+  for(let i=0;i<100&&rock.phase==='warning';i++)e.updateEnemies();
+  assert.equal(rock.phase,'fall');e.updateStage3();assert.equal(slot.respawnT,wallRock.WALL_ROCK_RESPAWN);
+  for(let i=0;i<120;i++)e.updateStage3();assert.ok(slot.respawnT>3.9&&slot.respawnT<4.1);
+  e.G.freezeT=1;const remaining=slot.respawnT;for(let i=0;i<60;i++)e.updateStage3();assert.equal(slot.respawnT,remaining);
+  const remote=unpackWorld(packWorld(e.G));assert.equal(remote.s3.rockSlots[0].respawnT,remaining);
+  e.G.freezeT=0;for(let i=0;i<300&&!e.G.en.some(r=>r!==rock&&r.sourceId===slot.sourceId&&r.phase==='embedded'&&!r.dead);i++)e.updateStage3();
+  const fresh=e.G.en.find(r=>r!==rock&&r.sourceId===slot.sourceId&&r.phase==='embedded'&&!r.dead);
+  assert.ok(fresh,'a new rock appears in the original wall');assert.equal(fresh.x,slot.x);assert.equal(fresh.y,slot.y);assert.equal(fresh.hp,wallRock.WALL_ROCK_HP);
+  for(let i=0;i<wallRock.WALL_ROCK_HP-1;i++)e.damageEnemy(fresh,1,fresh.x,fresh.y-fresh.r);
+  assert.equal(fresh.dead,undefined);e.damageEnemy(fresh,1,fresh.x,fresh.y-fresh.r);assert.equal(fresh.dead,true);
+  e.updateStage3();assert.equal(slot.respawnT,wallRock.WALL_ROCK_RESPAWN);
+  for(let i=0;i<wallRock.WALL_ROCK_RESPAWN*60+2;i++)e.updateStage3();
+  const third=e.G.en.find(r=>r!==rock&&r!==fresh&&r.sourceId===slot.sourceId&&!r.dead&&r.phase==='embedded');
+  assert.ok(third,'destroyed wall rocks also return after the interval');
+  e.G.s3.rockT=0;e.updateStage3();assert.equal(third.phase,'warning');assert.equal(third.warnT,wallRock.WALL_ROCK_WARNING);
+  e.G.mech.active=true;const count=e.G.en.length;for(let i=0;i<420;i++)e.updateStage3();assert.equal(e.G.en.length,count,'no respawns during the boss');
+});
+
+test('第二、四关各房间敌兵在墙边左右往返并开枪，只有红兵跳跃',()=>{
+  for(const stage of [2,4])for(const room of [0,1,2])for(const red of [false,true]){
+    const e=engine();e.play(stage,true);e.loadRoom(room);const B=e.G.base;
+    B.sol=[];B.spawned=red?1:0;B.spawnT=0;B.rolled=999;B.targets.forEach(t=>t.fireT=999);
+    e.G.p.invT=999;e.G.p2.invT=999;e.step();const s=B.sol[0];assert.ok(s?.patrolArmed);assert.equal(!!s.dropKind,red);
+    B.spawned=B.def.sol;let left=0,right=0,jumped=false,shot=false;
+    for(let i=0;i<600;i++){
+      const previous=s.u;e.step();assert.ok(!s.dead,`stage ${stage} room ${room}`);
+      assert.equal(s.z,BASE_PATROL_DEPTH);assert.equal(s.st,'walk');assert.ok(Math.abs(s.u)<=BASE_PATROL_LIMIT);
+      if(s.u<previous)left++;if(s.u>previous)right++;
+      jumped ||=s.jumpY>0;shot ||=e.G.eb.some(b=>b.from==='base-soldier');
+    }
+    assert.ok(left>20&&right>20,'the soldier reverses and patrols in both directions');
+    assert.equal(jumped,red,'only red carriers jump');assert.ok(shot,'both enemy types fire');
+    const point=204-64*s.z;assert.ok(point>=140&&point<150,'the projected feet remain near the back wall');
+    const copy=unpackWorld(packWorld(e.G)).base.sol[0];assert.equal(copy.z,s.z);assert.equal(copy.patrolDir,s.patrolDir);
+  }
+});
+
+test('第二、四关墙边巡逻兵可被玩家普通子弹击中并掉落补给',()=>{
+  for(const stage of [2,4]){
+    const e=engine();e.play(stage,false);const B=e.G.base;
+    B.sol=[];B.spawned=1;B.spawnT=0;B.rolled=999;B.targets.forEach(t=>t.fireT=999);
+    e.G.p.invT=999;e.step();const s=B.sol[0];assert.ok(s.dropKind);B.spawned=B.def.sol;
+    Object.assign(s,{jumpY:0,jumpV:0});e.G.p.x=192+s.u;e.G.freezeT=5;e.K.KeyJ=true;
+    for(let i=0;i<100&&!s.dead;i++)e.step();
+    assert.equal(s.dead,true,`stage ${stage}: actual rifle fire hits the wall patrol`);
+    assert.equal(e.G.items.filter(it=>it.fromSoldier).length,1);assert.equal(e.G.items.find(it=>it.fromSoldier).kind,s.dropKind);
+  }
+});
+
+test('第二、四关限制同时巡逻人数，消灭后继续生成，过关后停止巡逻并清场',()=>{
+  for(const stage of [2,4]){
+    const e=engine();e.play(stage,false);const B=e.G.base;B.sol=[];B.spawned=0;B.spawnT=0;B.rolled=999;
+    B.targets.forEach(t=>t.fireT=999);e.G.p.invT=999;
+    for(let i=0;i<1000;i++){e.step();assert.ok(B.sol.filter(s=>!s.dead).length<=BASE_PATROL_MAX);}
+    assert.equal(B.sol.length,BASE_PATROL_MAX);assert.equal(B.spawned,BASE_PATROL_MAX);
+    e.killSoldier(B.sol[0]);for(let i=0;i<240&&B.spawned===BASE_PATROL_MAX;i++)e.step();
+    assert.equal(B.spawned,BASE_PATROL_MAX+1,'the next patrol appears after a slot opens');
+    B.targets.forEach(t=>{if(t.k!=='core')t.hp=0;});
+    const core=B.targets.find(t=>t.k==='core');core.aperture=1;e.hitTarget(core,12);
+    assert.equal(B.cleared,true);assert.ok(B.sol.every(s=>s.st==='leave'||s.dead));
+    e.K.KeyW=true;e.step();e.K.KeyW=false;assert.equal(B.sol.length,0,'all soldiers disappear on the first advance frame');
+  }
+});
+
+test('第二、四关只有红色补给兵高跳并躲开真实迎面子弹，普通敌兵留在地面',()=>{
+  for(const stage of [2,4])for(const red of [false,true]){
+    const e=engine();e.play(stage,false);const B=e.G.base;B.sol=[];B.spawned=red?1:0;B.spawnT=0;B.rolled=999;
+    B.targets.forEach(t=>t.fireT=999);e.G.p.invT=999;e.step();const s=B.sol[0];assert.equal(!!s.dropKind,red);
+    B.spawned=B.def.sol;Object.assign(s,{u:0,patrolDir:1,patrolSpeed:.00001,jumpT:999,jumpY:0,jumpV:0,dodgeT:0,fireT:999});
+    Object.assign(e.G.p,{x:192,cool:0});e.K.KeyJ=true;e.step();e.K.KeyJ=false;
+    const bullet=e.G.pb[0];assert.ok(bullet,'a real rifle shot was created');let peak=0,passed=false;
+    for(let i=0;i<55;i++){
+      e.step();peak=Math.max(peak,baseSoldierJumpOffset(s));passed ||=bullet.t>=s.z;
+      if(s.dead||passed)break;
+    }
+    if(red){
+      assert.ok(passed,'the bullet reaches the red carrier depth');assert.equal(!!s.dead,false,'red carrier jumps over the shot');
+      assert.ok(peak>30,`the displayed jump is high enough to clear the bullet: ${peak}`);
+      const copy=unpackWorld(packWorld(e.G));assert.ok(copy.base.sol[0].jumpY>0);
+    }else{
+      assert.equal(s.dead,true,'the same shot hits the non-jumping soldier');assert.equal(peak,0);
+    }
+  }
+});
+
+test('红色补给兵高跳时仍能被击中，偏离路线的子弹不会触发躲避',()=>{
+  for(const stage of [2,4]){
+    const e=engine();e.play(stage,false);const B=e.G.base;B.sol=[];B.spawned=1;B.spawnT=0;B.rolled=999;
+    B.targets.forEach(t=>t.fireT=999);e.G.p.invT=999;e.step();const s=B.sol[0];B.spawned=B.def.sol;
+    Object.assign(s,{u:0,patrolDir:1,patrolSpeed:.00001,jumpT:999,jumpY:0,jumpV:0,dodgeT:0,fireT:999});
+    e.G.pb=[{k:'b',owner:1,t:0,spd:1.8,x0:35,y0:166,xe:35,ye:129,dmg:1}];
+    for(let i=0;i<15;i++)e.step();assert.equal(s.jumpY,0,'a distant shot does not cause a dodge');
+    Object.assign(s,{jumpY:35,jumpV:0});e.G.freezeT=1;
+    const x=192+s.u*(1-.5*s.z),y=204-64*s.z-baseSoldierJumpOffset(s)-BASE_SOLDIER.height*baseSoldierScale(s.z)/2;
+    e.G.pb=[{k:'b',owner:1,t:s.z-.01,spd:.6,x0:x,y0:y,xe:x,ye:y,dmg:1}];e.step();
+    assert.equal(s.dead,true,'airborne soldier can still be hit in its visible body');
+  }
+});
+
+test('第二关关底三炮弹随飞行逐渐散开，冻结暂停且双人快照保留轨迹',()=>{
+  for(const targetX of [30,192,354]){
+    const e=engine();e.play(2,true);e.loadRoom(3);e.G.p.invT=999;e.G.p2.invT=999;
+    e.G.p.x=targetX;e.G.p2.x=targetX;const B=e.G.base;B.targets.forEach(t=>t.fireT=999);
+    const turret=B.targets[2];turret.fireT=0;
+    for(let i=0;i<80&&!e.G.eb.some(b=>b.from==='boss-turret');i++)e.step();
+    const shots=e.G.eb.filter(b=>b.from==='boss-turret');assert.equal(shots.length,3);
+    assert.equal(shots[1].x1,targetX,'the central shot aims at the nearest player');
+    assert.equal(shots[0].x1,targetX-40);assert.equal(shots[2].x1,targetX+40);
+    const spacing=()=>[shots[1].x-shots[0].x,shots[2].x-shots[1].x];
+    const first=spacing();for(let i=0;i<40;i++)e.step();const middle=spacing();
+    assert.ok(middle[0]>first[0]+10&&middle[1]>first[1]+10,'both sides spread as they fly');
+    assert.ok(Math.abs(middle[0]-middle[1])<1e-8,'fan remains centered');
+    e.G.freezeT=3;const before=shots.map(b=>[b.x,b.y,b.t]);for(let i=0;i<30;i++)e.step();
+    assert.deepEqual(shots.map(b=>[b.x,b.y,b.t]),before,'freezing preserves all three positions');
+    const copy=unpackWorld(packWorld(e.G)).eb.filter(b=>b.from==='boss-turret');
+    assert.deepEqual(Array.from(copy,b=>[b.x,b.y,b.x1,b.y1,b.t]),Array.from(shots,b=>[b.x,b.y,b.x1,b.y1,b.t]));
+    e.G.freezeT=0;for(let i=0;i<30;i++)e.step();const late=spacing();assert.ok(late[0]>middle[0]&&late[1]>middle[1]);
+  }
+});
+
+test('第二关关底散开的三颗子弹各自可命中两名玩家',()=>{
+  for(const slot of [1,2])for(const index of [0,1,2]){
+    const e=engine();e.play(2,true);e.loadRoom(3);const B=e.G.base;
+    B.targets.forEach(t=>t.fireT=999);B.targets[2].fireT=0;
+    Object.assign(e.G.p,{x:192,invT:999});Object.assign(e.G.p2,{x:192,invT:999});
+    for(let i=0;i<80&&!e.G.eb.some(b=>b.from==='boss-turret');i++)e.step();
+    const shots=e.G.eb.filter(b=>b.from==='boss-turret');assert.equal(shots.length,3);
+    for(let i=0;i<110&&shots[index].t<.9;i++)e.step();
+    const p=slot===1?e.G.p:e.G.p2,other=slot===1?e.G.p2:e.G.p;
+    Object.assign(p,{x:shots[index].x,y:204,invT:0,shieldT:0,dead:false});other.invT=999;
+    if(slot===1)e.collideBasePlayer();else e.withPlayer2(e.collideBasePlayer);
+    assert.equal(p.dead,true,`player ${slot}, projectile ${index}`);assert.equal(other.dead,false);assert.equal(shots[index].dead,true);
+  }
+});
+
+test('第二、四关敌兵保持正面朝向，左右移动时枪口与实际射击一致',()=>{
+  for(const stage of [2,4])for(const red of [false,true])for(const side of [-1,1]){
+    const e=engine();e.play(stage,true);const B=e.G.base;B.sol=[];B.spawned=red?1:0;B.spawnT=0;B.rolled=999;
+    B.targets.forEach(t=>t.fireT=999);if(B.galleryTimers)B.galleryTimers.fill(999);
+    Object.assign(e.G.p,{x:90,invT:999});Object.assign(e.G.p2,{x:280,invT:999});e.step();const s=B.sol[0];
+    B.spawned=B.def.sol;Object.assign(s,{u:side*50,patrolDir:-side,fireT:0,jumpT:999,jumpY:0,jumpV:0,dodgeT:0});
+    const target=side<0?e.G.p:e.G.p2,other=side<0?e.G.p2:e.G.p;target.invT=0;other.invT=999;
+    e.G.eb=[];const x0=s.u;e.step();assert.notEqual(s.u,x0,'the soldier moves horizontally');
+    const shot=e.G.eb.find(b=>b.from==='base-soldier');assert.ok(shot);assert.equal(shot.x1,target.x);
+    const x=192+s.u*(1-.5*s.z);assert.ok(Math.abs(shot.x0-x)<1e-9,'the front-facing muzzle is centered');
+    assert.ok(Math.abs(shot.y0-(204-64*s.z-baseSoldierJumpOffset(s)-BASE_SOLDIER.muzzleHeight*baseSoldierScale(s.z)))<1e-9);
+    for(let i=0;i<100&&!target.dead;i++)e.step();
+    assert.equal(target.dead,true,`stage ${stage}, red ${red}, side ${side}: actual bullet hits target`);
+    assert.equal(other.dead,false);
+  }
 });

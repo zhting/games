@@ -18,6 +18,7 @@ export async function createBackend(options = {}) {
     app.get(file === 'index.html' ? ['/', '/index.html'] : '/backend-config.js', (req, res) => res.sendFile(path.join(root, file)));
   }
   app.use('/assets', express.static(path.join(root, 'assets')));
+  app.use('/games/shared', express.static(path.join(root, 'games/shared')));
   app.get(['/games/game/3d', '/games/game/3d/', '/game/3d'], (req, res) => res.sendFile(path.join(root, 'games/game/3d/index.html')));
   // Shared browser engine helpers; the Wukong game itself remains local.
   app.use('/games/wukong/js', express.static(path.join(root, 'games/wukong/js')));

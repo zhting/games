@@ -1,4 +1,4 @@
-import { versionedAssetUrl } from './asset-url.mjs?v=lives-load-1';
+import { versionedAssetUrl } from './asset-url.mjs?v=enemy-freeze-2';
 /** Successful resources stay warm; retries only repeat failed work. */
 export class ResourcePreloader {
   constructor(jobs, { concurrency = 4, timeout = 300000, completed = [], cache = null } = {}) {

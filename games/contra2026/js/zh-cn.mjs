@@ -1,7 +1,7 @@
 // Display labels only. Item codes and network state keep their original values.
 export const WEAPON_LABELS = Object.freeze({ rifle: '步枪', machine: '机枪', spread: '散弹', laser: '激光', fire: '火焰', homing: '导弹' });
 export const ITEM_LABELS = Object.freeze({
-  M: '机枪', S: '散弹', L: '激光', F: '火焰', H: '导弹', R: '速射', B: '护盾',
+  M: '机枪', S: '散弹', L: '激光', F: '火焰', H: '导弹', R: '速射', B: '护盾', life:'生命 +1',
   g: '手雷', f: '闪光', m: '摩托', h: '飞机', u: '蘑菇', c: '迷彩', t: '炸药',
   e: '电磁', d: '盾牌', k: '钩爪', j: '头盔', o: '诱饵', n: '扫雷', i: '冰爪',
   v: '热像', x: '防火', w: '液氮', y: '磁靴', a: '无人机', p: '声波', z: '抗酸',
